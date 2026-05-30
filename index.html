@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>Mary Care — Sistema de Gestión</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F9F5F1;--sf:#FFF;--sf2:#F4EDE5;--br:#E8DDD3;--br2:#D8CABC;
+  --ink:#1E120A;--ink2:#6B5043;--ink3:#9E8070;
+  --terra:#A0674A;--terra2:#7A4D35;--nude:#C9A98B;--nude2:#E8D5C0;
+  --mint:#4E7F62;--mint-bg:#EAF3EE;
+  --gold:#8C6D2F;--gold-bg:#F5EDD8;
+  --sky:#3D6A8A;--sky-bg:#E2EDF5;
+  --red:#9E3D3D;--red-bg:#F5E5E5;
+  --violet:#6B4E8A;--vio-bg:#EDE5F5;
+  --sw:240px;--r:12px;--rl:16px;
+  --sh:0 1px 3px rgba(30,18,10,.08),0 4px 16px rgba(30,18,10,.06);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px}
+/* LAYOUT */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:var(--sw);flex-shrink:0;background:var(--ink);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:200;transition:transform .3s}
+.sb-brand{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px}
+.sb-icon{width:36px;height:36px;border-radius:50%;background:var(--terra);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--nude2);flex-shrink:0}
+.sb-name{font-family:'Playfair Display',serif;font-size:14px;color:var(--nude);letter-spacing:1.5px;text-transform:uppercase;line-height:1.2}
+.sb-sub{font-size:9px;color:rgba(201,169,139,.45);letter-spacing:2px}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 8px}
+.sb-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.22);padding:0 10px;margin:14px 0 5px}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.48);font-size:13px;transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.ni i{font-size:17px;flex-shrink:0;width:20px;text-align:center}
+.ni:hover{color:rgba(255,255,255,.82);background:rgba(255,255,255,.06)}
+.ni.active{color:var(--nude);background:rgba(201,169,139,.15);font-weight:500}
+.sb-foot{padding:12px 10px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-bal{background:var(--terra);border-radius:10px;padding:10px 14px;text-align:center}
+.sb-bal .sl{font-size:9px;letter-spacing:2px;color:var(--nude2);text-transform:uppercase;margin-bottom:3px}
+.sb-bal .sv{font-family:'Playfair Display',serif;font-size:20px;color:#fff;font-weight:700}
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{height:55px;background:var(--sf);border-bottom:1px solid var(--br);display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:100}
+.tb-menu{display:none;background:none;border:none;font-size:22px;color:var(--ink2);cursor:pointer;padding:4px}
+.tb-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:400}
+.tb-title span{color:var(--terra)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tb-pill{background:var(--gold-bg);color:var(--gold);border:1px solid #DEC888;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600}
+.content{flex:1;padding:20px 22px;max-width:1120px;width:100%}
+.overlay{display:none;position:fixed;inset:0;background:rgba(30,18,10,.5);z-index:190}
+.overlay.show{display:block}
+/* BOTTOM NAV */
+.bnav{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--ink);z-index:200;align-items:center;padding:0 2px 5px}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:rgba(255,255,255,.38);font-size:9px;letter-spacing:.4px;text-transform:uppercase;padding:6px 2px;border-radius:8px;border:none;background:none;transition:all .15s}
+.bni i{font-size:20px}
+.bni.active{color:var(--nude)}
+/* PAGES */
+.page{display:none}.page.active{display:block}
+.ph{margin-bottom:18px}
+.ph h1{font-family:'Playfair Display',serif;font-size:22px;font-weight:400}
+.ph p{font-size:12px;color:var(--ink3);margin-top:2px}
+/* CARDS */
+.card{background:var(--sf);border-radius:var(--rl);border:1px solid var(--br);box-shadow:var(--sh)}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--br);flex-wrap:wrap;gap:8px}
+.ct{font-family:'Playfair Display',serif;font-size:15px;font-weight:400}
+.cb{padding:16px}
+.cb.np{padding:0}
+/* KPI */
+.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.kpi{background:var(--sf);border-radius:var(--r);padding:14px;border:1px solid var(--br);position:relative;overflow:hidden}
+.ka{position:absolute;top:0;left:0;right:0;height:3px}
+.ki{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px}
+.kl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+.kv{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--ink)}
+.ks{font-size:10px;color:var(--ink3);margin-top:3px}
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn i{font-size:15px}
+.bp{background:var(--ink);color:var(--nude)}.bp:hover{background:var(--terra2)}
+.bt{background:var(--terra);color:#fff}.bt:hover{background:var(--terra2)}
+.bg{background:transparent;color:var(--ink2);border:1px solid var(--br)}.bg:hover{background:var(--sf2)}
+.bgo{background:var(--gold-bg);color:var(--gold);border:1px solid #DEC888}
+.bda{background:var(--red-bg);color:var(--red);border:1px solid #E0AAAA}
+.bsm{padding:5px 10px;font-size:11px}
+.bxs{padding:4px 8px;font-size:10px}
+/* CHIPS */
+.chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500}
+.cm{background:var(--mint-bg);color:var(--mint)}
+.cg{background:var(--gold-bg);color:var(--gold)}
+.cs{background:var(--sky-bg);color:var(--sky)}
+.ct2{background:#F5EDE8;color:var(--terra)}
+.cr{background:var(--red-bg);color:var(--red)}
+.cv{background:var(--vio-bg);color:var(--violet)}
+.cx{background:var(--sf2);color:var(--ink3)}
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:9px;font-weight:600;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase;padding:9px 14px;border-bottom:2px solid var(--br);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--br);font-size:13px;vertical-align:middle}
+tr:last-child td{border:none}
+tbody tr:hover td{background:var(--bg)}
+.tdm{font-weight:500}
+.tds{font-size:10px;color:var(--ink3);margin-top:1px}
+.amt{font-family:'Playfair Display',serif;font-size:15px;font-weight:700}
+.apos{color:var(--mint)}.aneg{color:var(--red)}.ater{color:var(--terra)}
+/* SEARCH */
+.sb{position:relative}
+.sb i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink3);font-size:15px;pointer-events:none}
+.sb input{width:100%;padding:9px 12px 9px 32px;border:1.5px solid var(--br);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:#fff;outline:none;transition:border .15s}
+.sb input:focus{border-color:var(--terra)}
+/* FILTER */
+.fb{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.fc{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:500;border:1.5px solid var(--br);cursor:pointer;color:var(--ink2);background:#fff;transition:all .15s;font-family:'DM Sans',sans-serif}
+.fc:hover{border-color:var(--terra);color:var(--terra)}
+.fc.on{background:var(--ink);color:var(--nude);border-color:var(--ink)}
+.tbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+/* MODAL */
+.mb{display:none;position:fixed;inset:0;background:rgba(30,18,10,.6);z-index:500;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
+.mb.open{display:flex}
+.modal{background:var(--sf);border-radius:var(--rl);width:100%;max-width:520px;box-shadow:0 4px 40px rgba(30,18,10,.18);margin:auto}
+.modal.wide{max-width:740px}
+.mh{padding:18px 22px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--sf);z-index:10;border-radius:var(--rl) var(--rl) 0 0}
+.mt{font-family:'Playfair Display',serif;font-size:17px;color:var(--terra)}
+.mc{background:none;border:none;font-size:20px;color:var(--ink3);cursor:pointer}
+.mbody{padding:20px 22px}
+.mf{padding:14px 22px;border-top:1px solid var(--br);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:var(--sf);z-index:10;border-radius:0 0 var(--rl) var(--rl)}
+/* MODAL TABS */
+.mtabs{display:flex;gap:0;border-bottom:1px solid var(--br);overflow-x:auto;padding:0 22px;background:var(--sf)}
+.mtab{padding:10px 15px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s}
+.mtab.active{color:var(--terra);border-bottom-color:var(--terra);font-weight:500}
+.mtc{display:none;padding:18px 22px}.mtc.active{display:block}
+/* FIELDS */
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.fld{margin-bottom:12px}
+.fld label{display:block;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink3);margin-bottom:4px;font-weight:500}
+.fld input,.fld select,.fld textarea{width:100%;border:1.5px solid var(--br);border-radius:8px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:#fff;outline:none;transition:border .15s;-webkit-appearance:none}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--terra)}
+.fld textarea{resize:vertical;min-height:70px}
+/* PROGRESS */
+.pl{display:flex;flex-direction:column;gap:9px}
+.pi{display:flex;align-items:center;gap:9px}
+.pn{font-size:12px;color:var(--ink);min-width:130px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb{flex:1;height:5px;background:var(--sf2);border-radius:3px;overflow:hidden}
+.pf{height:100%;border-radius:3px;transition:width .5s}
+.pv{font-size:11px;font-weight:600;color:var(--ink2);min-width:60px;text-align:right}
+/* BAR CHART */
+.bch{display:flex;align-items:flex-end;gap:7px;height:110px}
+.bcg{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bcb{display:flex;gap:2px;align-items:flex-end;height:92px}
+.bar{border-radius:3px 3px 0 0;min-height:3px;transition:height .4s}
+.bcl{font-size:9px;color:var(--ink3);text-align:center}
+.leg{display:flex;gap:12px;justify-content:center;margin-top:8px;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px}
+.ld{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+/* CLIENTS */
+.cg2{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:10px}
+.cc{background:var(--sf);border:1px solid var(--br);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .15s}
+.cc:hover{border-color:var(--nude);box-shadow:var(--sh)}
+.avt{width:40px;height:40px;border-radius:50%;background:var(--ink);color:var(--nude);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:17px;flex-shrink:0}
+/* STAT ROW */
+.sr{display:flex;border:1px solid var(--br);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.sc{flex:1;padding:12px 14px;text-align:center;border-right:1px solid var(--br)}
+.sc:last-child{border-right:none}
+.scl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+.scv{font-family:'Playfair Display',serif;font-size:18px;font-weight:700}
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;flex-direction:column;gap:10px}
+.spinner{width:32px;height:32px;border:3px solid var(--br);border-top-color:var(--terra);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* EMPTY */
+.empty{text-align:center;padding:36px 20px}
+.empty i{font-size:36px;color:var(--br2);display:block;margin-bottom:8px}
+.empty p{color:var(--ink3);font-size:13px}
+/* TOAST */
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:9px 18px;border-radius:20px;font-size:12px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* CHECKBOX GRID */
+.cbg{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:5px}
+.cbi{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1.5px solid var(--br);border-radius:8px;cursor:pointer;transition:all .15s;user-select:none}
+.cbi:hover{border-color:var(--nude);background:var(--sf2)}
+.cbi.ck{border-color:var(--terra);background:#FDF6F2}
+.cbi input{width:14px;height:14px;accent-color:var(--terra);cursor:pointer;flex-shrink:0}
+.cbi span{font-size:12px;color:var(--ink)}
+.cbi.ck span{color:var(--terra);font-weight:500}
+/* RADIO PILLS */
+.rg{display:flex;gap:5px;flex-wrap:wrap}
+.rp{display:flex;align-items:center;gap:5px;padding:6px 11px;border:1.5px solid var(--br);border-radius:20px;cursor:pointer;font-size:12px;color:var(--ink2);transition:all .15s;user-select:none}
+.rp:hover{border-color:var(--nude)}
+.rp.ck{border-color:var(--terra);background:#FDF6F2;color:var(--terra);font-weight:500}
+.rp input{display:none}
+/* REPORT SELECTOR */
+.rsel{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:9px;margin-bottom:20px}
+.rcard{background:var(--sf);border:1.5px solid var(--br);border-radius:var(--rl);padding:14px;cursor:pointer;transition:all .2s;text-align:left;width:100%}
+.rcard:hover{border-color:var(--terra);box-shadow:var(--sh)}
+.rcard.sel{border-color:var(--terra);background:#FDF6F2}
+.rcard i{font-size:22px;margin-bottom:8px;display:block}
+.rcard h3{font-size:13px;font-weight:600;margin-bottom:2px}
+.rcard p{font-size:11px;color:var(--ink3)}
+/* EXPEDIENTES */
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.pc{background:var(--sf);border:1px solid var(--br);border-radius:var(--r);padding:13px;cursor:pointer;transition:all .15s}
+.pc:hover{border-color:var(--nude);box-shadow:var(--sh)}
+.section-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;font-weight:600}
+/* ANIMATE */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.page.active>*{animation:fadeUp .25s ease both}
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}.tb-menu{display:block}.bnav{display:flex}
+  .content{padding:14px 12px 74px}
+  .kg{grid-template-columns:repeat(2,1fr)}
+  .g2,.g3{grid-template-columns:1fr}
+  .fr,.f3{grid-template-columns:1fr}
+  .rsel{grid-template-columns:repeat(2,1fr)}
+  .pn{min-width:100px;max-width:100px}
+}
+@media(max-width:480px){
+  .kg{grid-template-columns:repeat(2,1fr)}
+  .cg2,.pg{grid-template-columns:1fr}
+  .sr{flex-wrap:wrap}.sc{min-width:50%}
+}
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay" onclick="closeSB()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-icon"><i class="ti ti-leaf"></i></div>
+    <div><div class="sb-name">Mary Care</div><div class="sb-sub">by Maria Frias</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-lbl">Principal</div>
+    <button class="ni active" onclick="goPage('dashboard',this)"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
+    <button class="ni" onclick="goPage('movimientos',this)"><i class="ti ti-arrows-exchange"></i>Movimientos</button>
+    <div class="sb-lbl">Gestión</div>
+    <button class="ni" onclick="goPage('clientes',this)"><i class="ti ti-users"></i>Clientes</button>
+    <button class="ni" onclick="goPage('catalogo',this)"><i class="ti ti-package"></i>Catálogo</button>
+    <button class="ni" onclick="goPage('deudas',this)"><i class="ti ti-clock-dollar"></i>Deudas</button>
+    <div class="sb-lbl">Clínico</div>
+    <button class="ni" onclick="goPage('expedientes',this)"><i class="ti ti-file-medical"></i>Expedientes</button>
+    <button class="ni" onclick="goPage('sesiones',this)"><i class="ti ti-calendar-event"></i>Sesiones</button>
+    <div class="sb-lbl">Análisis</div>
+    <button class="ni" onclick="goPage('reportes',this)"><i class="ti ti-chart-bar"></i>Reportería</button>
+  </nav>
+  <div class="sb-foot">
+    <div class="sb-bal">
+      <div class="sl">Balance Mayo 2026</div>
+      <div class="sv" id="sbBal">—</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <button class="tb-menu" onclick="toggleSB()"><i class="ti ti-menu-2"></i></button>
+    <div class="tb-title" id="tbTitle">Dashboard</div>
+    <div class="tb-right">
+      <div class="tb-pill" id="tbBal">—</div>
+      <button class="btn bp bsm" onclick="openMovModal()"><i class="ti ti-plus"></i>Nuevo</button>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="ph"><h1>Dashboard <span>Mary Care</span></h1><p>Resumen ejecutivo · Mayo 2026</p></div>
+      <div class="kg">
+        <div class="kpi"><div class="ka" style="background:var(--mint)"></div><div class="ki" style="background:var(--mint-bg);color:var(--mint)"><i class="ti ti-scissors"></i></div><div class="kl">Servicios</div><div class="kv apos" id="kServ">—</div><div class="ks" id="kcServ">— transacciones</div></div>
+        <div class="kpi"><div class="ka" style="background:var(--gold)"></div><div class="ki" style="background:var(--gold-bg);color:var(--gold)"><i class="ti ti-package"></i></div><div class="kl">Productos</div><div class="kv" style="color:var(--gold)" id="kProd">—</div><div class="ks" id="kcProd">— ventas</div></div>
+        <div class="kpi"><div class="ka" style="background:var(--terra)"></div><div class="ki" style="background:#F5EDE8;color:var(--terra)"><i class="ti ti-trending-up"></i></div><div class="kl">Total ingresos</div><div class="kv ater" id="kTotal">—</div><div class="ks">Este mes</div></div>
+        <div class="kpi"><div class="ka" style="background:var(--violet)"></div><div class="ki" style="background:var(--vio-bg);color:var(--violet)"><i class="ti ti-users"></i></div><div class="kl">Clientes únicos</div><div class="kv" style="color:var(--violet)" id="kCli">—</div><div class="ks" id="kcxc">— por cobrar</div></div>
+      </div>
+      <div class="g2" style="margin-bottom:14px">
+        <div class="card"><div class="ch"><div class="ct">Ingresos por semana</div></div><div class="cb"><div class="bch" id="dWeekChart"></div><div class="leg"><div class="li"><div class="ld" style="background:var(--mint)"></div>Servicios</div><div class="li"><div class="ld" style="background:var(--gold)"></div>Productos</div></div></div></div>
+        <div class="card"><div class="ch"><div class="ct">Métodos de pago</div></div><div class="cb"><div class="pl" id="dPago"></div></div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="ch"><div class="ct">Top servicios</div></div><div class="cb"><div class="pl" id="dTopServ"></div></div></div>
+        <div class="card"><div class="ch"><div class="ct">Últimos movimientos</div><button class="btn bg bsm" onclick="goPage('movimientos',null)">Ver todos <i class="ti ti-arrow-right"></i></button></div><div class="cb np" id="dUltimos"></div></div>
+      </div>
+    </div>
+
+    <!-- MOVIMIENTOS -->
+    <div class="page" id="page-movimientos">
+      <div class="ph"><h1>Movimientos</h1><p>Registro de ingresos · servicios y productos</p></div>
+      <div class="card">
+        <div class="ch">
+          <div class="tbar" style="margin:0;flex:1">
+            <div class="sb" style="max-width:260px;flex:1"><i class="ti ti-search"></i><input type="text" placeholder="Buscar cliente o concepto..." oninput="mSearch(this.value)"></div>
+            <div class="fb">
+              <button class="fc on" onclick="mFilter('all',this)">Todos</button>
+              <button class="fc" onclick="mFilter('servicio',this)">Servicios</button>
+              <button class="fc" onclick="mFilter('producto',this)">Productos</button>
+              <button class="fc" onclick="mFilter('efectivo',this)">Efectivo</button>
+              <button class="fc" onclick="mFilter('transferencia',this)">Transf.</button>
+              <button class="fc" onclick="mFilter('cxc',this)">C×Cobrar</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn bgo bsm" onclick="exportMovCSV()"><i class="ti ti-download"></i>CSV</button>
+            <button class="btn bp bsm" onclick="openMovModal()"><i class="ti ti-plus"></i>Agregar</button>
+          </div>
+        </div>
+        <div class="cb np"><div class="tw"><table>
+          <thead><tr><th>Fecha</th><th>Cliente</th><th>Concepto</th><th>Tipo</th><th>Pago</th><th>Monto</th><th></th></tr></thead>
+          <tbody id="movTbody"></tbody>
+        </table></div></div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="page" id="page-clientes">
+      <div class="ph"><h1>Clientes</h1><p>Historial y valor acumulado por clienta</p></div>
+      <div class="tbar">
+        <div class="sb" style="flex:1;max-width:300px"><i class="ti ti-search"></i><input type="text" placeholder="Buscar cliente..." oninput="cliSearch(this.value)"></div>
+        <select class="btn bg bsm" onchange="cliSort(this.value)" style="cursor:pointer"><option value="total">Por total</option><option value="visitas">Por visitas</option><option value="nombre">Por nombre</option></select>
+      </div>
+      <div class="sr" id="cliStats"></div>
+      <div class="cg2" id="cliGrid"></div>
+    </div>
+
+    <!-- CATÁLOGO -->
+    <div class="page" id="page-catalogo">
+      <div class="ph"><h1>Catálogo de Productos</h1><p>29 productos · precios actualizados</p></div>
+      <div class="tbar">
+        <div class="sb" style="flex:1;max-width:280px"><i class="ti ti-search"></i><input type="text" placeholder="Buscar producto..." oninput="catSearch(this.value)"></div>
+        <div class="fb">
+          <button class="fc on" onclick="catFilter('all',this)">Todos</button>
+          <button class="fc" onclick="catFilter('GDC',this)">GDC</button>
+          <button class="fc" onclick="catFilter('La Roche Posay',this)">LRP</button>
+          <button class="fc" onclick="catFilter('Kit',this)">Kits</button>
+          <button class="fc" onclick="catFilter('Serum',this)">Serums</button>
+        </div>
+        <button class="btn bp bsm" style="margin-left:auto" onclick="openCatModal()"><i class="ti ti-plus"></i>Agregar</button>
+      </div>
+      <div id="catGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:9px"></div>
+    </div>
+
+    <!-- DEUDAS -->
+    <div class="page" id="page-deudas">
+      <div class="ph"><h1>Deudas & Cobros</h1><p>Cuentas por cobrar y por pagar</p></div>
+      <div class="kg" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpi"><div class="ka" style="background:var(--red)"></div><div class="kl">Por cobrar</div><div class="kv" style="color:var(--red)" id="dCobrar">—</div><div class="ks" id="dcCobrar">— deudas</div></div>
+        <div class="kpi"><div class="ka" style="background:var(--gold)"></div><div class="kl">Por pagar</div><div class="kv" style="color:var(--gold)" id="dPagar">—</div><div class="ks" id="dcPagar">— deudas</div></div>
+        <div class="kpi"><div class="ka" style="background:var(--mint)"></div><div class="kl">Cobradas</div><div class="kv apos" id="dCobradas">—</div><div class="ks">historial</div></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">Deudas activas</div><button class="btn bp bsm" onclick="openDeudaModal()"><i class="ti ti-plus"></i>Registrar</button></div>
+        <div class="cb np"><div class="tw"><table>
+          <thead><tr><th>Persona</th><th>Concepto</th><th>Monto</th><th>Tipo</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="deudaTbody"></tbody>
+        </table></div></div>
+      </div>
+    </div>
+
+    <!-- EXPEDIENTES -->
+    <div class="page" id="page-expedientes">
+      <div class="ph"><h1>Expedientes <span>GlowCheck 360</span></h1><p>Fichas clínicas de pacientes</p></div>
+      <div class="tbar">
+        <div class="sb" style="flex:1;max-width:300px"><i class="ti ti-search"></i><input type="text" placeholder="Buscar paciente..." oninput="expSearch(this.value)"></div>
+        <div class="fb">
+          <button class="fc on" onclick="expFilter('all',this)">Todas</button>
+          <button class="fc" onclick="expFilter('acne',this)">Acné</button>
+          <button class="fc" onclick="expFilter('grasa',this)">Grasa</button>
+          <button class="fc" onclick="expFilter('seca',this)">Seca</button>
+          <button class="fc" onclick="expFilter('mixta',this)">Mixta</button>
+        </div>
+        <button class="btn bp bsm" onclick="openExpModal()"><i class="ti ti-plus"></i>Nueva ficha</button>
+      </div>
+      <div class="pg" id="expGrid"></div>
+    </div>
+
+    <!-- SESIONES -->
+    <div class="page" id="page-sesiones">
+      <div class="ph"><h1>Sesiones</h1><p>Historial de tratamientos por paciente</p></div>
+      <div class="tbar">
+        <div class="sb" style="flex:1;max-width:280px"><i class="ti ti-search"></i><input type="text" placeholder="Buscar paciente..." oninput="sesSearch2(this.value)"></div>
+        <button class="btn bp bsm" onclick="openSesModal()"><i class="ti ti-plus"></i>Nueva sesión</button>
+      </div>
+      <div class="card"><div class="cb np"><div class="tw"><table>
+        <thead><tr><th>Fecha</th><th>Paciente</th><th>Servicio</th><th>Productos</th><th>Evolución</th><th>Próxima</th><th></th></tr></thead>
+        <tbody id="sesTbody"></tbody>
+      </table></div></div></div>
+    </div>
+
+    <!-- REPORTES -->
+    <div class="page" id="page-reportes">
+      <div class="ph"><h1>Reportería</h1><p>Análisis de todos los módulos</p></div>
+      <div class="rsel" id="rSel">
+        <button class="rcard sel" onclick="selReport('resumen',this)"><i class="ti ti-chart-pie" style="color:var(--terra)"></i><h3>Resumen General</h3><p>KPIs y balance completo</p></button>
+        <button class="rcard" onclick="selReport('servicios',this)"><i class="ti ti-scissors" style="color:var(--mint)"></i><h3>Servicios</h3><p>Análisis y ranking</p></button>
+        <button class="rcard" onclick="selReport('productos',this)"><i class="ti ti-package" style="color:var(--gold)"></i><h3>Productos</h3><p>Ventas y top vendidos</p></button>
+        <button class="rcard" onclick="selReport('clientes',this)"><i class="ti ti-users" style="color:var(--violet)"></i><h3>Clientes</h3><p>Ranking y frecuencia</p></button>
+        <button class="rcard" onclick="selReport('pagos',this)"><i class="ti ti-credit-card" style="color:var(--sky)"></i><h3>Pagos</h3><p>Métodos de pago</p></button>
+        <button class="rcard" onclick="selReport('semanal',this)"><i class="ti ti-calendar-stats" style="color:var(--terra)"></i><h3>Semanal</h3><p>Comparativa semanas</p></button>
+        <button class="rcard" onclick="selReport('expedientes',this)"><i class="ti ti-file-medical" style="color:var(--violet)"></i><h3>Clínico</h3><p>Tipos de piel y condiciones</p></button>
+      </div>
+      <div id="reportContent"></div>
+    </div>
+
+  </div>
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav" id="bnav">
+  <button class="bni active" onclick="goPage('dashboard',null);bnAct(this)"><i class="ti ti-layout-dashboard"></i>Inicio</button>
+  <button class="bni" onclick="goPage('movimientos',null);bnAct(this)"><i class="ti ti-arrows-exchange"></i>Movim.</button>
+  <button class="bni" onclick="goPage('expedientes',null);bnAct(this)"><i class="ti ti-file-medical"></i>Expeds.</button>
+  <button class="bni" onclick="goPage('deudas',null);bnAct(this)"><i class="ti ti-clock-dollar"></i>Deudas</button>
+  <button class="bni" onclick="goPage('reportes',null);bnAct(this)"><i class="ti ti-chart-bar"></i>Reportes</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- MODAL MOVIMIENTO -->
+<div class="mb" id="movModal"><div class="modal">
+  <div class="mh"><div class="mt">Nuevo Movimiento</div><button class="mc" onclick="closeM('movModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mbody">
+    <div class="fr"><div class="fld"><label>Tipo</label><select id="mTipo" onchange="toggleMTipo()"><option value="servicio">Servicio</option><option value="producto">Producto</option></select></div><div class="fld"><label>Fecha</label><input type="date" id="mFecha"></div></div>
+    <div class="fld"><label>Cliente *</label><input type="text" id="mCliente" list="mCliList" placeholder="Nombre del cliente"><datalist id="mCliList"></datalist></div>
+    <div class="fld" id="mServFld"><label>Servicio *</label><input type="text" id="mServicio" list="mServList" placeholder="Ej: Peeling Acné"><datalist id="mServList"><option value="Peeling Acne"><option value="Clean Balance"><option value="HidraCare"><option value="DermaPen Bost"><option value="Purifying"><option value="Peeling Axilas"><option value="Lash Lift"><option value="Peeling Manchas"><option value="RadiantCare"></datalist></div>
+    <div class="fld" id="mProdFld" style="display:none"><label>Producto *</label><select id="mProducto" onchange="autofillPrice()"></select></div>
+    <div class="fr"><div class="fld"><label>Monto (RD$) *</label><input type="number" id="mMonto" placeholder="0" min="0"></div><div class="fld"><label>Método de pago</label><select id="mPago"><option value="transferencia">Transferencia</option><option value="efectivo">Efectivo</option><option value="cxc">Cuenta × Cobrar</option></select></div></div>
+    <div class="fld"><label>Notas</label><input type="text" id="mNotas" placeholder="Opcional..."></div>
+  </div>
+  <div class="mf"><button class="btn bg" onclick="closeM('movModal')">Cancelar</button><button class="btn bt" onclick="saveMov()"><i class="ti ti-check"></i>Guardar</button></div>
+</div></div>
+
+<!-- MODAL DEUDA -->
+<div class="mb" id="deudaModal"><div class="modal">
+  <div class="mh"><div class="mt">Registrar Deuda</div><button class="mc" onclick="closeM('deudaModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mbody">
+    <div class="fr"><div class="fld"><label>Tipo</label><select id="dTipo"><option value="cobrar">Por cobrar (me deben)</option><option value="pagar">Por pagar (debo)</option></select></div><div class="fld"><label>Fecha</label><input type="date" id="dFecha"></div></div>
+    <div class="fld"><label>Persona *</label><input type="text" id="dPersona" placeholder="Nombre"></div>
+    <div class="fld"><label>Concepto</label><input type="text" id="dConcepto" placeholder="Descripción..."></div>
+    <div class="fld"><label>Monto (RD$) *</label><input type="number" id="dMonto" placeholder="0" min="0"></div>
+  </div>
+  <div class="mf"><button class="btn bg" onclick="closeM('deudaModal')">Cancelar</button><button class="btn bt" onclick="saveDeuda()"><i class="ti ti-check"></i>Guardar</button></div>
+</div></div>
+
+<!-- MODAL CATÁLOGO -->
+<div class="mb" id="catModal"><div class="modal">
+  <div class="mh"><div class="mt">Nuevo Producto</div><button class="mc" onclick="closeM('catModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mbody">
+    <div class="fld"><label>Nombre *</label><input type="text" id="cpNombre" placeholder="Nombre del producto"></div>
+    <div class="fr"><div class="fld"><label>Precio (RD$) *</label><input type="number" id="cpPrecio" placeholder="0" min="0"></div><div class="fld"><label>Categoría</label><input type="text" id="cpCat" placeholder="Ej: GDC, La Roche Posay..."></div></div>
+  </div>
+  <div class="mf"><button class="btn bg" onclick="closeM('catModal')">Cancelar</button><button class="btn bt" onclick="saveCat()"><i class="ti ti-check"></i>Guardar</button></div>
+</div></div>
+
+<!-- MODAL EXPEDIENTE -->
+<div class="mb" id="expModal"><div class="modal wide" style="max-height:90vh;overflow-y:auto">
+  <div class="mh"><div class="mt" id="expModalTitle">Nueva Ficha Clínica</div><button class="mc" onclick="closeM('expModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mtabs">
+    <button class="mtab active" onclick="switchExpTab(0,this)">1. Datos</button>
+    <button class="mtab" onclick="switchExpTab(1,this)">2. Antecedentes</button>
+    <button class="mtab" onclick="switchExpTab(2,this)">3. Hábitos</button>
+    <button class="mtab" onclick="switchExpTab(3,this)">4. Análisis piel</button>
+    <button class="mtab" onclick="switchExpTab(4,this)">5. Diagnóstico</button>
+  </div>
+  <!-- Tab 0 -->
+  <div class="mtc active" id="etab0">
+    <div class="fr"><div class="fld"><label>Nombre completo *</label><input type="text" id="ep_nombre" placeholder="Nombre y apellidos"></div><div class="fld"><label>Fecha de nacimiento</label><input type="date" id="ep_nacimiento"></div></div>
+    <div class="fr"><div class="fld"><label>Edad</label><input type="number" id="ep_edad" placeholder="Años"></div><div class="fld"><label>Género</label><div class="rg" style="margin-top:6px"><label class="rp" id="erF" onclick="eGender('F')"><input type="radio"><span>Femenino</span></label><label class="rp" id="erM" onclick="eGender('M')"><input type="radio"><span>Masculino</span></label></div></div></div>
+    <div class="fr"><div class="fld"><label>Estado civil</label><select id="ep_civil"><option value="">—</option><option>Soltera/o</option><option>Casada/o</option><option>Unión libre</option><option>Divorciada/o</option></select></div><div class="fld"><label>Profesión</label><input type="text" id="ep_profesion" placeholder="Ocupación"></div></div>
+    <div class="fr"><div class="fld"><label>E-mail</label><input type="email" id="ep_email" placeholder="correo@email.com"></div><div class="fld"><label>Tel / Cel</label><input type="tel" id="ep_tel" placeholder="809-000-0000"></div></div>
+    <div class="fld"><label>Motivo de consulta</label><textarea id="ep_motivo" placeholder="Describe el motivo principal..."></textarea></div>
+  </div>
+  <!-- Tab 1 -->
+  <div class="mtc" id="etab1">
+    <div class="section-lbl">Antecedentes patológicos</div>
+    <div class="cbg" id="eCbPat"></div>
+    <div class="fld" style="margin-top:10px"><label>Otros antecedentes</label><input type="text" id="ep_otros_pat" placeholder="Especificar..."></div>
+    <div class="fld"><label>Medicación actual</label><div class="rg" style="margin-top:6px"><label class="rp" id="eMedSi" onclick="eSelRp('eMedSi','eMedNo')"><input type="radio"><span>Sí</span></label><label class="rp" id="eMedNo" onclick="eSelRp('eMedNo','eMedSi')"><input type="radio"><span>No</span></label></div></div>
+    <div class="fld"><label>Medicamento / Dosis</label><input type="text" id="ep_medicacion" placeholder="Nombre y dosis..."></div>
+    <div class="fld"><label>Antecedentes médicos familiares</label><textarea id="ep_familia" placeholder="Condiciones hereditarias relevantes..."></textarea></div>
+    <div class="section-lbl" style="margin-top:12px">Antecedentes quirúrgicos / estéticos</div>
+    <div class="cbg" id="eCbQuir"></div>
+    <div class="fr" style="margin-top:8px"><div class="fld"><label>Cirugía estética</label><input type="text" id="ep_cirugia" placeholder="Especificar..."></div><div class="fld"><label>Faciales previos</label><input type="text" id="ep_faciales" placeholder="Especificar..."></div></div>
+    <div class="fld"><label>Observaciones</label><textarea id="ep_obs" placeholder="Observaciones generales..."></textarea></div>
+  </div>
+  <!-- Tab 2 -->
+  <div class="mtc" id="etab2">
+    <div class="section-lbl">Ciclo menstrual</div>
+    <div class="cbg" id="eCbCiclo"></div>
+    <div class="f3" style="margin-top:10px"><div class="fld"><label>Gestas (G)</label><input type="number" id="ep_g" placeholder="0" min="0"></div><div class="fld"><label>Partos (P)</label><input type="number" id="ep_p" placeholder="0" min="0"></div><div class="fld"><label>Abortos (A)</label><input type="number" id="ep_a" placeholder="0" min="0"></div></div>
+    <div style="height:12px"></div>
+    <div class="section-lbl">Hábitos diarios</div>
+    <div class="fr"><div class="fld"><label>Horas de sueño</label><input type="number" id="ep_sueno" placeholder="7" min="0" max="24"></div><div class="fld"><label>Ejercicio</label><div class="rg" style="margin-top:6px"><label class="rp" id="eEjSi" onclick="eSelRp('eEjSi','eEjNo')"><input type="radio"><span>Sí</span></label><label class="rp" id="eEjNo" onclick="eSelRp('eEjNo','eEjSi')"><input type="radio"><span>No</span></label></div></div></div>
+    <div class="fr"><div class="fld"><label>Tiempo exposición solar</label><input type="text" id="ep_sol" placeholder="Ej: 2 horas"></div><div class="fld"><label>Protector solar</label><div class="rg" style="margin-top:6px"><label class="rp" id="ePsSi" onclick="eSelRp('ePsSi','ePsNo')"><input type="radio"><span>Sí</span></label><label class="rp" id="ePsNo" onclick="eSelRp('ePsNo','ePsSi')"><input type="radio"><span>No</span></label></div></div></div>
+    <div class="fr"><div class="fld"><label>Reaplicación protector</label><div class="rg" style="margin-top:6px"><label class="rp" id="eReaSi" onclick="eSelRp('eReaSi','eReaNo')"><input type="radio"><span>Sí</span></label><label class="rp" id="eReaNo" onclick="eSelRp('eReaNo','eReaSi')"><input type="radio"><span>No</span></label></div></div><div class="fld"><label>Agua al día</label><input type="text" id="ep_agua" placeholder="Ej: 2 litros"></div></div>
+    <div class="fld"><label>Dieta</label><input type="text" id="ep_dieta" placeholder="Balanceada / regular..."></div>
+    <div class="fld"><label>Régimen cosmético actual</label><textarea id="ep_regimen" placeholder="Productos que usa actualmente..."></textarea></div>
+  </div>
+  <!-- Tab 3 -->
+  <div class="mtc" id="etab3">
+    <div class="section-lbl">Análisis de la piel</div>
+    <div id="eAnalisisGrid"></div>
+  </div>
+  <!-- Tab 4 -->
+  <div class="mtc" id="etab4">
+    <div class="section-lbl">Clasificación del tipo de piel</div>
+    <div class="cbg" id="eCbTipo"></div>
+    <div style="height:12px"></div>
+    <div class="section-lbl">Grado de acné</div>
+    <div class="rg" id="eAcneGrado"></div>
+    <div style="height:12px"></div>
+    <div class="section-lbl">Trastornos de piel (área afectada)</div>
+    <div id="eTrastornos"></div>
+    <div class="fld" style="margin-top:10px"><label>Fecha de evaluación</label><input type="date" id="ep_fecha_eval"></div>
+    <div class="fld"><label>Notas del profesional</label><textarea id="ep_notas" placeholder="Plan de tratamiento, observaciones..."></textarea></div>
+    <div class="fld"><label>Firma del cliente</label><input type="text" id="ep_firma" placeholder="Nombre completo del cliente"></div>
+  </div>
+  <div class="mf">
+    <button class="btn bg" onclick="closeM('expModal')">Cancelar</button>
+    <button class="btn bt" onclick="saveExp()"><i class="ti ti-device-floppy"></i>Guardar ficha</button>
+  </div>
+</div></div>
+
+<!-- MODAL SESIÓN -->
+<div class="mb" id="sesModal"><div class="modal">
+  <div class="mh"><div class="mt">Nueva Sesión</div><button class="mc" onclick="closeM('sesModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mbody">
+    <div class="fld"><label>Paciente *</label><input type="text" id="ss_pac" list="ssPacList" placeholder="Nombre"><datalist id="ssPacList"></datalist></div>
+    <div class="fr"><div class="fld"><label>Fecha *</label><input type="date" id="ss_fecha"></div><div class="fld"><label>Servicio *</label><input type="text" id="ss_serv" placeholder="Ej: Peeling Acné"></div></div>
+    <div class="fld"><label>Productos utilizados</label><input type="text" id="ss_prod" placeholder="Ej: Ácido Salicílico LRP..."></div>
+    <div class="fld"><label>Observaciones</label><textarea id="ss_notas" placeholder="Reacción, resultados, recomendaciones..."></textarea></div>
+    <div class="fr"><div class="fld"><label>Próxima cita</label><input type="date" id="ss_prox"></div><div class="fld"><label>Evolución</label><select id="ss_evol"><option value="">—</option><option>Excelente</option><option>Buena</option><option>Regular</option><option>Sin cambios</option><option>Reacción adversa</option></select></div></div>
+  </div>
+  <div class="mf"><button class="btn bg" onclick="closeM('sesModal')">Cancelar</button><button class="btn bt" onclick="saveSes()"><i class="ti ti-check"></i>Guardar</button></div>
+</div></div>
+
+<!-- MODAL VER PACIENTE -->
+<div class="mb" id="viewExpModal"><div class="modal wide" style="max-height:90vh;overflow-y:auto">
+  <div class="mh"><div><div class="mt" id="vExpName">—</div><div style="font-size:11px;color:var(--ink3);margin-top:2px" id="vExpMeta">—</div></div><button class="mc" onclick="closeM('viewExpModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mtabs" id="vExpTabs">
+    <button class="mtab active" onclick="switchVExp(0,this)">Datos</button>
+    <button class="mtab" onclick="switchVExp(1,this)">Antecedentes</button>
+    <button class="mtab" onclick="switchVExp(2,this)">Hábitos</button>
+    <button class="mtab" onclick="switchVExp(3,this)">Análisis</button>
+    <button class="mtab" onclick="switchVExp(4,this)">Diagnóstico</button>
+    <button class="mtab" onclick="switchVExp(5,this)">Sesiones</button>
+  </div>
+  <div style="padding:18px 22px;min-height:280px" id="vExpBody"></div>
+  <div class="mf"><button class="btn bg" onclick="closeM('viewExpModal')">Cerrar</button><button class="btn bt" onclick="editExp()"><i class="ti ti-edit"></i>Editar</button></div>
+</div></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// SUPABASE INIT
+// ═══════════════════════════════════════════════════════════
+const { createClient } = window.supabase;
+const db = createClient(
+  'https://dzwvvtqvmwpkgzgkknaj.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6d3Z2dHF2bXdwa2d6Z2trbmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTYwMjAsImV4cCI6MjA5NTY3MjAyMH0.uxDyOKN8f7iTq8c2S1DbaLQRGx1qnZCfQFUP2mU9YIc'
+);
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let S = { movimientos:[], catalogo:[], deudas:[], pacientes:[], sesiones:[] };
+let mFilterV='all', mSearchV='', catFilterV='all', catSearchV='';
+let cliSearchV='', cliSortV='total';
+let expFilterV='all', expSearchV='', sesSearchV='';
+let currentReport='resumen', vExpId=null, vExpTab=0;
+let editExpId=null;
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+const fmt = n => 'RD$' + Number(n||0).toLocaleString('es-DO',{minimumFractionDigits:0,maximumFractionDigits:0});
+const pct = (a,b) => b ? Math.round(a/b*100) : 0;
+const toast = msg => { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); };
+const loading = el => { if(el) el.innerHTML='<div class="loading"><div class="spinner"></div><p style="color:var(--ink3);font-size:12px">Cargando...</p></div>'; };
+const empty = (el,icon,msg) => { if(el) el.innerHTML=`<div class="empty"><i class="ti ti-${icon}"></i><p>${msg}</p></div>`; };
+
+// ═══════════════════════════════════════════════════════════
+// DB LAYER
+// ═══════════════════════════════════════════════════════════
+async function loadAll() {
+  const [m,c,d,p,s] = await Promise.all([
+    db.from('movimientos').select('*').order('fecha',{ascending:false}),
+    db.from('catalogo').select('*').eq('active',true).order('name'),
+    db.from('deudas').select('*').order('created_at',{ascending:false}),
+    db.from('pacientes').select('*').order('nombre'),
+    db.from('sesiones').select('*').order('fecha',{ascending:false}),
+  ]);
+  if(m.error) toast('Error cargando movimientos: '+m.error.message);
+  if(p.error) toast('Error cargando pacientes: '+p.error.message);
+  S.movimientos = m.data||[];
+  S.catalogo    = c.data||[];
+  S.deudas      = d.data||[];
+  S.pacientes   = p.data||[];
+  S.sesiones    = s.data||[];
+  renderAll();
+}
+
+async function insertMov(obj) {
+  const {data,error} = await db.from('movimientos').insert(obj).select().single();
+  if(error){ toast('Error: '+error.message); return null; }
+  S.movimientos.unshift(data);
+  if(obj.pago==='cxc'){
+    await insertDeuda({tipo:'cobrar',persona:obj.cliente,concepto:obj.concepto,monto:obj.monto,estado:'pendiente',fecha:obj.fecha});
+  }
+  return data;
+}
+async function deleteMov(id) {
+  const {error} = await db.from('movimientos').delete().eq('id',id);
+  if(error){ toast('Error: '+error.message); return; }
+  S.movimientos = S.movimientos.filter(m=>m.id!==id);
+}
+async function insertDeuda(obj) {
+  const {data,error} = await db.from('deudas').insert(obj).select().single();
+  if(error){ toast('Error: '+error.message); return; }
+  S.deudas.unshift(data);
+}
+async function updateDeuda(id,changes) {
+  const {error} = await db.from('deudas').update(changes).eq('id',id);
+  if(error){ toast('Error: '+error.message); return; }
+  const d=S.deudas.find(x=>x.id===id);
+  if(d) Object.assign(d,changes);
+}
+async function deleteDeuda(id) {
+  const {error} = await db.from('deudas').delete().eq('id',id);
+  if(error){ toast('Error: '+error.message); return; }
+  S.deudas = S.deudas.filter(d=>d.id!==id);
+}
+async function insertCat(obj) {
+  const {data,error} = await db.from('catalogo').insert(obj).select().single();
+  if(error){ toast('Error: '+error.message); return; }
+  S.catalogo.push(data);
+  S.catalogo.sort((a,b)=>a.name.localeCompare(b.name));
+}
+async function insertPac(obj) {
+  const {data,error} = await db.from('pacientes').insert(obj).select().single();
+  if(error){ toast('Error: '+error.message); return null; }
+  S.pacientes.push(data);
+  S.pacientes.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  return data;
+}
+async function updatePac(id,obj) {
+  const {data,error} = await db.from('pacientes').update(obj).eq('id',id).select().single();
+  if(error){ toast('Error: '+error.message); return; }
+  const idx=S.pacientes.findIndex(p=>p.id===id);
+  if(idx>=0) S.pacientes[idx]=data;
+}
+async function insertSes(obj) {
+  const {data,error} = await db.from('sesiones').insert(obj).select().single();
+  if(error){ toast('Error: '+error.message); return; }
+  S.sesiones.unshift(data);
+}
+async function deleteSes(id) {
+  const {error} = await db.from('sesiones').delete().eq('id',id);
+  if(error){ toast('Error: '+error.message); return; }
+  S.sesiones = S.sesiones.filter(s=>s.id!==id);
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+const pageTitles = {dashboard:'Dashboard',movimientos:'Movimientos',clientes:'Clientes',catalogo:'Catálogo',deudas:'Deudas & Cobros',expedientes:'Expedientes <span>GlowCheck 360</span>',sesiones:'Sesiones',reportes:'Reportería'};
+function goPage(id,el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  const pg=document.getElementById('page-'+id);
+  if(pg) pg.classList.add('active');
+  if(el) el.classList.add('active');
+  else document.querySelectorAll('.ni').forEach(n=>{if(n.textContent.trim().toLowerCase().includes(id.slice(0,4)))n.classList.add('active')});
+  document.getElementById('tbTitle').innerHTML=pageTitles[id]||id;
+  closeSB();
+  renderAll();
+}
+function toggleSB(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show')}
+function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show')}
+function bnAct(el){document.querySelectorAll('.bni').forEach(b=>b.classList.remove('active'));el.classList.add('active')}
+function closeM(id){document.getElementById(id).classList.remove('open')}
+
+// ═══════════════════════════════════════════════════════════
+// COMPUTED STATS
+// ═══════════════════════════════════════════════════════════
+function getStats() {
+  const movs=S.movimientos, servs=movs.filter(m=>m.tipo==='servicio'), prods=movs.filter(m=>m.tipo==='producto');
+  const sumS=servs.reduce((a,m)=>a+parseFloat(m.monto||0),0);
+  const sumP=prods.reduce((a,m)=>a+parseFloat(m.monto||0),0);
+  const total=sumS+sumP;
+  const cxc=movs.filter(m=>m.pago==='cxc').reduce((a,m)=>a+parseFloat(m.monto||0),0);
+  const pagoMap={transferencia:0,efectivo:0,cxc:0};
+  movs.forEach(m=>{if(pagoMap[m.pago]!==undefined)pagoMap[m.pago]+=parseFloat(m.monto||0)});
+  const servMap={},prodMap={};
+  servs.forEach(m=>{servMap[m.concepto]=(servMap[m.concepto]||0)+parseFloat(m.monto||0)});
+  prods.forEach(m=>{prodMap[m.concepto]=(prodMap[m.concepto]||0)+parseFloat(m.monto||0)});
+  const cliMap={};
+  movs.forEach(m=>{const k=m.cliente.toLowerCase().trim();if(!cliMap[k])cliMap[k]={nombre:m.cliente,total:0,visitas:0};cliMap[k].total+=parseFloat(m.monto||0);cliMap[k].visitas++});
+  const clientes=Object.values(cliMap);
+  const weeks=[{l:'S1 1-7',s:0,p:0},{l:'S2 8-13',s:0,p:0},{l:'S3 14-18',s:0,p:0},{l:'S4 19-23',s:0,p:0},{l:'S5 24+',s:0,p:0}];
+  movs.forEach(m=>{const d=parseInt((m.fecha||'').split('-')[2]||'0');const wi=d<=7?0:d<=13?1:d<=18?2:d<=23?3:4;if(m.tipo==='servicio')weeks[wi].s+=parseFloat(m.monto||0);else weeks[wi].p+=parseFloat(m.monto||0)});
+  return {servs,prods,sumS,sumP,total,cxc,pagoMap,servMap,prodMap,clientes,weeks};
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════════════════════════════════
+function renderAll() {
+  const st=getStats();
+  document.getElementById('sbBal').textContent=fmt(st.total);
+  document.getElementById('tbBal').textContent=fmt(st.total);
+  renderDash(st);
+  renderMovimientos();
+  renderClientes(st);
+  renderCatalogo();
+  renderDeudas();
+  renderExpedientes();
+  renderSesiones();
+  renderReport(currentReport,st);
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────
+function renderDash(st) {
+  document.getElementById('kServ').textContent=fmt(st.sumS);
+  document.getElementById('kcServ').textContent=st.servs.length+' servicios';
+  document.getElementById('kProd').textContent=fmt(st.sumP);
+  document.getElementById('kcProd').textContent=st.prods.length+' ventas';
+  document.getElementById('kTotal').textContent=fmt(st.total);
+  document.getElementById('kCli').textContent=st.clientes.length;
+  document.getElementById('kcxc').textContent=fmt(st.cxc)+' por cobrar';
+  // Week chart
+  const maxW=Math.max(...st.weeks.map(w=>Math.max(w.s,w.p)),1);
+  document.getElementById('dWeekChart').innerHTML=st.weeks.map(w=>`<div class="bcg"><div class="bcb"><div class="bar" style="width:13px;background:var(--mint);height:${Math.max(w.s/maxW*88,3)}px"></div><div class="bar" style="width:13px;background:var(--gold);height:${Math.max(w.p/maxW*88,3)}px"></div></div><div class="bcl">${w.l}</div></div>`).join('');
+  // Pago
+  const pLabels={transferencia:'Transferencia',efectivo:'Efectivo',cxc:'C×Cobrar'};
+  const pCols={transferencia:'var(--sky)',efectivo:'var(--mint)',cxc:'var(--red)'};
+  const totalP=Object.values(st.pagoMap).reduce((a,v)=>a+v,1);
+  document.getElementById('dPago').innerHTML=Object.entries(st.pagoMap).map(([k,v])=>`<div class="pi"><div class="pn">${pLabels[k]}</div><div class="pb"><div class="pf" style="width:${pct(v,totalP)}%;background:${pCols[k]}"></div></div><div class="pv">${fmt(v)}</div></div>`).join('');
+  // Top servicios
+  const topS=Object.entries(st.servMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxS=topS[0]?topS[0][1]:1;
+  document.getElementById('dTopServ').innerHTML=topS.map(([k,v])=>`<div class="pi"><div class="pn">${k}</div><div class="pb"><div class="pf" style="width:${pct(v,maxS)}%;background:var(--mint)"></div></div><div class="pv">${fmt(v)}</div></div>`).join('')||'<div class="empty" style="padding:20px"><i class="ti ti-scissors"></i><p>Sin datos</p></div>';
+  // Últimos
+  document.getElementById('dUltimos').innerHTML=S.movimientos.slice(0,6).map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--br)"><div style="width:30px;height:30px;border-radius:7px;background:${m.tipo==='servicio'?'var(--mint-bg)':'var(--gold-bg)'};display:flex;align-items:center;justify-content:center;color:${m.tipo==='servicio'?'var(--mint)':'var(--gold)'};font-size:13px"><i class="ti ti-${m.tipo==='servicio'?'scissors':'package'}"></i></div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.cliente}</div><div style="font-size:10px;color:var(--ink3)">${m.concepto}</div></div><div class="amt apos" style="font-size:13px">+${fmt(m.monto)}</div></div>`).join('');
+}
+
+// ── MOVIMIENTOS ───────────────────────────────────────────
+function mFilter(v,el){mFilterV=v;document.querySelectorAll('#page-movimientos .fc').forEach(c=>c.classList.remove('on'));el.classList.add('on');renderMovimientos()}
+function mSearch(v){mSearchV=v.toLowerCase();renderMovimientos()}
+function renderMovimientos() {
+  let rows=[...S.movimientos];
+  if(mFilterV!=='all')rows=rows.filter(m=>mFilterV==='servicio'||mFilterV==='producto'?m.tipo===mFilterV:m.pago===mFilterV);
+  if(mSearchV)rows=rows.filter(m=>m.cliente.toLowerCase().includes(mSearchV)||m.concepto.toLowerCase().includes(mSearchV));
+  const pCh={transferencia:'cs',efectivo:'cm',cxc:'cr'};
+  const pLb={transferencia:'Transferencia',efectivo:'Efectivo',cxc:'C×Cobrar'};
+  document.getElementById('movTbody').innerHTML=rows.length?rows.map(m=>`<tr><td style="white-space:nowrap">${m.fecha}</td><td><div class="tdm">${m.cliente}</div></td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.concepto}</td><td><span class="chip ${m.tipo==='servicio'?'cm':'cg'}">${m.tipo==='servicio'?'Servicio':'Producto'}</span></td><td><span class="chip ${pCh[m.pago]||'cx'}">${pLb[m.pago]||m.pago}</span></td><td><span class="amt apos">+${fmt(m.monto)}</span></td><td><button class="btn bda bxs" onclick="delMov(${m.id})"><i class="ti ti-trash"></i></button></td></tr>`).join(''):`<tr><td colspan="7"><div class="empty"><i class="ti ti-receipt"></i><p>Sin movimientos</p></div></td></tr>`;
+}
+async function delMov(id){if(!confirm('¿Eliminar?'))return;await deleteMov(id);renderMovimientos();renderDash(getStats());toast('Eliminado')}
+function exportMovCSV(){
+  let csv='\uFEFFfecha,cliente,concepto,tipo,pago,monto\n';
+  S.movimientos.forEach(m=>{csv+=`${m.fecha},"${m.cliente}","${m.concepto}",${m.tipo},${m.pago},${m.monto}\n`});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='MaryCaré_Movimientos.csv';a.click();toast('CSV descargado ✓');
+}
+
+// ── CLIENTES ──────────────────────────────────────────────
+function cliSearch(v){cliSearchV=v.toLowerCase();renderClientes(getStats())}
+function cliSort(v){cliSortV=v;renderClientes(getStats())}
+function renderClientes(st) {
+  let list=[...st.clientes];
+  if(cliSearchV)list=list.filter(c=>c.nombre.toLowerCase().includes(cliSearchV));
+  if(cliSortV==='total')list.sort((a,b)=>b.total-a.total);
+  else if(cliSortV==='visitas')list.sort((a,b)=>b.visitas-a.visitas);
+  else list.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  const topC=st.clientes.sort((a,b)=>b.total-a.total)[0];
+  document.getElementById('cliStats').innerHTML=`<div class="sc"><div class="scl">Clientes</div><div class="scv" style="color:var(--violet)">${st.clientes.length}</div></div><div class="sc"><div class="scl">Ticket prom.</div><div class="scv" style="color:var(--terra)">${fmt(st.clientes.length?Math.round(st.total/st.movimientos.length||1):0)}</div></div><div class="sc"><div class="scl">Top clienta</div><div class="scv" style="font-size:13px;color:var(--gold)">${topC?topC.nombre:'—'}</div></div><div class="sc"><div class="scl">Mayor gasto</div><div class="scv" style="color:var(--mint)">${topC?fmt(topC.total):'—'}</div></div>`;
+  document.getElementById('cliGrid').innerHTML=list.length?list.map(c=>`<div class="cc"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div class="avt">${c.nombre.charAt(0).toUpperCase()}</div><div><div style="font-weight:500;font-size:13px">${c.nombre}</div><div style="font-size:10px;color:var(--ink3)">${c.visitas} visita${c.visitas!==1?'s':''}</div></div></div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--br)"><span style="font-size:10px;color:var(--ink3)">Total acumulado</span><span class="amt ater" style="font-size:14px">${fmt(c.total)}</span></div></div>`).join(''):`<div class="empty" style="grid-column:1/-1"><i class="ti ti-users"></i><p>Sin clientes</p></div>`;
+}
+
+// ── CATÁLOGO ──────────────────────────────────────────────
+function catFilter(v,el){catFilterV=v;document.querySelectorAll('#page-catalogo .fc').forEach(c=>c.classList.remove('on'));el.classList.add('on');renderCatalogo()}
+function catSearch(v){catSearchV=v.toLowerCase();renderCatalogo()}
+function renderCatalogo() {
+  let list=[...S.catalogo];
+  if(catSearchV)list=list.filter(p=>p.name.toLowerCase().includes(catSearchV));
+  if(catFilterV!=='all')list=list.filter(p=>p.cat&&p.cat.toLowerCase().includes(catFilterV.toLowerCase()));
+  const catCols={'GDC':'ct2','La Roche Posay':'cs','Kit':'cg','Serum':'cv','Eucerin':'cm','Suplemento':'cx','Cosmética':'cx'};
+  document.getElementById('catGrid').innerHTML=list.map(p=>`<div style="background:var(--sf);border:1px solid var(--br);border-radius:var(--r);padding:13px"><div style="font-size:12px;font-weight:500;color:var(--ink);line-height:1.4;margin-bottom:7px">${p.name}</div><div class="amt ater" style="font-size:16px">${fmt(p.price)}</div><div style="margin-top:5px"><span class="chip ${catCols[p.cat]||'cx'}" style="font-size:9px">${p.cat||'—'}</span></div></div>`).join('');
+}
+
+// ── DEUDAS ────────────────────────────────────────────────
+function renderDeudas() {
+  const pC=S.deudas.filter(d=>d.tipo==='cobrar'&&d.estado==='pendiente');
+  const pP=S.deudas.filter(d=>d.tipo==='pagar'&&d.estado==='pendiente');
+  const pg=S.deudas.filter(d=>d.estado==='pagada');
+  document.getElementById('dCobrar').textContent=fmt(pC.reduce((a,d)=>a+parseFloat(d.monto||0),0));
+  document.getElementById('dcCobrar').textContent=pC.length+' deuda'+( pC.length!==1?'s':'');
+  document.getElementById('dPagar').textContent=fmt(pP.reduce((a,d)=>a+parseFloat(d.monto||0),0));
+  document.getElementById('dcPagar').textContent=pP.length+' deuda'+(pP.length!==1?'s':'');
+  document.getElementById('dCobradas').textContent=fmt(pg.reduce((a,d)=>a+parseFloat(d.monto||0),0));
+  const tCh={cobrar:'cr',pagar:'cg'};const tLb={cobrar:'Por cobrar',pagar:'Por pagar'};
+  document.getElementById('deudaTbody').innerHTML=S.deudas.length?S.deudas.map(d=>`<tr><td><div class="tdm">${d.persona}</div><div class="tds">${d.fecha||''}</div></td><td>${d.concepto||'—'}</td><td><span class="amt ${d.tipo==='cobrar'?'apos':'aneg'}">${fmt(d.monto)}</span></td><td><span class="chip ${tCh[d.tipo]}">${tLb[d.tipo]}</span></td><td><span class="chip ${d.estado==='pagada'?'cm':'ct2'}">${d.estado==='pagada'?'Pagada':'Pendiente'}</span></td><td style="display:flex;gap:4px">${d.estado==='pendiente'?`<button class="btn bgo bxs" onclick="marcarPagada(${d.id})"><i class="ti ti-check"></i></button>`:''}<button class="btn bda bxs" onclick="elimDeuda(${d.id})"><i class="ti ti-trash"></i></button></td></tr>`).join(''):`<tr><td colspan="6"><div class="empty"><i class="ti ti-clock-dollar"></i><p>Sin deudas</p></div></td></tr>`;
+}
+async function marcarPagada(id){await updateDeuda(id,{estado:'pagada'});renderDeudas();toast('Marcada como pagada ✓')}
+async function elimDeuda(id){if(!confirm('¿Eliminar?'))return;await deleteDeuda(id);renderDeudas();toast('Eliminada')}
+
+// ── EXPEDIENTES ───────────────────────────────────────────
+function expFilter(v,el){expFilterV=v;document.querySelectorAll('#page-expedientes .fc').forEach(c=>c.classList.remove('on'));el.classList.add('on');renderExpedientes()}
+function expSearch(v){expSearchV=v.toLowerCase();renderExpedientes()}
+function renderExpedientes() {
+  let list=[...S.pacientes];
+  if(expFilterV!=='all')list=list.filter(p=>{
+    const tp=(p.tipo_piel||[]).map(x=>x.toLowerCase()).join(' ');
+    if(expFilterV==='acne')return p.acne&&p.acne!=='No tiene';
+    if(expFilterV==='grasa')return tp.includes('grasa');
+    if(expFilterV==='seca')return tp.includes('seca');
+    if(expFilterV==='mixta')return tp.includes('mixto');
+    return true;
+  });
+  if(expSearchV)list=list.filter(p=>p.nombre.toLowerCase().includes(expSearchV));
+  const grid=document.getElementById('expGrid');
+  if(!list.length){empty(grid,'file-medical',S.pacientes.length?'Sin resultados':'Aún no hay expedientes registrados');return}
+  grid.innerHTML=list.map(p=>{
+    const ss=S.sesiones.filter(s=>s.paciente_id===p.id).length;
+    const tags=(p.tipo_piel||[]).slice(0,2);
+    return `<div class="pc" onclick="viewExp(${p.id})">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="avt">${p.nombre.charAt(0).toUpperCase()}</div>
+        <div><div style="font-weight:500;font-size:13px">${p.nombre}</div><div style="font-size:10px;color:var(--ink3)">${p.edad?p.edad+' años · ':''}${p.tel||'Sin teléfono'}</div></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">${tags.map(t=>`<span class="chip ct2" style="font-size:9px">${t}</span>`).join('')}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;padding-top:8px;border-top:1px solid var(--br)">
+        <span style="font-size:10px;color:var(--ink3)"><i class="ti ti-calendar" style="font-size:11px;vertical-align:-1px"></i> ${p.fecha_eval||p.fecha_creacion?.split('T')[0]||'—'}</span>
+        <span style="font-size:10px;font-weight:500;color:var(--terra)"><i class="ti ti-activity" style="font-size:11px;vertical-align:-1px"></i> ${ss} sesión${ss!==1?'es':''}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── SESIONES ─────────────────────────────────────
