@@ -439,7 +439,7 @@ try {
   if(supa && supa.createClient) db = supa.createClient(
     'https://dzwvvtqvmwpkgzgkknaj.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6d3Z2dHF2bXdwa2d6Z2trbmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTYwMjAsImV4cCI6MjA5NTY3MjAyMH0.uxDyOKN8f7iTq8c2S1DbaLQRGx1qnZCfQFUP2mU9YIc'
-  ));
+  );
 } catch(e) { console.error('Supabase init error:', e); db = null; }
 
 var S = { movimientos:[], catalogo:[], deudas:[], pacientes:[], sesiones:[] };
@@ -776,9 +776,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
-
-
-
-
 
