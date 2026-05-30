@@ -6,7 +6,7 @@
 <title>Mary Care — Sistema de Gestión</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -435,12 +435,12 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 var db = null;
 try {
-  var supa = window.supabase || supabase;
-  db = supa.createClient(
+  var supa = (typeof window !== 'undefined' && window.supabase) ? window.supabase : (typeof supabase !== 'undefined' ? supabase : null);
+  if(supa && supa.createClient) db = supa.createClient(
     'https://dzwvvtqvmwpkgzgkknaj.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6d3Z2dHF2bXdwa2d6Z2trbmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTYwMjAsImV4cCI6MjA5NTY3MjAyMH0.uxDyOKN8f7iTq8c2S1DbaLQRGx1qnZCfQFUP2mU9YIc'
-  );
-} catch(e) { console.error('Supabase init error:', e); }
+  ));
+} catch(e) { console.error('Supabase init error:', e); db = null; }
 
 var S = { movimientos:[], catalogo:[], deudas:[], pacientes:[], sesiones:[] };
 var mFilterV='all', mSearchV='', catFilterV='all', catSearchV='', cliSearchV='', cliSortV='total';
@@ -768,7 +768,10 @@ function exportMovCSV() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  loadAll();
+  // Render immediately so buttons work
+  renderAll();
+  // Then try to load from Supabase
+  setTimeout(function() { loadAll(); }, 100);
 });
 </script>
 </body>
