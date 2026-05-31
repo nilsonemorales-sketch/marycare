@@ -141,9 +141,54 @@ tbody tr:hover td{background:var(--bg)}
 .page.active>*{animation:fadeUp .25s ease both}
 @media(max-width:900px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.tb-menu{display:block}.bnav{display:flex}.content{padding:14px 12px 74px}.kg{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}.fr{grid-template-columns:1fr}}
 @media(max-width:480px){.kg{grid-template-columns:repeat(2,1fr)}.cg2,.pg{grid-template-columns:1fr}.sr{flex-wrap:wrap}.sc{min-width:50%}}
+
+/* PIN SCREEN */
+.pin-screen{position:fixed;inset:0;background:var(--ink);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.pin-screen.hidden{display:none}
+.pin-logo{font-family:'Playfair Display',serif;font-size:28px;color:var(--nude);letter-spacing:3px;text-transform:uppercase;margin-bottom:4px}
+.pin-sub{font-size:11px;color:rgba(201,169,139,.5);letter-spacing:3px;margin-bottom:40px}
+.pin-dots{display:flex;gap:14px;margin-bottom:32px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(201,169,139,.4);transition:all .2s}
+.pin-dot.filled{background:var(--nude);border-color:var(--nude)}
+.pin-dot.error{background:var(--red);border-color:var(--red)}
+.pin-error{color:var(--red);font-size:12px;height:18px;margin-bottom:12px;letter-spacing:.5px}
+.pin-pad{display:grid;grid-template-columns:repeat(3,70px);gap:12px}
+.pin-btn{width:70px;height:70px;border-radius:50%;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:white;font-family:'DM Sans',sans-serif;font-size:22px;font-weight:400;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.pin-btn:hover{background:rgba(201,169,139,.2);border-color:var(--nude)}
+.pin-btn:active{transform:scale(.92)}
+.pin-btn.del{font-size:18px}
+.pin-btn.empty{border:none;background:transparent;cursor:default}
 </style>
 </head>
 <body>
+
+<!-- PIN SCREEN -->
+<div class="pin-screen" id="pinScreen">
+  <div class="pin-logo">Mary Care</div>
+  <div class="pin-sub">by Maria Frias</div>
+  <div class="pin-dots" id="pinDots">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-error" id="pinError"></div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn empty"></button>
+    <button class="pin-btn" onclick="pinPress('0')">0</button>
+    <button class="pin-btn del" onclick="pinDel()"><i class="ti ti-backspace"></i></button>
+  </div>
+</div>
+
 <div class="overlay" id="overlay" onclick="closeSB()"></div>
 <aside class="sidebar" id="sidebar">
   <div class="sb-brand">
@@ -734,7 +779,11 @@ function renderExpedientes() {
       '<div style="display:flex;flex-wrap:wrap;gap:4px">' + tags + '</div>' +
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;padding-top:8px;border-top:1px solid var(--br)">' +
       '<span style="font-size:10px;color:var(--ink3)">' + (p.fecha_eval || 'Sin fecha') + '</span>' +
-      '<span style="font-size:10px;font-weight:500;color:var(--terra)">' + ss + ' sesión' + (ss !== 1 ? 'es' : '') + '</span></div></div>';
+      '<span style="font-size:10px;font-weight:500;color:var(--terra)">' + ss + ' sesión' + (ss !== 1 ? 'es' : '') + '</span></div>' +
+      '<div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--br)">' +
+      '<button class="btn bp bxs" style="flex:1" onclick="event.stopPropagation();editExp(' + p.id + ')"><i class="ti ti-edit"></i>Editar</button>' +
+      '<button class="btn bda bxs" onclick="event.stopPropagation();delExp(' + p.id + ')"><i class="ti ti-trash"></i></button>' +
+      '</div></div>';
   }).join('');
 }
 
@@ -924,6 +973,7 @@ function getChecked(prefix, items) {
 async function saveExp() {
   var nombre = document.getElementById('ep_nombre').value.trim();
   if (!nombre) { toast('El nombre es obligatorio'); return; }
+  var isEdit = editExpId !== null;
   var obj = {
     nombre: nombre,
     nacimiento: document.getElementById('ep_nacimiento').value || null,
@@ -953,12 +1003,23 @@ async function saveExp() {
     firma_cli: document.getElementById('ep_firma').value,
     firma_pro: 'Maria Frias'
   };
-  if (db) {
-    var r = await db.from('pacientes').insert(obj).select().single();
-    if (!r.error) { S.pacientes.push(r.data); S.pacientes.sort(function(a, b) { return a.nombre.localeCompare(b.nombre); }); }
-    else { toast('Error: ' + r.error.message); return; }
-  } else { obj.id = Date.now(); S.pacientes.push(obj); S.pacientes.sort(function(a, b) { return a.nombre.localeCompare(b.nombre); }); }
-  closeM('expModal'); renderExpedientes(); toast('Ficha guardada');
+  if (isEdit) {
+    if (db) {
+      var r2 = await db.from('pacientes').update(obj).eq('id', editExpId).select().single();
+      if (!r2.error) { var idx = S.pacientes.findIndex(function(p) { return p.id === editExpId; }); if (idx >= 0) S.pacientes[idx] = r2.data; }
+      else { toast('Error: ' + r2.error.message); return; }
+    } else { var idx = S.pacientes.findIndex(function(p) { return p.id === editExpId; }); if (idx >= 0) Object.assign(S.pacientes[idx], obj); }
+    document.querySelector('#expModal .mt').textContent = 'Nueva Ficha GlowCheck 360';
+    editExpId = null;
+    closeM('expModal'); renderExpedientes(); toast('Ficha actualizada');
+  } else {
+    if (db) {
+      var r = await db.from('pacientes').insert(obj).select().single();
+      if (!r.error) { S.pacientes.push(r.data); S.pacientes.sort(function(a, b) { return a.nombre.localeCompare(b.nombre); }); }
+      else { toast('Error: ' + r.error.message); return; }
+    } else { obj.id = Date.now(); S.pacientes.push(obj); S.pacientes.sort(function(a, b) { return a.nombre.localeCompare(b.nombre); }); }
+    closeM('expModal'); renderExpedientes(); toast('Ficha guardada');
+  }
 }
 
 function openSesModal() {
@@ -1109,8 +1170,101 @@ function exportRep(type) {
   toast('CSV descargado');
 }
 
+
+// ── PIN ─────────────────────────────────────────────────
+var PIN_CODE = '0827';
+var pinEntry = '';
+
+function pinPress(digit) {
+  if (pinEntry.length >= 4) return;
+  pinEntry += digit;
+  updatePinDots();
+  if (pinEntry.length === 4) {
+    if (pinEntry === PIN_CODE) {
+      document.getElementById('pinScreen').classList.add('hidden');
+      sessionStorage.setItem('mc_auth', '1');
+    } else {
+      document.getElementById('pinError').textContent = 'Código incorrecto';
+      document.querySelectorAll('.pin-dot').forEach(function(d) { d.classList.add('error'); });
+      setTimeout(function() {
+        pinEntry = '';
+        updatePinDots();
+        document.getElementById('pinError').textContent = '';
+        document.querySelectorAll('.pin-dot').forEach(function(d) { d.classList.remove('error'); });
+      }, 800);
+    }
+  }
+}
+function pinDel() {
+  if (pinEntry.length > 0) { pinEntry = pinEntry.slice(0, -1); updatePinDots(); }
+}
+function updatePinDots() {
+  for (var i = 0; i < 4; i++) {
+    var dot = document.getElementById('pd' + i);
+    if (dot) dot.classList[i < pinEntry.length ? 'add' : 'remove']('filled');
+  }
+}
+// Keyboard support for PIN
+document.addEventListener('keydown', function(e) {
+  if (!document.getElementById('pinScreen').classList.contains('hidden')) {
+    if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+    if (e.key === 'Backspace') pinDel();
+  }
+});
+
+// ── EDIT/DELETE EXPEDIENTE ───────────────────────────────
+var editExpId = null;
+
+function editExp(id) {
+  var p = S.pacientes.find(function(x) { return x.id === id; });
+  if (!p) return;
+  editExpId = id;
+  buildExpForm();
+  // Fill form with existing data
+  var fields = ['nombre','nacimiento','edad','genero','tel','email','motivo','medicacion_det','sueno','agua','regimen','notas','firma'];
+  var map = {nombre:'ep_nombre',nacimiento:'ep_nacimiento',edad:'ep_edad',genero:'ep_genero',tel:'ep_tel',email:'ep_email',motivo:'ep_motivo',medicacion_det:'ep_medicacion',sueno:'ep_sueno',agua:'ep_agua',regimen:'ep_regimen',notas_prof:'ep_notas',firma_cli:'ep_firma'};
+  Object.entries(map).forEach(function(kv) {
+    var el = document.getElementById(kv[1]);
+    if (el && p[kv[0]] !== undefined && p[kv[0]] !== null) el.value = p[kv[0]];
+  });
+  // Fill analisis
+  var an = p.analisis || {};
+  ['apariencia','textura','tonicidad','poro','fototipo'].forEach(function(k) {
+    var el = document.getElementById('ep_' + k);
+    if (el && an[k]) el.value = an[k];
+  });
+  if (p.acne) { var el = document.getElementById('ep_acne'); if (el) el.value = p.acne; }
+  if (p.fecha_eval) { var el = document.getElementById('ep_fecha_eval'); if (el) el.value = p.fecha_eval; }
+  // Check patologicos
+  (p.patologicos || []).forEach(function(item) {
+    var el = document.getElementById('cb_pat_' + item.replace(/[^a-zA-Z0-9]/g, '_'));
+    if (el) el.checked = true;
+  });
+  // Check tipo_piel
+  (p.tipo_piel || []).forEach(function(item) {
+    var el = document.getElementById('cb_tipo_' + item.replace(/[^a-zA-Z0-9]/g, '_'));
+    if (el) el.checked = true;
+  });
+  document.querySelector('#expModal .mt').textContent = 'Editar Ficha: ' + p.nombre;
+  document.getElementById('expModal').classList.add('open');
+}
+
+async function delExp(id) {
+  var p = S.pacientes.find(function(x) { return x.id === id; });
+  if (!p) return;
+  if (!confirm('¿Eliminar la ficha de ' + p.nombre + '? Esta acción no se puede deshacer.')) return;
+  if (db) await db.from('pacientes').delete().eq('id', id);
+  S.pacientes = S.pacientes.filter(function(x) { return x.id !== id; });
+  renderExpedientes();
+  toast('Ficha eliminada');
+}
+
 // ── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
+  // Check PIN
+  if (sessionStorage.getItem('mc_auth') === '1') {
+    document.getElementById('pinScreen').classList.add('hidden');
+  }
   renderAll();
   if (db) setTimeout(loadAll, 200);
 });
@@ -1118,4 +1272,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
