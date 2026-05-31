@@ -371,12 +371,16 @@ tbody tr:hover td{background:var(--bg)}
     <div class="fld"><label>Cliente *</label><input type="text" id="mCliente" list="mCliList" placeholder="Nombre"><datalist id="mCliList"></datalist></div>
     <div class="fld" id="mServFld"><label>Servicio *</label><input type="text" id="mServicio" list="mServList" placeholder="Ej: Peeling Acné"><datalist id="mServList"><option value="Peeling Acne"><option value="Clean Balance"><option value="HidraCare"><option value="DermaPen Bost"><option value="Purifying"><option value="Peeling Axilas"><option value="Lash Lift"><option value="Peeling Manchas"><option value="RadiantCare"></datalist></div>
     <div class="fld" id="mProdFld" style="display:none">
-      <label>Productos</label>
-      <div id="cartList" style="min-height:4px;margin-bottom:6px"></div>
-      <div style="display:flex;gap:6px;align-items:stretch">
-        <select id="mProductoSel" style="flex:1;border:1.5px solid var(--br);border-radius:8px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);background:#fff;outline:none"></select>
-        <input type="number" id="mProdQty" value="1" min="1" max="999" style="width:58px;border:1.5px solid var(--br);border-radius:8px;padding:8px;font-family:'DM Sans',sans-serif;font-size:13px;text-align:center;outline:none" placeholder="1">
-        <button class="btn bp bsm" onclick="addCartItem()" type="button" style="white-space:nowrap"><i class="ti ti-plus"></i>Add</button>
+      <label>Productos en esta venta</label>
+      <div id="cartList" style="margin-bottom:6px"></div>
+      <div id="cartEmpty" style="font-size:11px;color:var(--ink3);text-align:center;padding:8px 0;margin-bottom:6px">Selecciona un producto y presiona <strong>Agregar</strong></div>
+      <div style="display:flex;gap:6px;align-items:stretch;background:var(--sf2);padding:8px;border-radius:8px;border:1.5px solid var(--br)">
+        <select id="mProductoSel" style="flex:1;border:none;border-radius:6px;padding:7px 8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);background:#fff;outline:none"></select>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Cant.</span>
+          <input type="number" id="mProdQty" value="1" min="1" max="999" style="width:52px;border:1.5px solid var(--br);border-radius:6px;padding:5px;font-family:'DM Sans',sans-serif;font-size:13px;text-align:center;outline:none">
+        </div>
+        <button class="btn bt" onclick="addCartItem()" type="button" style="align-self:flex-end;padding:8px 12px"><i class="ti ti-plus"></i>Agregar</button>
       </div>
       <div id="cartTotal" style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;text-align:right;margin-top:8px;color:var(--terra)"></div>
     </div>
@@ -914,6 +918,7 @@ function openMovModal() {
   movCart = [];
   setHTML('cartList', '');
   var ct = document.getElementById('cartTotal'); if (ct) ct.textContent = '';
+  var ce = document.getElementById('cartEmpty'); if (ce) ce.style.display = '';
   document.getElementById('mMonto').readOnly = false;
   toggleMTipo();
   var dl = document.getElementById('mCliList');
@@ -952,6 +957,8 @@ function removeCartItem(i) {
 }
 function renderCart() {
   var total = movCart.reduce(function(a, item) { return a + item.price * item.qty; }, 0);
+  var emptyEl = document.getElementById('cartEmpty');
+  if (emptyEl) emptyEl.style.display = movCart.length ? 'none' : '';
   setHTML('cartList', movCart.length ? movCart.map(function(item, i) {
     return '<div class="prod-row">' +
       '<div style="flex:1;font-size:12px;font-weight:500">' + item.name + '</div>' +
