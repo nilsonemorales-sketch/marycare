@@ -387,7 +387,18 @@ tbody tr:hover td{background:var(--bg)}
       </div>
       <div id="cartTotal" style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;text-align:right;margin-top:8px;color:var(--terra)"></div>
     </div>
-    <div class="fr"><div class="fld" id="mMontoFld"><label>Monto (RD$) *</label><input type="number" id="mMonto" placeholder="0" min="0"></div><div class="fld"><label>Método de pago</label><select id="mPago"><option value="transferencia">Transferencia</option><option value="efectivo">Efectivo</option><option value="cxc">Cuenta x Cobrar</option></select></div></div>
+    <div class="fld">
+      <label>Descuento <span style="font-weight:400;color:var(--ink3)">(opcional)</span></label>
+      <div style="display:flex;gap:6px">
+        <input type="number" id="mDescVal" placeholder="0" min="0" oninput="calcDesc()" style="flex:1;border:1.5px solid var(--br);border-radius:8px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:#fff;outline:none">
+        <select id="mDescTipo" onchange="calcDesc()" style="width:95px;border:1.5px solid var(--br);border-radius:8px;padding:9px 8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);background:#fff;outline:none">
+          <option value="pct">% Porciento</option>
+          <option value="fijo">RD$ Fijo</option>
+        </select>
+      </div>
+      <div id="mDescInfo" style="display:none;background:var(--mint-bg);border-radius:8px;padding:10px 14px;margin-top:6px;font-size:12px;line-height:1.8"></div>
+    </div>
+    <div class="fr"><div class="fld" id="mMontoFld"><label>Monto (RD$) *</label><input type="number" id="mMonto" placeholder="0" min="0" oninput="calcDesc()"></div><div class="fld"><label>Método de pago</label><select id="mPago"><option value="transferencia">Transferencia</option><option value="efectivo">Efectivo</option><option value="cxc">Cuenta x Cobrar</option></select></div></div>
     <div class="fld"><label>Notas</label><input type="text" id="mNotas" placeholder="Opcional..."></div>
   </div>
   <div class="mf"><button class="btn bg2" onclick="closeM('movModal')">Cancelar</button><button class="btn bt" onclick="saveMov()"><i class="ti ti-check"></i>Guardar</button></div>
@@ -484,7 +495,7 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 // Force-reload si hay versión vieja en caché
 (function() {
-  var VER = 'v4';
+  var VER = 'v5';
   if (location.search.indexOf(VER) === -1) {
     location.replace('?' + VER);
   }
@@ -930,6 +941,8 @@ function openMovModal() {
   setHTML('cartList', '');
   var ct = document.getElementById('cartTotal'); if (ct) ct.textContent = '';
   var ce = document.getElementById('cartEmpty'); if (ce) ce.style.display = '';
+  var dv = document.getElementById('mDescVal'); if (dv) dv.value = '';
+  var di = document.getElementById('mDescInfo'); if (di) di.style.display = 'none';
   document.getElementById('mMonto').readOnly = false;
   toggleMTipo();
   var dl = document.getElementById('mCliList');
@@ -982,8 +995,37 @@ function renderCart() {
       '</div>';
   }).join('') : '');
   var ct = document.getElementById('cartTotal');
-  if (ct) ct.textContent = total > 0 ? 'Total: ' + fmt(total) : '';
+  if (ct) ct.textContent = total > 0 ? 'Subtotal: ' + fmt(total) : '';
   var mi = document.getElementById('mMonto'); if (mi) mi.value = total || '';
+  calcDesc();
+}
+function calcDesc() {
+  var base = parseFloat(document.getElementById('mMonto').value) || 0;
+  var descVal = parseFloat(document.getElementById('mDescVal').value) || 0;
+  var descTipo = document.getElementById('mDescTipo').value;
+  var infoEl = document.getElementById('mDescInfo');
+  if (!infoEl) return;
+  if (base > 0 && descVal > 0) {
+    var descMonto = descTipo === 'pct' ? base * descVal / 100 : descVal;
+    if (descMonto > base) descMonto = base;
+    var final = base - descMonto;
+    infoEl.style.display = '';
+    infoEl.innerHTML =
+      '<div style="color:var(--ink2)">Subtotal: <strong>' + fmt(base) + '</strong></div>' +
+      '<div style="color:var(--mint)">Descuento: <strong>-' + fmt(descMonto) + '</strong>' + (descTipo === 'pct' ? ' (' + descVal + '%)' : '') + '</div>' +
+      '<div style="color:var(--terra);font-size:14px;font-weight:700">Total a cobrar: ' + fmt(final) + '</div>';
+  } else {
+    infoEl.style.display = 'none';
+  }
+}
+function getDescuento(base) {
+  var descVal = parseFloat(document.getElementById('mDescVal').value) || 0;
+  var descTipo = document.getElementById('mDescTipo').value;
+  if (!descVal) return { descMonto: 0, final: base, nota: '' };
+  var descMonto = descTipo === 'pct' ? base * descVal / 100 : descVal;
+  if (descMonto > base) descMonto = base;
+  var nota = 'Desc. ' + fmt(descMonto) + (descTipo === 'pct' ? ' (' + descVal + '%)' : '');
+  return { descMonto: descMonto, final: base - descMonto, nota: nota };
 }
 async function saveMov() {
   var tipo = document.getElementById('mTipo').value;
@@ -995,10 +1037,14 @@ async function saveMov() {
 
   if (tipo === 'producto') {
     if (movCart.length === 0) { toast('Agrega al menos un producto al carrito'); return; }
-    var totalMonto = movCart.reduce(function(a, item) { return a + item.price * item.qty; }, 0);
+    var subtotal = movCart.reduce(function(a, item) { return a + item.price * item.qty; }, 0);
+    var desc = getDescuento(subtotal);
+    var totalMonto = desc.final;
+    if (desc.nota && !notas) notas = desc.nota;
     for (var ci = 0; ci < movCart.length; ci++) {
       var item = movCart[ci];
-      var itemMonto = item.price * item.qty;
+      var itemBruto = item.price * item.qty;
+      var itemMonto = desc.descMonto > 0 ? Math.round(itemBruto / subtotal * totalMonto) : itemBruto;
       var itemConcepto = item.qty > 1 ? item.name + ' x' + item.qty : item.name;
       var obj = { fecha: fecha, cliente: cliente, concepto: itemConcepto, tipo: 'producto', monto: itemMonto, pago: pago, notas: notas };
       if (db) {
@@ -1019,8 +1065,11 @@ async function saveMov() {
   }
 
   var concepto = document.getElementById('mServicio').value.trim();
-  var monto = parseFloat(document.getElementById('mMonto').value) || 0;
-  if (!concepto || !monto) { toast('Completa los campos obligatorios'); return; }
+  var montoBase = parseFloat(document.getElementById('mMonto').value) || 0;
+  if (!concepto || !montoBase) { toast('Completa los campos obligatorios'); return; }
+  var descS = getDescuento(montoBase);
+  var monto = descS.final;
+  if (descS.nota && !notas) notas = descS.nota;
   if (db) {
     var r = await db.from('movimientos').insert({ fecha: fecha, cliente: cliente, concepto: concepto, tipo: tipo, monto: monto, pago: pago, notas: notas }).select().single();
     if (!r.error) S.movimientos.unshift(r.data);
