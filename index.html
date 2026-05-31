@@ -482,6 +482,14 @@ tbody tr:hover td{background:var(--bg)}
   <div class="mf"><button class="btn bg2" onclick="closeM('sesModal')">Cancelar</button><button class="btn bt" onclick="saveSes()"><i class="ti ti-check"></i>Guardar</button></div>
 </div></div>
 <script>
+// Force-reload si hay versión vieja en caché
+(function() {
+  var VER = 'v4';
+  if (location.search.indexOf(VER) === -1) {
+    location.replace('?' + VER);
+  }
+})();
+
 // ── SUPABASE ────────────────────────────────────────────
 var db = null;
 try {
@@ -944,14 +952,17 @@ function toggleMTipo() {
 }
 function addCartItem() {
   var sel = document.getElementById('mProductoSel');
-  if (!sel || !sel.options.length) { toast('Sin productos en catálogo'); return; }
+  if (!sel || !sel.options.length) { toast('Sin productos en catálogo. Agrega productos primero.'); return; }
   var opt = sel.options[sel.selectedIndex];
-  var name = opt.dataset.name;
-  var price = parseFloat(opt.value);
+  var name = opt.getAttribute('data-name') || opt.text.split(' — ')[0].trim();
+  var price = parseFloat(opt.value) || 0;
   var qty = parseInt(document.getElementById('mProdQty').value) || 1;
-  if (!name || !price) return;
+  if (!name) { toast('Selecciona un producto'); return; }
+  if (!price) { toast('El producto no tiene precio'); return; }
+  if (qty < 1) { toast('La cantidad debe ser al menos 1'); return; }
   var existing = movCart.find(function(item) { return item.name === name; });
   if (existing) { existing.qty += qty; } else { movCart.push({ name: name, price: price, qty: qty }); }
+  document.getElementById('mProdQty').value = 1;
   renderCart();
 }
 function removeCartItem(i) {
