@@ -66,6 +66,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .bg2{background:transparent;color:var(--ink2);border:1px solid var(--br)}.bg2:hover{background:var(--sf2)}
 .bgo{background:var(--gold-bg);color:var(--gold);border:1px solid #DEC888}
 .bda{background:var(--red-bg);color:var(--red);border:1px solid #E0AAAA}
+.bwa{background:#e8f8ef;color:#25D366;border:1px solid #b2dfc4}
 .bsm{padding:5px 10px;font-size:11px}.bxs{padding:4px 8px;font-size:10px}
 .chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500}
 .cm{background:var(--mint-bg);color:var(--mint)}.cg{background:var(--gold-bg);color:var(--gold)}
@@ -475,6 +476,35 @@ tbody tr:hover td{background:var(--bg)}
   <div class="mf"><button class="btn bg2" onclick="closeM('restockModal')">Cancelar</button><button class="btn bt" onclick="saveRestock()"><i class="ti ti-package-import"></i>Registrar entrada</button></div>
 </div></div>
 
+<!-- MODAL REPORTE WA -->
+<div class="mb" id="reporteModal"><div class="modal" style="max-width:480px">
+  <div class="mh"><div class="mt"><i class="ti ti-brand-whatsapp" style="color:#25D366;margin-right:6px"></i>Reporte para cliente</div><button class="mc" onclick="closeM('reporteModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mbody">
+    <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:8px">Vista previa del mensaje</div>
+    <div id="reportePreview" style="background:var(--sf2);border-radius:10px;padding:13px 15px;font-size:12px;line-height:1.7;white-space:pre-wrap;max-height:280px;overflow-y:auto;border:1px solid var(--br);color:var(--ink2)"></div>
+    <div style="border-top:1px solid var(--br);margin-top:16px;padding-top:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <i class="ti ti-lock" style="color:var(--terra);font-size:16px"></i>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--ink)">Autorización requerida</div>
+          <div style="font-size:10px;color:var(--ink3)">Ingresa tu PIN para enviar este reporte</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="password" id="reportePin" maxlength="4" placeholder="••••" inputmode="numeric"
+          style="width:90px;border:1.5px solid var(--br);border-radius:8px;padding:10px 12px;font-size:18px;letter-spacing:6px;text-align:center;font-family:'DM Sans',sans-serif;outline:none"
+          oninput="this.style.borderColor=this.value.length===4?'var(--terra)':'var(--br)'"
+          onkeydown="if(event.key==='Enter')autorizarEnvio()">
+        <div id="reportePinError" style="font-size:11px;color:var(--red);display:none"><i class="ti ti-alert-circle"></i> PIN incorrecto</div>
+      </div>
+    </div>
+  </div>
+  <div class="mf">
+    <button class="btn bg2" onclick="closeM('reporteModal')">Cancelar</button>
+    <button class="btn" style="background:#25D366;color:#fff;border:none" onclick="autorizarEnvio()"><i class="ti ti-brand-whatsapp"></i>Autorizar y enviar</button>
+  </div>
+</div></div>
+
 <!-- MODAL EXPEDIENTE -->
 <div class="mb" id="expModal"><div class="modal" style="max-width:680px;max-height:90vh;overflow-y:auto">
   <div class="mh"><div class="mt">Nueva Ficha GlowCheck 360</div><button class="mc" onclick="closeM('expModal')"><i class="ti ti-x"></i></button></div>
@@ -536,7 +566,7 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 // Force-reload si hay versión vieja en caché
 (function() {
-  var VER = '9';
+  var VER = '10';
   try {
     var p = new URLSearchParams(location.search);
     if (p.get('v') !== VER) { location.replace(location.pathname + '?v=' + VER); }
@@ -564,6 +594,7 @@ var currentReport = 'resumen';
 var editCatId = null;
 var movCart = [];
 var restockCatId = null;
+var reporteSesId = null;
 
 // ── UTILS ───────────────────────────────────────────────
 function fmt(n) {
@@ -1109,7 +1140,7 @@ function renderSesiones() {
       '<td>' + s.servicio + '</td>' +
       '<td style="font-size:11px;color:var(--ink3)">' + (s.productos || '—') + '</td>' +
       '<td>' + (s.evolucion ? '<span class="chip ' + (eC[s.evolucion] || 'cx') + '">' + s.evolucion + '</span>' : '—') + '</td>' +
-      '<td><button class="btn bda bxs" onclick="delSes(' + s.id + ')"><i class="ti ti-trash"></i></button></td></tr>';
+      '<td style="display:flex;gap:4px"><button class="btn bwa bxs" onclick="openReporteModal(' + s.id + ')" title="Enviar reporte por WhatsApp"><i class="ti ti-brand-whatsapp"></i></button><button class="btn bda bxs" onclick="delSes(' + s.id + ')"><i class="ti ti-trash"></i></button></td></tr>';
   }).join('') : '<tr><td colspan="6"><div class="empty"><i class="ti ti-calendar-event"></i><p>Sin sesiones</p></div></td></tr>');
 }
 async function delSes(id) {
@@ -1604,6 +1635,75 @@ function showSesActions(nombre, pac, servicio, prox, proxHora) {
   div.className = 'mb open dyn-modal';
   div.innerHTML = '<div class="modal"><div class="mh"><div class="mt">Cita Programada 📅</div><button class="mc" onclick="removeTopModal()"><i class="ti ti-x"></i></button></div><div class="mbody">' + html + '</div><div class="mf"><button class="btn bg2" onclick="removeTopModal()">Cerrar</button></div></div>';
   document.body.appendChild(div);
+}
+
+// ── REPORTE WA ──────────────────────────────────────────
+function generarTextoReporte(s, pac) {
+  var nombre = (pac && pac.nombre) ? pac.nombre.split(' ')[0] : s.paciente_nombre.split(' ')[0];
+  var lineas = [];
+  lineas.push('🌸 *Mary Care* — Resumen de tu sesión');
+  lineas.push('');
+  lineas.push('Hola ' + nombre + '! Aquí tienes el resumen de tu visita:');
+  lineas.push('');
+  lineas.push('📅 *Fecha:* ' + s.fecha);
+  lineas.push('✨ *Tratamiento:* ' + s.servicio);
+  if (s.productos) lineas.push('💊 *Productos aplicados:* ' + s.productos);
+  if (s.evolucion) lineas.push('📊 *Evolución:* ' + s.evolucion);
+  if (s.notas) lineas.push('📝 *Notas:* ' + s.notas);
+  if (s.proxima) {
+    lineas.push('');
+    lineas.push('📆 *Próxima cita:* ' + s.proxima + (s.proxima_hora ? ' a las ' + s.proxima_hora : ''));
+    lineas.push('¡Te esperamos! Recuerda confirmar tu cita. 🗓️');
+  }
+  lineas.push('');
+  lineas.push('Fue un placer atenderte 💆‍♀️');
+  lineas.push('— *María Frías · Mary Care*');
+  return lineas.join('\n');
+}
+function openReporteModal(id) {
+  var s = S.sesiones.find(function(x) { return x.id === id; });
+  if (!s) return;
+  reporteSesId = id;
+  var pac = S.pacientes.find(function(p) {
+    return p.id === s.paciente_id || p.nombre.toLowerCase().trim() === s.paciente_nombre.toLowerCase().trim();
+  });
+  var texto = generarTextoReporte(s, pac);
+  document.getElementById('reportePreview').textContent = texto;
+  document.getElementById('reportePin').value = '';
+  document.getElementById('reportePin').style.borderColor = 'var(--br)';
+  document.getElementById('reportePinError').style.display = 'none';
+  if (pac && pac.tel) {
+    document.getElementById('reporteModal').dataset.tel = pac.tel;
+    document.getElementById('reporteModal').dataset.texto = texto;
+  } else {
+    document.getElementById('reporteModal').dataset.tel = '';
+    document.getElementById('reporteModal').dataset.texto = texto;
+  }
+  document.getElementById('reporteModal').classList.add('open');
+  setTimeout(function() { document.getElementById('reportePin').focus(); }, 300);
+}
+function autorizarEnvio() {
+  var pin = document.getElementById('reportePin').value;
+  var errEl = document.getElementById('reportePinError');
+  if (pin !== PIN_CODE) {
+    errEl.style.display = '';
+    document.getElementById('reportePin').style.borderColor = 'var(--red)';
+    document.getElementById('reportePin').value = '';
+    setTimeout(function() { document.getElementById('reportePin').focus(); }, 100);
+    return;
+  }
+  errEl.style.display = 'none';
+  var modal = document.getElementById('reporteModal');
+  var tel = modal.dataset.tel;
+  var texto = modal.dataset.texto;
+  closeM('reporteModal');
+  if (tel) {
+    window.open(makeWALink(tel, texto), '_blank');
+  } else {
+    var s = S.sesiones.find(function(x) { return x.id === reporteSesId; });
+    var nombre = s ? s.paciente_nombre : '';
+    toast('No hay teléfono registrado para ' + nombre + '. Agrega el número en la ficha del paciente.');
+  }
 }
 
 // ── REPORTERÍA ──────────────────────────────────────────
