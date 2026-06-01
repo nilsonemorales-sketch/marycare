@@ -458,6 +458,23 @@ tbody tr:hover td{background:var(--bg)}
   <div class="mf"><button class="btn bg2" onclick="closeM('catModal')">Cancelar</button><button class="btn bt" onclick="saveCat()"><i class="ti ti-check"></i>Guardar</button></div>
 </div></div>
 
+<!-- MODAL RESTOCK -->
+<div class="mb" id="restockModal"><div class="modal" style="max-width:360px">
+  <div class="mh"><div class="mt">Entrada de inventario</div><button class="mc" onclick="closeM('restockModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mbody">
+    <div id="restockNombre" style="font-family:'Playfair Display',serif;font-size:15px;color:var(--terra);margin-bottom:14px"></div>
+    <div style="background:var(--sf2);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:12px">
+      Stock actual: <strong id="restockStockActual">—</strong> unidades
+    </div>
+    <div class="fr">
+      <div class="fld"><label>Unidades que ingresaron *</label><input type="number" id="restockQty" placeholder="0" min="1" oninput="updateRestockPreview()"></div>
+      <div class="fld"><label>Costo unit. (RD$) — opcional</label><input type="number" id="restockCosto" placeholder="Sin cambio" min="0"></div>
+    </div>
+    <div id="restockPreview" style="display:none;border-radius:8px;padding:10px 14px;font-size:12px;font-weight:500;margin-top:4px"></div>
+  </div>
+  <div class="mf"><button class="btn bg2" onclick="closeM('restockModal')">Cancelar</button><button class="btn bt" onclick="saveRestock()"><i class="ti ti-package-import"></i>Registrar entrada</button></div>
+</div></div>
+
 <!-- MODAL EXPEDIENTE -->
 <div class="mb" id="expModal"><div class="modal" style="max-width:680px;max-height:90vh;overflow-y:auto">
   <div class="mh"><div class="mt">Nueva Ficha GlowCheck 360</div><button class="mc" onclick="closeM('expModal')"><i class="ti ti-x"></i></button></div>
@@ -519,7 +536,7 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 // Force-reload si hay versión vieja en caché
 (function() {
-  var VER = '8';
+  var VER = '9';
   try {
     var p = new URLSearchParams(location.search);
     if (p.get('v') !== VER) { location.replace(location.pathname + '?v=' + VER); }
@@ -546,6 +563,7 @@ var cliSearchV = '', cliSortV = 'total', expFilterV = 'all', expSearchV = '';
 var currentReport = 'resumen';
 var editCatId = null;
 var movCart = [];
+var restockCatId = null;
 
 // ── UTILS ───────────────────────────────────────────────
 function fmt(n) {
@@ -926,7 +944,10 @@ function renderCatalogo() {
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">' +
       '<span class="chip ' + (cc[p.cat] || 'cx') + '" style="font-size:9px">' + (p.cat || '') + '</span>' +
       stockHtml + '</div>' +
-      '<button class="btn bg2 bxs" style="width:100%;margin-top:8px;justify-content:center" onclick="openCatModal(' + p.id + ')"><i class="ti ti-edit"></i>Editar</button>' +
+      '<div style="display:flex;gap:5px;margin-top:8px">' +
+      '<button class="btn bg2 bxs" style="flex:1;justify-content:center" onclick="openCatModal(' + p.id + ')"><i class="ti ti-edit"></i>Editar</button>' +
+      '<button class="btn bgo bxs" style="flex:1;justify-content:center" onclick="openRestockModal(' + p.id + ')"><i class="ti ti-package-import"></i>Entrada</button>' +
+      '</div>' +
       '</div>';
   }).join(''));
 }
@@ -1242,8 +1263,19 @@ async function saveMov() {
         if (!rdp.error) S.deudas.unshift(rdp.data);
       }
     }
+    // Descontar inventario por cada producto vendido
+    var stockOps = [];
+    for (var si = 0; si < movCart.length; si++) {
+      var sItem = movCart[si];
+      var catP = S.catalogo.find(function(p) { return p.name === sItem.name; });
+      if (catP && catP.cantidad != null) {
+        catP.cantidad = Math.max(0, (catP.cantidad || 0) - sItem.qty);
+        if (db) stockOps.push(db.from('catalogo').update({ cantidad: catP.cantidad }).eq('id', catP.id));
+      }
+    }
+    if (stockOps.length) await Promise.all(stockOps);
     movCart = [];
-    closeM('movModal'); renderAll(); toast('Productos guardados');
+    closeM('movModal'); renderAll(); toast('Productos guardados · Inventario actualizado');
     return;
   }
 
@@ -1361,6 +1393,51 @@ async function saveCat() {
     } else { obj.id = Date.now(); S.catalogo.push(obj); S.catalogo.sort(function(a, b) { return a.name.localeCompare(b.name); }); }
     closeM('catModal'); renderCatalogo(); toast('Producto agregado');
   }
+}
+
+function openRestockModal(id) {
+  var p = S.catalogo.find(function(x) { return x.id === id; });
+  if (!p) return;
+  restockCatId = id;
+  document.getElementById('restockNombre').textContent = p.name;
+  document.getElementById('restockStockActual').textContent = (p.cantidad != null ? p.cantidad : 0);
+  document.getElementById('restockQty').value = '';
+  document.getElementById('restockCosto').value = '';
+  document.getElementById('restockPreview').style.display = 'none';
+  document.getElementById('restockModal').classList.add('open');
+}
+function updateRestockPreview() {
+  var p = S.catalogo.find(function(x) { return x.id === restockCatId; });
+  if (!p) return;
+  var qty = parseInt(document.getElementById('restockQty').value) || 0;
+  var prev = document.getElementById('restockPreview');
+  if (qty > 0) {
+    var nuevo = (p.cantidad || 0) + qty;
+    prev.style.display = '';
+    prev.style.background = 'var(--mint-bg)';
+    prev.style.color = 'var(--mint)';
+    prev.innerHTML = '<i class="ti ti-trending-up"></i> Stock: ' + (p.cantidad || 0) + ' + ' + qty + ' = <strong>' + nuevo + ' unidades</strong>';
+  } else {
+    prev.style.display = 'none';
+  }
+}
+async function saveRestock() {
+  var p = S.catalogo.find(function(x) { return x.id === restockCatId; });
+  if (!p) return;
+  var qty = parseInt(document.getElementById('restockQty').value) || 0;
+  var costo = parseFloat(document.getElementById('restockCosto').value) || null;
+  if (qty < 1) { toast('Ingresa cuántas unidades recibiste'); return; }
+  var nuevaCantidad = (p.cantidad || 0) + qty;
+  var updateObj = { cantidad: nuevaCantidad };
+  if (costo) updateObj.costo = costo;
+  if (db) {
+    var r = await db.from('catalogo').update(updateObj).eq('id', p.id);
+    if (r.error) { toast('Error al actualizar inventario'); return; }
+  }
+  Object.assign(p, updateObj);
+  closeM('restockModal');
+  renderCatalogo();
+  toast(qty + ' unidades de ' + p.name + ' agregadas al inventario');
 }
 
 var PATOL = ['HTA', 'Alergias', 'Claustrofobia', 'Diabetes', 'Herpes', 'Marcapasos', 'Enf. renales', 'Queloides', 'Implantes dentales', 'Trastornos hormonales', 'Epilepsia'];
