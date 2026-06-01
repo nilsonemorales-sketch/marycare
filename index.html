@@ -644,7 +644,7 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 // Force-reload si hay versión vieja en caché
 (function() {
-  var VER = '12';
+  var VER = '13';
   try {
     var p = new URLSearchParams(location.search);
     if (p.get('v') !== VER) { location.replace(location.pathname + '?v=' + VER); }
@@ -1922,7 +1922,7 @@ async function saveGasto() {
     if (db) {
       var r = await db.from('gastos').insert(obj).select().single();
       if (!r.error) S.gastos.unshift(r.data);
-      else { toast('Error al guardar. Ejecuta la migración en Supabase primero.'); return; }
+      else { toast('Error: ' + (r.error.message || 'Sin permisos. Corre ALTER TABLE gastos DISABLE ROW LEVEL SECURITY en Supabase')); return; }
     } else { obj.id = Date.now(); S.gastos.unshift(obj); }
     toast('Gasto registrado');
   }
