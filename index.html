@@ -7,6 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Mary Care — Sistema de Gestión</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><circle cx='18' cy='18' r='18' fill='%237A4D35'/><circle cx='18' cy='10' r='1.8' fill='rgba(201,169,139,.65)'/><path d='M10 25 L10 15 L18 21.5 L26 15 L26 25' fill='none' stroke='%23C9A98B' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.js"></script>
@@ -17,7 +18,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .layout{display:flex;min-height:100vh}
 .sidebar{width:var(--sw);flex-shrink:0;background:var(--ink);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:200;transition:transform .3s}
 .sb-brand{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px}
-.sb-icon{width:36px;height:36px;border-radius:50%;background:var(--terra);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--nude2);flex-shrink:0}
+.sb-icon{width:36px;height:36px;border-radius:50%;background:transparent;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--nude2);flex-shrink:0;overflow:hidden}
 .sb-name{font-family:'Playfair Display',serif;font-size:13px;color:var(--nude);letter-spacing:1.5px;text-transform:uppercase;line-height:1.2}
 .sb-sub{font-size:9px;color:rgba(201,169,139,.45);letter-spacing:2px}
 .sb-nav{flex:1;overflow-y:auto;padding:10px 8px}
@@ -151,6 +152,10 @@ tbody tr:hover td{background:var(--bg)}
 .mcat-margin{font-size:10px;font-weight:500;margin-top:2px}
 .stock-chip{display:inline-block;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:600}
 .stock-ok{background:var(--mint-bg);color:var(--mint)}.stock-low{background:var(--gold-bg);color:var(--gold)}.stock-zero{background:var(--red-bg);color:var(--red)}
+/* Normalize date inputs on all platforms */
+.fld input[type="date"]{-webkit-appearance:none;appearance:none;height:40px;padding:0 11px;line-height:40px;cursor:pointer}
+/* Keep 2-col grid on mobile for date+amount pairs */
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
 /* PIN SCREEN */
 .pin-screen{position:fixed;inset:0;background:var(--ink);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column}
@@ -174,6 +179,14 @@ tbody tr:hover td{background:var(--bg)}
 
 <!-- PIN SCREEN -->
 <div class="pin-screen" id="pinScreen">
+  <div style="margin-bottom:18px">
+    <svg width="72" height="72" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="18" cy="18" r="18" fill="#7A4D35"/>
+      <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(201,169,139,.25)" stroke-width="1"/>
+      <circle cx="18" cy="10" r="1.8" fill="rgba(201,169,139,.65)"/>
+      <path d="M10 25 L10 15 L18 21.5 L26 15 L26 25" fill="none" stroke="#C9A98B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
   <div class="pin-logo">Mary Care</div>
   <div class="pin-sub">by Maria Frias</div>
   <div class="pin-dots" id="pinDots">
@@ -202,7 +215,14 @@ tbody tr:hover td{background:var(--bg)}
 <div class="overlay" id="overlay" onclick="closeSB()"></div>
 <aside class="sidebar" id="sidebar">
   <div class="sb-brand">
-    <div class="sb-icon"><i class="ti ti-leaf"></i></div>
+    <div class="sb-icon">
+      <svg width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="18" cy="18" r="18" fill="#7A4D35"/>
+        <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(201,169,139,.22)" stroke-width="1"/>
+        <circle cx="18" cy="10" r="1.8" fill="rgba(201,169,139,.65)"/>
+        <path d="M10 25 L10 15 L18 21.5 L26 15 L26 25" fill="none" stroke="#C9A98B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
     <div><div class="sb-name">Mary Care</div><div class="sb-sub">by Maria Frias</div></div>
   </div>
   <nav class="sb-nav">
@@ -412,7 +432,7 @@ tbody tr:hover td{background:var(--bg)}
 <div class="mb" id="movModal"><div class="modal">
   <div class="mh"><div class="mt">Nuevo Movimiento</div><button class="mc" onclick="closeM('movModal')"><i class="ti ti-x"></i></button></div>
   <div class="mbody">
-    <div class="fr"><div class="fld"><label>Tipo</label><select id="mTipo" onchange="toggleMTipo()"><option value="servicio">Servicio</option><option value="producto">Producto</option></select></div><div class="fld"><label>Fecha</label><input type="date" id="mFecha"></div></div>
+    <div class="fr2"><div class="fld"><label>Tipo</label><select id="mTipo" onchange="toggleMTipo()"><option value="servicio">Servicio</option><option value="producto">Producto</option></select></div><div class="fld"><label>Fecha</label><input type="date" id="mFecha"></div></div>
     <div class="fld"><label>Cliente *</label><input type="text" id="mCliente" list="mCliList" placeholder="Nombre"><datalist id="mCliList"></datalist></div>
     <div class="fld" id="mServFld"><label>Servicio *</label><input type="text" id="mServicio" list="mServList" placeholder="Ej: Peeling Acné"><datalist id="mServList"><option value="Peeling Acne"><option value="Clean Balance"><option value="HidraCare"><option value="DermaPen Bost"><option value="Purifying"><option value="Peeling Axilas"><option value="Lash Lift"><option value="Peeling Manchas"><option value="RadiantCare"></datalist></div>
     <div class="fld" id="mProdFld" style="display:none">
@@ -465,7 +485,7 @@ tbody tr:hover td{background:var(--bg)}
 <div class="mb" id="deudaModal"><div class="modal">
   <div class="mh"><div class="mt">Registrar Deuda</div><button class="mc" onclick="closeM('deudaModal')"><i class="ti ti-x"></i></button></div>
   <div class="mbody">
-    <div class="fr"><div class="fld"><label>Tipo</label><select id="dTipo"><option value="cobrar">Me deben</option><option value="pagar">Debo</option></select></div><div class="fld"><label>Fecha</label><input type="date" id="dFecha"></div></div>
+    <div class="fr2"><div class="fld"><label>Tipo</label><select id="dTipo"><option value="cobrar">Me deben</option><option value="pagar">Debo</option></select></div><div class="fld"><label>Fecha</label><input type="date" id="dFecha"></div></div>
     <div class="fld"><label>Persona *</label><input type="text" id="dPersona" placeholder="Nombre"></div>
     <div class="fld"><label>Concepto</label><input type="text" id="dConcepto" placeholder="Descripción"></div>
     <div class="fld"><label>Monto (RD$) *</label><input type="number" id="dMonto" placeholder="0" min="0"></div>
@@ -512,7 +532,7 @@ tbody tr:hover td{background:var(--bg)}
 <div class="mb" id="gastoModal"><div class="modal" style="max-width:420px">
   <div class="mh"><div class="mt" id="gastoModalTitle">Registrar Gasto</div><button class="mc" onclick="closeM('gastoModal')"><i class="ti ti-x"></i></button></div>
   <div class="mbody">
-    <div class="fr">
+    <div class="fr2">
       <div class="fld"><label>Fecha *</label><input type="date" id="gFecha"></div>
       <div class="fld"><label>Monto (RD$) *</label><input type="number" id="gMonto" placeholder="0" min="0"></div>
     </div>
@@ -624,7 +644,7 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 // Force-reload si hay versión vieja en caché
 (function() {
-  var VER = '11';
+  var VER = '12';
   try {
     var p = new URLSearchParams(location.search);
     if (p.get('v') !== VER) { location.replace(location.pathname + '?v=' + VER); }
