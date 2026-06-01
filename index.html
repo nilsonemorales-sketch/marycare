@@ -510,7 +510,7 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 // Force-reload si hay versión vieja en caché
 (function() {
-  var VER = '6';
+  var VER = '7';
   try {
     var p = new URLSearchParams(location.search);
     if (p.get('v') !== VER) { location.replace(location.pathname + '?v=' + VER); }
@@ -763,16 +763,123 @@ function renderClientes(st) {
     '<div class="sc"><div class="scl">Top clienta</div><div class="scv" style="font-size:13px;color:var(--gold)">' + (topC ? topC.nombre : '—') + '</div></div>' +
     '<div class="sc"><div class="scl">Mayor gasto</div><div class="scv" style="color:var(--mint)">' + (topC ? fmt(topC.total) : '—') + '</div></div>'
   );
-  setHTML('cliGrid', list.length ? list.map(function(c) {
-    return '<div class="cc">' +
+  setHTML('cliGrid', list.length ? list.map(function(c, i) {
+    var pac = S.pacientes.find(function(p) { return p.nombre.toLowerCase().trim() === c.nombre.toLowerCase().trim(); });
+    var tpTags = pac && pac.tipo_piel && pac.tipo_piel.length ? pac.tipo_piel.slice(0,2).map(function(t){ return '<span class="chip ct2" style="font-size:9px">' + t + '</span>'; }).join('') : '';
+    var ultimaMov = S.movimientos.filter(function(m){ return m.cliente.toLowerCase().trim()===c.nombre.toLowerCase().trim(); }).sort(function(a,b){return b.fecha.localeCompare(a.fecha);})[0];
+    return '<div class="cc" style="cursor:pointer" onclick="viewCliente(' + i + ')">' +
       '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
       '<div class="avt">' + c.nombre.charAt(0).toUpperCase() + '</div>' +
-      '<div><div style="font-weight:500;font-size:13px">' + c.nombre + '</div>' +
-      '<div style="font-size:10px;color:var(--ink3)">' + c.visitas + ' visita' + (c.visitas !== 1 ? 's' : '') + '</div></div></div>' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--br)">' +
-      '<span style="font-size:10px;color:var(--ink3)">Total</span>' +
+      '<div style="flex:1;min-width:0"><div style="font-weight:500;font-size:13px">' + c.nombre + '</div>' +
+      '<div style="font-size:10px;color:var(--ink3)">' + c.visitas + ' visita' + (c.visitas !== 1 ? 's' : '') + (ultimaMov ? ' · última: ' + ultimaMov.fecha : '') + '</div></div>' +
+      '<i class="ti ti-chevron-right" style="color:var(--br);font-size:16px;flex-shrink:0"></i></div>' +
+      (tpTags ? '<div style="margin-bottom:6px">' + tpTags + '</div>' : '') +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;padding-top:6px;border-top:1px solid var(--br)">' +
+      '<span style="font-size:10px;color:var(--ink3)">Total acumulado</span>' +
       '<span class="amt ater" style="font-size:14px">' + fmt(c.total) + '</span></div></div>';
   }).join('') : '<div class="empty" style="grid-column:1/-1"><i class="ti ti-users"></i><p>Sin clientes</p></div>');
+  S._cliList = list;
+}
+
+function viewCliente(i) {
+  var c = S._cliList && S._cliList[i];
+  if (!c) return;
+  var nombre = c.nombre;
+  var movs = S.movimientos.filter(function(m){ return m.cliente.toLowerCase().trim()===nombre.toLowerCase().trim(); }).sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
+  var pac = S.pacientes.find(function(p){ return p.nombre.toLowerCase().trim()===nombre.toLowerCase().trim(); });
+  var sess = S.sesiones.filter(function(s){ return (pac && s.paciente_id===pac.id) || s.paciente_nombre.toLowerCase().trim()===nombre.toLowerCase().trim(); }).sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
+  var servs = movs.filter(function(m){ return m.tipo==='servicio'; });
+  var prods = movs.filter(function(m){ return m.tipo==='producto'; });
+  var totalServ = servs.reduce(function(a,m){ return a+parseFloat(m.monto||0); },0);
+  var totalProd = prods.reduce(function(a,m){ return a+parseFloat(m.monto||0); },0);
+  var pLb = {transferencia:'Transf.',efectivo:'Efectivo',cxc:'CxC'};
+  var pCh = {transferencia:'cs',efectivo:'cm',cxc:'cr'};
+  var eC = {Excelente:'cm',Buena:'cs',Regular:'cg','Sin cambios':'cx','Reacción adversa':'cr'};
+
+  var h = '';
+  // ── Header ──
+  h += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">' +
+    '<div style="width:54px;height:54px;border-radius:50%;background:var(--ink);color:var(--nude);display:flex;align-items:center;justify-content:center;font-family:\'Playfair Display\',serif;font-size:22px;flex-shrink:0">' + nombre.charAt(0).toUpperCase() + '</div>' +
+    '<div style="flex:1">' +
+    '<div style="font-family:\'Playfair Display\',serif;font-size:17px;color:var(--terra);margin-bottom:2px">' + nombre + '</div>' +
+    (pac && pac.tel ? '<div style="font-size:11px;color:var(--ink3)"><i class="ti ti-phone" style="font-size:10px"></i> ' + pac.tel + '</div>' : '') +
+    (pac && pac.email ? '<div style="font-size:11px;color:var(--ink3)"><i class="ti ti-mail" style="font-size:10px"></i> ' + pac.email + '</div>' : '') +
+    (pac && pac.nacimiento ? '<div style="font-size:11px;color:var(--ink3)"><i class="ti ti-cake" style="font-size:10px"></i> ' + pac.nacimiento + (pac.edad ? ' (' + pac.edad + ' años)' : '') + '</div>' : '') +
+    '</div></div>';
+
+  // ── KPIs ──
+  h += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">' +
+    '<div style="background:var(--sf2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:3px">Total</div><div style="font-family:\'Playfair Display\',serif;font-size:15px;font-weight:700;color:var(--terra)">' + fmt(c.total) + '</div></div>' +
+    '<div style="background:var(--sf2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:3px">Visitas</div><div style="font-family:\'Playfair Display\',serif;font-size:15px;font-weight:700;color:var(--violet)">' + movs.length + '</div></div>' +
+    '<div style="background:var(--sf2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:3px">Última visita</div><div style="font-size:11px;font-weight:600;color:var(--ink2)">' + (movs[0] ? movs[0].fecha : '—') + '</div></div>' +
+    '</div>';
+
+  // ── Servicios vs Productos ──
+  if (c.total > 0) {
+    h += '<div style="display:flex;gap:8px;margin-bottom:14px">' +
+      '<div style="flex:1;background:var(--mint-bg);border-radius:var(--r);padding:10px"><div style="font-size:9px;text-transform:uppercase;color:var(--mint);letter-spacing:1px;margin-bottom:2px">Servicios</div><div style="font-family:\'Playfair Display\',serif;font-size:14px;color:var(--mint);font-weight:700">' + fmt(totalServ) + '</div><div style="font-size:10px;color:var(--mint)">' + servs.length + ' servicio' + (servs.length!==1?'s':'') + '</div></div>' +
+      '<div style="flex:1;background:var(--gold-bg);border-radius:var(--r);padding:10px"><div style="font-size:9px;text-transform:uppercase;color:var(--gold);letter-spacing:1px;margin-bottom:2px">Productos</div><div style="font-family:\'Playfair Display\',serif;font-size:14px;color:var(--gold);font-weight:700">' + fmt(totalProd) + '</div><div style="font-size:10px;color:var(--gold)">' + prods.length + ' compra' + (prods.length!==1?'s':'') + '</div></div>' +
+      '</div>';
+  }
+
+  // ── Datos Clínicos ──
+  if (pac) {
+    h += '<div style="border-top:1px solid var(--br);padding-top:13px;margin-bottom:13px">' +
+      '<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:10px">Datos Clínicos</div>';
+    if (pac.tipo_piel && pac.tipo_piel.length) h += '<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--ink3);margin-bottom:4px">Tipo de piel</div><div>' + pac.tipo_piel.map(function(t){return '<span class="chip cs" style="font-size:9px;margin-right:3px;margin-bottom:3px">' + t + '</span>';}).join('') + '</div></div>';
+    if (pac.acne && pac.acne !== 'No tiene' && pac.acne !== '') h += '<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--ink3);margin-bottom:4px">Acné</div><span class="chip cr" style="font-size:9px">Grado ' + pac.acne + '</span></div>';
+    if (pac.patologicos && pac.patologicos.length) h += '<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--ink3);margin-bottom:4px">Antecedentes patológicos</div><div>' + pac.patologicos.map(function(t){return '<span class="chip cr" style="font-size:9px;margin-right:3px;margin-bottom:3px">' + t + '</span>';}).join('') + '</div></div>';
+    if (pac.analisis) { var an=pac.analisis; var ai=[]; if(an.apariencia)ai.push('Apariencia: '+an.apariencia); if(an.textura)ai.push('Textura: '+an.textura); if(an.tonicidad)ai.push('Tonicidad: '+an.tonicidad); if(an.poro)ai.push('Poro: '+an.poro); if(an.fototipo)ai.push('Fototipo: '+an.fototipo); if(ai.length) h += '<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--ink3);margin-bottom:4px">Análisis de piel</div><div style="font-size:11px;color:var(--ink2)">' + ai.join(' · ') + '</div></div>'; }
+    if (pac.protector || pac.sueno || pac.agua) { var hb=[]; if(pac.protector)hb.push('Protector solar: '+pac.protector); if(pac.sueno)hb.push('Sueño: '+pac.sueno+'h'); if(pac.agua)hb.push('Agua: '+pac.agua); h += '<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--ink3);margin-bottom:4px">Hábitos</div><div style="font-size:11px;color:var(--ink2)">' + hb.join(' · ') + '</div></div>'; }
+    if (pac.motivo) h += '<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--ink3);margin-bottom:4px">Motivo de consulta</div><div style="font-size:12px;background:var(--sf2);padding:8px 10px;border-radius:8px">' + pac.motivo + '</div></div>';
+    if (pac.notas_prof) h += '<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--ink3);margin-bottom:4px">Notas del profesional</div><div style="font-size:12px;background:var(--gold-bg);padding:8px 10px;border-radius:8px;border-left:3px solid var(--gold)">' + pac.notas_prof + '</div></div>';
+    if (pac.regimen) h += '<div style="margin-bottom:4px"><div style="font-size:10px;color:var(--ink3);margin-bottom:4px">Régimen cosmético actual</div><div style="font-size:12px;background:var(--sf2);padding:8px 10px;border-radius:8px">' + pac.regimen + '</div></div>';
+    h += '</div>';
+  }
+
+  // ── Historial de Compras ──
+  h += '<div style="border-top:1px solid var(--br);padding-top:13px;margin-bottom:13px">' +
+    '<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:10px">Historial de Compras (' + movs.length + ')</div>';
+  if (movs.length) {
+    h += '<div style="max-height:220px;overflow-y:auto;margin:0 -4px;padding:0 4px">' +
+      movs.map(function(m){
+        return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--br)">' +
+          '<div style="width:28px;height:28px;border-radius:6px;background:' + (m.tipo==='servicio'?'var(--mint-bg)':'var(--gold-bg)') + ';display:flex;align-items:center;justify-content:center;font-size:11px;color:' + (m.tipo==='servicio'?'var(--mint)':'var(--gold)') + ';flex-shrink:0"><i class="ti ti-' + (m.tipo==='servicio'?'scissors':'package') + '"></i></div>' +
+          '<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + m.concepto + '</div>' +
+          '<div style="font-size:10px;color:var(--ink3)">' + m.fecha + ' · <span class="chip ' + (pCh[m.pago]||'cx') + '" style="font-size:9px">' + (pLb[m.pago]||m.pago) + '</span>' + (m.notas?'<span style="margin-left:4px;color:var(--ink3)">· '+m.notas+'</span>':'') + '</div></div>' +
+          '<div style="font-family:\'Playfair Display\',serif;font-size:13px;font-weight:700;color:' + (m.tipo==='servicio'?'var(--mint)':'var(--gold)') + ';white-space:nowrap">+' + fmt(m.monto) + '</div></div>';
+      }).join('') + '</div>';
+  } else { h += '<p style="color:var(--ink3);font-size:12px;padding:4px 0">Sin movimientos registrados</p>'; }
+  h += '</div>';
+
+  // ── Sesiones Clínicas ──
+  if (sess.length) {
+    h += '<div style="border-top:1px solid var(--br);padding-top:13px">' +
+      '<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:10px">Sesiones Clínicas (' + sess.length + ')</div>' +
+      '<div style="max-height:220px;overflow-y:auto;margin:0 -4px;padding:0 4px">' +
+      sess.map(function(s){
+        return '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--br)">' +
+          '<div style="width:8px;height:8px;border-radius:50%;background:var(--terra);flex-shrink:0;margin-top:5px"></div>' +
+          '<div style="flex:1"><div style="font-size:10px;color:var(--ink3);margin-bottom:2px">' + s.fecha + (s.evolucion?'&nbsp;·&nbsp;<span class="chip ' + (eC[s.evolucion]||'cx') + '" style="font-size:9px">'+s.evolucion+'</span>':'') + '</div>' +
+          '<div style="font-size:13px;font-weight:500">' + s.servicio + '</div>' +
+          (s.productos?'<div style="font-size:11px;color:var(--ink3);margin-top:1px"><i class="ti ti-package" style="font-size:10px"></i> '+s.productos+'</div>':'') +
+          (s.notas?'<div style="font-size:11px;color:var(--ink2);margin-top:2px;font-style:italic">'+s.notas+'</div>':'') +
+          (s.proxima?'<div style="font-size:10px;color:var(--terra);margin-top:2px"><i class="ti ti-calendar" style="font-size:10px"></i> Próxima: '+s.proxima+'</div>':'') +
+          '</div></div>';
+      }).join('') + '</div></div>';
+  }
+
+  var div = document.createElement('div');
+  div.className = 'mb open dyn-modal';
+  div.innerHTML = '<div class="modal" style="max-width:560px;max-height:92vh;overflow-y:auto">' +
+    '<div class="mh"><div class="mt">Perfil del cliente</div><button class="mc" onclick="removeTopModal()"><i class="ti ti-x"></i></button></div>' +
+    '<div class="mbody">' + h + '</div>' +
+    '<div class="mf" style="flex-wrap:wrap;gap:6px">' +
+    '<button class="btn bg2" onclick="removeTopModal()">Cerrar</button>' +
+    (pac ? '<button class="btn bg2 bsm" onclick="removeTopModal();editExp(' + pac.id + ')"><i class="ti ti-file-medical"></i>Editar ficha</button>' : '') +
+    '<button class="btn bt bsm" onclick="removeTopModal();openMovModal()" style="margin-left:auto"><i class="ti ti-receipt"></i>Nueva venta</button>' +
+    '</div></div>';
+  document.body.appendChild(div);
 }
 
 // ── CATÁLOGO ────────────────────────────────────────────
