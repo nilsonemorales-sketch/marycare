@@ -313,7 +313,16 @@ tbody tr:hover td{background:var(--bg)}
         <div class="kpi"><div class="ka" style="background:var(--mint)"></div><div class="kl">Cobradas</div><div class="kv apos" id="dCobradas">—</div></div>
       </div>
       <div class="card">
-        <div class="ch"><div class="ct">Deudas activas</div><button class="btn bp bsm" onclick="openDeudaModal()"><i class="ti ti-plus"></i>Registrar</button></div>
+        <div class="ch" style="flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div class="fb">
+              <button class="fc on" id="dfBtnActivas" onclick="deudaFilter('activas',this)">Activas</button>
+              <button class="fc" id="dfBtnTodas" onclick="deudaFilter('todas',this)"><i class="ti ti-alert-triangle" style="font-size:10px;margin-right:3px"></i>Activas + Atrasadas</button>
+            </div>
+            <span id="dfSubtitle" style="font-size:11px;color:var(--red);font-weight:600"></span>
+          </div>
+          <button class="btn bp bsm" style="margin-left:auto" onclick="openDeudaModal()"><i class="ti ti-plus"></i>Registrar</button>
+        </div>
         <div class="cb np"><div class="tw"><table><thead><tr><th>Persona</th><th>Concepto</th><th>Monto</th><th>Tipo</th><th>Estado</th><th></th></tr></thead><tbody id="deudaTbody"></tbody></table></div></div>
       </div>
     </div>
@@ -510,7 +519,7 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 // Force-reload si hay versión vieja en caché
 (function() {
-  var VER = '7';
+  var VER = '8';
   try {
     var p = new URLSearchParams(location.search);
     if (p.get('v') !== VER) { location.replace(location.pathname + '?v=' + VER); }
@@ -532,7 +541,7 @@ try {
 
 // ── STATE ───────────────────────────────────────────────
 var S = { movimientos: [], catalogo: [], deudas: [], pacientes: [], sesiones: [] };
-var mFilterV = 'all', mSearchV = '', catSearchV = '', catFilterV = 'all';
+var mFilterV = 'all', mSearchV = '', catSearchV = '', catFilterV = 'all', deudaFilterV = 'activas';
 var cliSearchV = '', cliSortV = 'total', expFilterV = 'all', expSearchV = '';
 var currentReport = 'resumen';
 var editCatId = null;
@@ -923,7 +932,16 @@ function renderCatalogo() {
 }
 
 // ── DEUDAS ──────────────────────────────────────────────
+function deudaFilter(v, el) {
+  deudaFilterV = v;
+  document.querySelectorAll('#page-deudas .fc').forEach(function(c) { c.classList.remove('on'); });
+  if (el) el.classList.add('on');
+  renderDeudas();
+}
 function renderDeudas() {
+  var today = new Date(); today.setHours(0,0,0,0);
+  var thisMonth = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0');
+  var cutoff30 = new Date(today); cutoff30.setDate(cutoff30.getDate()-30);
   var pC = S.deudas.filter(function(d) { return d.tipo === 'cobrar' && d.estado === 'pendiente'; });
   var pP = S.deudas.filter(function(d) { return d.tipo === 'pagar' && d.estado === 'pendiente'; });
   var pg = S.deudas.filter(function(d) { return d.estado === 'pagada'; });
@@ -934,17 +952,40 @@ function renderDeudas() {
   setText('dCobradas', fmt(pg.reduce(function(a, d) { return a + parseFloat(d.monto || 0); }, 0)));
   var tCh = { cobrar: 'cr', pagar: 'cg' };
   var tLb = { cobrar: 'Por cobrar', pagar: 'Por pagar' };
-  setHTML('deudaTbody', S.deudas.length ? S.deudas.map(function(d) {
-    return '<tr>' +
+  var list;
+  if (deudaFilterV === 'activas') {
+    list = S.deudas.filter(function(d) {
+      if (d.estado !== 'pendiente') return false;
+      var fm = (d.fecha || '').substring(0, 7);
+      return fm >= thisMonth;
+    });
+  } else {
+    list = S.deudas.filter(function(d) { return d.estado === 'pendiente'; });
+    list.sort(function(a, b) {
+      var da = a.fecha || '', db = b.fecha || '';
+      return da.localeCompare(db);
+    });
+  }
+  var atrasadasCount = list.filter(function(d) { return d.estado === 'pendiente' && d.fecha && new Date(d.fecha) < cutoff30; }).length;
+  var subtitleEl = document.getElementById('dfSubtitle');
+  if (subtitleEl) subtitleEl.textContent = deudaFilterV === 'todas' && atrasadasCount > 0 ? atrasadasCount + ' atrasada' + (atrasadasCount !== 1 ? 's' : '') : '';
+  setHTML('deudaTbody', list.length ? list.map(function(d) {
+    var isAtrasada = d.estado === 'pendiente' && d.fecha && new Date(d.fecha) < cutoff30;
+    var estadoBadge = d.estado === 'pagada'
+      ? '<span class="chip cm">Pagada</span>'
+      : isAtrasada && deudaFilterV === 'todas'
+        ? '<span class="chip ct2">Pendiente</span> <span class="chip cr" style="font-size:9px"><i class="ti ti-clock-exclamation" style="font-size:9px"></i>Atrasada</span>'
+        : '<span class="chip ct2">Pendiente</span>';
+    return '<tr' + (isAtrasada && deudaFilterV === 'todas' ? ' style="background:rgba(220,80,60,.04)"' : '') + '>' +
       '<td><div class="tdm">' + d.persona + '</div><div class="tds">' + (d.fecha || '') + '</div></td>' +
       '<td>' + (d.concepto || '—') + '</td>' +
       '<td><span class="amt ' + (d.tipo === 'cobrar' ? 'apos' : 'aneg') + '">' + fmt(d.monto) + '</span></td>' +
       '<td><span class="chip ' + tCh[d.tipo] + '">' + tLb[d.tipo] + '</span></td>' +
-      '<td><span class="chip ' + (d.estado === 'pagada' ? 'cm' : 'ct2') + '">' + (d.estado === 'pagada' ? 'Pagada' : 'Pendiente') + '</span></td>' +
+      '<td>' + estadoBadge + '</td>' +
       '<td style="display:flex;gap:4px">' +
       (d.estado === 'pendiente' ? '<button class="btn bgo bxs" onclick="marcarPagada(' + d.id + ')"><i class="ti ti-check"></i></button>' : '') +
       '<button class="btn bda bxs" onclick="elimDeuda(' + d.id + ')"><i class="ti ti-trash"></i></button></td></tr>';
-  }).join('') : '<tr><td colspan="6"><div class="empty"><i class="ti ti-clock-dollar"></i><p>Sin deudas</p></div></td></tr>');
+  }).join('') : '<tr><td colspan="6"><div class="empty"><i class="ti ti-clock-dollar"></i><p>' + (deudaFilterV === 'activas' ? 'Sin deudas activas este mes' : 'Sin deudas pendientes') + '</p></div></td></tr>');
 }
 async function marcarPagada(id) {
   if (db) await db.from('deudas').update({ estado: 'pagada' }).eq('id', id);
