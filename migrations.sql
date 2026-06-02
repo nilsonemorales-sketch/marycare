@@ -9,7 +9,10 @@ ALTER TABLE catalogo ADD COLUMN IF NOT EXISTS cantidad integer DEFAULT 0;
 ALTER TABLE sesiones ADD COLUMN IF NOT EXISTS hora time;
 ALTER TABLE sesiones ADD COLUMN IF NOT EXISTS proxima_hora time;
 
--- 3. Tabla de gastos/costos del negocio ← NUEVA
+-- 3. Abonos parciales en deudas ← NUEVA
+ALTER TABLE deudas ADD COLUMN IF NOT EXISTS monto_pagado numeric DEFAULT 0;
+
+-- 4. Tabla de gastos/costos del negocio ← NUEVA
 CREATE TABLE IF NOT EXISTS gastos (
   id bigint generated always as identity primary key,
   fecha date not null default current_date,
