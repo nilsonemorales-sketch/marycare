@@ -22,3 +22,17 @@ CREATE TABLE IF NOT EXISTS gastos (
   notas text,
   created_at timestamptz default now()
 );
+
+-- 5. Tabla de cotizaciones ← NUEVA
+CREATE TABLE IF NOT EXISTS cotizaciones (
+  id bigint generated always as identity primary key,
+  fecha date not null default current_date,
+  cliente text not null,
+  items jsonb not null default '[]',
+  total numeric default 0,
+  notas text,
+  validez date,
+  estado text default 'pendiente',
+  created_at timestamptz default now()
+);
+ALTER TABLE cotizaciones DISABLE ROW LEVEL SECURITY;

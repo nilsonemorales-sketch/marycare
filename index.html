@@ -238,6 +238,7 @@ tbody tr:hover td{background:var(--bg)}
     <button class="ni" onclick="goPage('sesiones',this)"><i class="ti ti-calendar-event"></i>Sesiones</button>
     <div class="sb-lbl">Análisis</div>
     <button class="ni" onclick="goPage('gastos',this)"><i class="ti ti-receipt-2"></i>Gastos</button>
+    <button class="ni" onclick="goPage('cotizaciones',this)"><i class="ti ti-file-invoice"></i>Cotizaciones</button>
     <button class="ni" onclick="goPage('reportes',this)"><i class="ti ti-chart-bar"></i>Reportería</button>
   </nav>
   <div class="sb-foot">
@@ -412,8 +413,28 @@ tbody tr:hover td{background:var(--bg)}
         <button class="rcard" onclick="selReport('clientes',this)"><i class="ti ti-users" style="color:var(--violet)"></i><h3>Clientes</h3><p>Ranking</p></button>
         <button class="rcard" onclick="selReport('semanal',this)"><i class="ti ti-calendar-stats" style="color:var(--terra)"></i><h3>Semanal</h3><p>Por semana</p></button>
         <button class="rcard" onclick="selReport('clinico',this)"><i class="ti ti-file-medical" style="color:var(--violet)"></i><h3>Clínico</h3><p>Expedientes</p></button>
+        <button class="rcard" onclick="selReport('mensual',this)"><i class="ti ti-calendar-month" style="color:var(--sky)"></i><h3>Mensual</h3><p>Por mes</p></button>
       </div>
       <div id="reportContent"></div>
+    </div>
+
+    <div class="page" id="page-cotizaciones">
+      <div class="ph"><h1>Cotizaciones</h1><p>Presupuestos para clientes</p></div>
+      <div class="card">
+        <div class="ch">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1">
+            <div class="sb2" style="max-width:240px;flex:1"><i class="ti ti-search"></i><input type="text" placeholder="Buscar..." oninput="cotSearch(this.value)"></div>
+            <div class="fb" id="cotFiltros">
+              <button class="fc on" onclick="cotFilter('all',this)">Todas</button>
+              <button class="fc" onclick="cotFilter('pendiente',this)">Pendientes</button>
+              <button class="fc" onclick="cotFilter('aprobada',this)">Aprobadas</button>
+              <button class="fc" onclick="cotFilter('rechazada',this)">Rechazadas</button>
+            </div>
+          </div>
+          <button class="btn bp bsm" onclick="openCotModal()"><i class="ti ti-plus"></i>Nueva cotización</button>
+        </div>
+        <div class="cb np"><div class="tw"><table><thead><tr><th>Fecha</th><th>Cliente</th><th>Ítems</th><th>Total</th><th>Estado</th><th>Válida hasta</th><th></th></tr></thead><tbody id="cotTbody"></tbody></table></div></div>
+      </div>
     </div>
 
   </div>
@@ -567,7 +588,7 @@ tbody tr:hover td{background:var(--bg)}
 
 <!-- MODAL REPORTE WA -->
 <div class="mb" id="reporteModal"><div class="modal" style="max-width:480px">
-  <div class="mh"><div class="mt"><i class="ti ti-brand-whatsapp" style="color:#25D366;margin-right:6px"></i>Reporte para cliente</div><button class="mc" onclick="closeM('reporteModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mh"><div class="mt" id="reporteModalTitle"><i class="ti ti-brand-whatsapp" style="color:#25D366;margin-right:6px"></i>Reporte para cliente</div><button class="mc" onclick="closeM('reporteModal')"><i class="ti ti-x"></i></button></div>
   <div class="mbody">
     <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:8px">Vista previa del mensaje</div>
     <div id="reportePreview" style="background:var(--sf2);border-radius:10px;padding:13px 15px;font-size:12px;line-height:1.7;white-space:pre-wrap;max-height:280px;overflow-y:auto;border:1px solid var(--br);color:var(--ink2)"></div>
@@ -591,6 +612,35 @@ tbody tr:hover td{background:var(--bg)}
   <div class="mf">
     <button class="btn bg2" onclick="closeM('reporteModal')">Cancelar</button>
     <button class="btn" style="background:#25D366;color:#fff;border:none" onclick="autorizarEnvio()"><i class="ti ti-brand-whatsapp"></i>Autorizar y enviar</button>
+  </div>
+</div></div>
+
+<!-- MODAL COTIZACIÓN -->
+<div class="mb" id="cotModal"><div class="modal" style="max-width:560px">
+  <div class="mh"><div class="mt" id="cotModalTitle">Nueva Cotización</div><button class="mc" onclick="closeM('cotModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mbody">
+    <div class="fr2">
+      <div class="fld"><label>Cliente *</label><input type="text" id="cotCliente" list="cotCliList" placeholder="Nombre del cliente"><datalist id="cotCliList"></datalist></div>
+      <div class="fld"><label>Fecha</label><input type="date" id="cotFecha"></div>
+    </div>
+    <div class="fr2">
+      <div class="fld"><label>Válida hasta</label><input type="date" id="cotValidez"></div>
+      <div class="fld"><label>Estado</label><select id="cotEstado"><option value="pendiente">Pendiente</option><option value="aprobada">Aprobada</option><option value="rechazada">Rechazada</option></select></div>
+    </div>
+    <div style="margin-top:4px">
+      <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:8px">Servicios / Productos</div>
+      <div id="cotItemsList"></div>
+      <button class="btn bg2 bsm" style="margin-top:6px" onclick="addCotItem()"><i class="ti ti-plus"></i>Agregar ítem</button>
+    </div>
+    <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:12px;gap:8px">
+      <span style="font-size:12px;color:var(--ink3)">Total:</span>
+      <span id="cotTotalDisplay" style="font-size:18px;font-weight:700;color:var(--terra)">RD$0</span>
+    </div>
+    <div class="fld" style="margin-top:8px"><label>Notas</label><textarea id="cotNotas" placeholder="Observaciones adicionales..." style="height:60px"></textarea></div>
+  </div>
+  <div class="mf">
+    <button class="btn bg2" onclick="closeM('cotModal')">Cancelar</button>
+    <button class="btn bp" onclick="saveCot()"><i class="ti ti-check"></i>Guardar</button>
   </div>
 </div></div>
 
@@ -655,7 +705,7 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 // Force-reload si hay versión vieja en caché
 (function() {
-  var VER = '14';
+  var VER = '15';
   try {
     var p = new URLSearchParams(location.search);
     if (p.get('v') !== VER) { location.replace(location.pathname + '?v=' + VER); }
@@ -676,7 +726,7 @@ try {
 } catch(e) { db = null; }
 
 // ── STATE ───────────────────────────────────────────────
-var S = { movimientos: [], catalogo: [], deudas: [], pacientes: [], sesiones: [], gastos: [] };
+var S = { movimientos: [], catalogo: [], deudas: [], pacientes: [], sesiones: [], gastos: [], cotizaciones: [] };
 var mFilterV = 'all', mSearchV = '', catSearchV = '', catFilterV = 'all', deudaFilterV = 'activas';
 var cliSearchV = '', cliSortV = 'total', expFilterV = 'all', expSearchV = '';
 var currentReport = 'resumen';
@@ -709,14 +759,16 @@ async function loadAll() {
       db.from('deudas').select('*').order('created_at', { ascending: false }),
       db.from('pacientes').select('*').order('nombre'),
       db.from('sesiones').select('*').order('fecha', { ascending: false }),
-      db.from('gastos').select('*').order('fecha', { ascending: false })
+      db.from('gastos').select('*').order('fecha', { ascending: false }),
+      db.from('cotizaciones').select('*').order('created_at', { ascending: false })
     ]);
-    S.movimientos = results[0].data || [];
-    S.catalogo    = results[1].data || [];
-    S.deudas      = results[2].data || [];
-    S.pacientes   = results[3].data || [];
-    S.sesiones    = results[4].data || [];
-    S.gastos      = results[5].data || [];
+    S.movimientos  = results[0].data || [];
+    S.catalogo     = results[1].data || [];
+    S.deudas       = results[2].data || [];
+    S.pacientes    = results[3].data || [];
+    S.sesiones     = results[4].data || [];
+    S.gastos       = results[5].data || [];
+    S.cotizaciones = results[6].data || [];
     renderAll();
   } catch(e) { console.error('Load error:', e); }
 }
@@ -725,7 +777,7 @@ async function loadAll() {
 var pageTitles = {
   dashboard: 'Dashboard', movimientos: 'Movimientos', clientes: 'Clientes',
   catalogo: 'Catálogo', deudas: 'Deudas', expedientes: 'Expedientes',
-  sesiones: 'Sesiones', gastos: 'Gastos & Costos', reportes: 'Reportería'
+  sesiones: 'Sesiones', gastos: 'Gastos & Costos', reportes: 'Reportería', cotizaciones: 'Cotizaciones'
 };
 
 function goPage(id, el) {
@@ -805,6 +857,7 @@ function renderAll() {
   renderSesiones();
   renderGastos();
   renderReport(currentReport, st);
+  renderCotizaciones();
   checkBirthdays();
 }
 
@@ -878,7 +931,7 @@ function renderMovimientos() {
       '<td><span class="chip ' + (m.tipo === 'servicio' ? 'cm' : 'cg') + '">' + (m.tipo === 'servicio' ? 'Servicio' : 'Producto') + '</span></td>' +
       '<td><span class="chip ' + (pCh[m.pago] || 'cx') + '">' + (pLb[m.pago] || m.pago) + '</span></td>' +
       '<td><span class="amt apos">+' + fmt(m.monto) + '</span></td>' +
-      '<td><button class="btn bda bxs" onclick="delMov(' + m.id + ')"><i class="ti ti-trash"></i></button></td>' +
+      '<td style="display:flex;gap:4px"><button class="btn bwa bxs" onclick="openMovWAModal(' + m.id + ')" title="Enviar comprobante WA"><i class="ti ti-brand-whatsapp"></i></button><button class="btn bda bxs" onclick="delMov(' + m.id + ')"><i class="ti ti-trash"></i></button></td>' +
       '</tr>';
   }).join('') : '<tr><td colspan="7"><div class="empty"><i class="ti ti-receipt"></i><p>Sin movimientos</p></div></td></tr>');
 }
@@ -1864,14 +1917,12 @@ function openReporteModal(id) {
   document.getElementById('reportePin').value = '';
   document.getElementById('reportePin').style.borderColor = 'var(--br)';
   document.getElementById('reportePinError').style.display = 'none';
-  if (pac && pac.tel) {
-    document.getElementById('reporteModal').dataset.tel = pac.tel;
-    document.getElementById('reporteModal').dataset.texto = texto;
-  } else {
-    document.getElementById('reporteModal').dataset.tel = '';
-    document.getElementById('reporteModal').dataset.texto = texto;
-  }
-  document.getElementById('reporteModal').classList.add('open');
+  var modal = document.getElementById('reporteModal');
+  modal.dataset.tel = pac && pac.tel ? pac.tel : '';
+  modal.dataset.texto = texto;
+  modal.dataset.clienteNombre = s.paciente_nombre;
+  document.getElementById('reporteModalTitle').innerHTML = '<i class="ti ti-brand-whatsapp" style="color:#25D366;margin-right:6px"></i>Reporte de sesión';
+  modal.classList.add('open');
   setTimeout(function() { document.getElementById('reportePin').focus(); }, 300);
 }
 function autorizarEnvio() {
@@ -1892,9 +1943,8 @@ function autorizarEnvio() {
   if (tel) {
     window.open(makeWALink(tel, texto), '_blank');
   } else {
-    var s = S.sesiones.find(function(x) { return x.id === reporteSesId; });
-    var nombre = s ? s.paciente_nombre : '';
-    toast('No hay teléfono registrado para ' + nombre + '. Agrega el número en la ficha del paciente.');
+    var nombre = modal.dataset.clienteNombre || '';
+    toast('No hay teléfono registrado' + (nombre ? ' para ' + nombre : '') + '. Agrega el número en la ficha del paciente.');
   }
 }
 
@@ -2146,6 +2196,62 @@ function renderReport(id, st) {
         return '<div class="pi"><div class="pn">' + kv[0] + '</div>' + mkBar(kv[1], maxT, 'var(--sky)') + '<div class="pv">' + kv[1] + '</div></div>';
       }).join('') : '<div class="empty"><p>Sin datos</p></div>') +
       '</div></div></div>';
+  } else if (id === 'mensual') {
+    var mesSelEl = document.getElementById('repMesSelect');
+    var anioSelEl = document.getElementById('repAnioSelect');
+    var hoy = new Date();
+    var mesVal = mesSelEl ? parseInt(mesSelEl.value) : (hoy.getMonth() + 1);
+    var anioVal = anioSelEl ? parseInt(anioSelEl.value) : hoy.getFullYear();
+    var mesStr = String(mesVal).padStart(2, '0');
+    var prefix = anioVal + '-' + mesStr;
+    var movMes = S.movimientos.filter(function(m) { return m.fecha && m.fecha.startsWith(prefix); });
+    var gastosMes = S.gastos.filter(function(g) { return g.fecha && g.fecha.startsWith(prefix); });
+    var totalIngresos = movMes.reduce(function(s, m) { return s + (m.monto || 0); }, 0);
+    var totalGastos = gastosMes.reduce(function(g, x) { return g + (x.monto || 0); }, 0);
+    var margen = totalIngresos - totalGastos;
+    var pctMargen = totalIngresos ? Math.round(margen / totalIngresos * 100) : 0;
+    var srvMapM = {};
+    movMes.filter(function(m) { return m.tipo === 'servicio'; }).forEach(function(m) { srvMapM[m.concepto] = (srvMapM[m.concepto] || 0) + m.monto; });
+    var topSrv = Object.entries(srvMapM).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
+    var maxSrv = topSrv.length ? topSrv[0][1] : 1;
+    var cliMapM = {};
+    movMes.forEach(function(m) { cliMapM[m.cliente] = (cliMapM[m.cliente] || 0) + m.monto; });
+    var topCli = Object.entries(cliMapM).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
+    var maxCli = topCli.length ? topCli[0][1] : 1;
+    var sesMes = S.sesiones.filter(function(s) { return s.fecha && s.fecha.startsWith(prefix); }).length;
+    var mesNombres = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    var curY = hoy.getFullYear();
+    var yearOpts = '';
+    for (var y = curY; y >= curY - 3; y--) yearOpts += '<option value="' + y + '"' + (y === anioVal ? ' selected' : '') + '>' + y + '</option>';
+    var mesOpts = [1,2,3,4,5,6,7,8,9,10,11,12].map(function(m) {
+      return '<option value="' + m + '"' + (m === mesVal ? ' selected' : '') + '>' + mesNombres[m] + '</option>';
+    }).join('');
+    var selStyle = 'border:1.5px solid var(--br);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;background:var(--sf2);color:var(--ink)';
+    html = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">' +
+      '<select id="repMesSelect" onchange="selReport(\'mensual\',null)" style="' + selStyle + '">' + mesOpts + '</select>' +
+      '<select id="repAnioSelect" onchange="selReport(\'mensual\',null)" style="' + selStyle + '">' + yearOpts + '</select>' +
+      '<span style="font-size:12px;color:var(--ink3)">' + movMes.length + ' movimientos · ' + Object.keys(cliMapM).length + ' clientes</span>' +
+      '</div>' +
+      '<div class="kg" style="margin-bottom:14px">' +
+        '<div class="kpi"><div class="ka" style="background:var(--mint)"></div><div class="kl">Ingresos</div><div class="kv apos">' + fmt(totalIngresos) + '</div></div>' +
+        '<div class="kpi"><div class="ka" style="background:var(--red)"></div><div class="kl">Gastos</div><div class="kv" style="color:var(--red)">' + fmt(totalGastos) + '</div></div>' +
+        '<div class="kpi"><div class="ka" style="background:var(--terra)"></div><div class="kl">Margen neto</div><div class="kv ater">' + fmt(margen) + '</div></div>' +
+        '<div class="kpi"><div class="ka" style="background:var(--sky)"></div><div class="kl">% Margen</div><div class="kv" style="color:var(--sky)">' + pctMargen + '%</div></div>' +
+        '<div class="kpi"><div class="ka" style="background:var(--violet)"></div><div class="kl">Sesiones</div><div class="kv" style="color:var(--violet)">' + sesMes + '</div></div>' +
+        '<div class="kpi"><div class="ka" style="background:var(--gold)"></div><div class="kl">Clientes atendidos</div><div class="kv" style="color:var(--gold)">' + Object.keys(cliMapM).length + '</div></div>' +
+      '</div>' +
+      '<div class="g2">' +
+        '<div class="card"><div class="ch"><div class="ct">Top servicios del mes</div></div><div class="cb"><div class="pl">' +
+        (topSrv.length ? topSrv.map(function(kv) {
+          return '<div class="pi"><div class="pn" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + kv[0] + '</div>' + mkBar(kv[1], maxSrv, 'var(--mint)') + '<div class="pv">' + fmt(kv[1]) + '</div></div>';
+        }).join('') : '<div class="empty"><p>Sin datos</p></div>') +
+        '</div></div></div>' +
+        '<div class="card"><div class="ch"><div class="ct">Top clientes del mes</div></div><div class="cb"><div class="pl">' +
+        (topCli.length ? topCli.map(function(kv) {
+          return '<div class="pi"><div class="pn" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + kv[0] + '</div>' + mkBar(kv[1], maxCli, 'var(--violet)') + '<div class="pv">' + fmt(kv[1]) + '</div></div>';
+        }).join('') : '<div class="empty"><p>Sin datos</p></div>') +
+        '</div></div></div>' +
+      '</div>';
   }
   el.innerHTML = html;
 }
@@ -2175,6 +2281,201 @@ function exportRep(type) {
   toast('CSV descargado');
 }
 
+
+// ── COMPROBANTE WA (MOVIMIENTOS) ────────────────────────
+function openMovWAModal(id) {
+  var m = S.movimientos.find(function(x) { return x.id === id; });
+  if (!m) return;
+  var pac = S.pacientes.find(function(p) { return p.nombre.toLowerCase().trim() === m.cliente.toLowerCase().trim(); });
+  var pago = { transferencia: 'Transferencia', efectivo: 'Efectivo', cxc: 'C×Cobrar' }[m.pago] || m.pago;
+  var tipo = m.tipo === 'servicio' ? 'Servicio' : 'Producto';
+  var texto = '✅ *Comprobante Mary Care*\n';
+  texto += '━━━━━━━━━━━━━━━━━━\n';
+  texto += '👤 Cliente: ' + m.cliente + '\n';
+  texto += '📅 Fecha: ' + m.fecha + '\n';
+  texto += '🔹 ' + tipo + ': ' + m.concepto + '\n';
+  texto += '💳 Pago: ' + pago + '\n';
+  texto += '━━━━━━━━━━━━━━━━━━\n';
+  texto += '*Total: ' + fmt(m.monto) + '*\n';
+  texto += '\n¡Gracias por tu visita! 💆‍♀️✨';
+  document.getElementById('reportePreview').textContent = texto;
+  document.getElementById('reportePin').value = '';
+  document.getElementById('reportePin').style.borderColor = 'var(--br)';
+  document.getElementById('reportePinError').style.display = 'none';
+  var modal = document.getElementById('reporteModal');
+  modal.dataset.tel = pac && pac.tel ? pac.tel : '';
+  modal.dataset.texto = texto;
+  modal.dataset.clienteNombre = m.cliente;
+  document.getElementById('reporteModalTitle').innerHTML = '<i class="ti ti-brand-whatsapp" style="color:#25D366;margin-right:6px"></i>Comprobante de pago';
+  modal.classList.add('open');
+  setTimeout(function() { document.getElementById('reportePin').focus(); }, 300);
+}
+
+// ── COTIZACIONES ─────────────────────────────────────────
+var cotFilterV = 'all', cotSearchV = '', editCotId = null, cotItems = [];
+
+function cotSearch(v) { cotSearchV = v.toLowerCase(); renderCotizaciones(); }
+function cotFilter(v, el) {
+  cotFilterV = v;
+  document.querySelectorAll('#cotFiltros .fc').forEach(function(b) { b.classList.remove('on'); });
+  if (el) el.classList.add('on');
+  renderCotizaciones();
+}
+
+function renderCotizaciones() {
+  var dl = document.getElementById('cotCliList');
+  if (dl) dl.innerHTML = S.pacientes.map(function(p) { return '<option value="' + p.nombre + '">'; }).join('');
+  var rows = S.cotizaciones.filter(function(c) {
+    if (cotFilterV !== 'all' && c.estado !== cotFilterV) return false;
+    if (cotSearchV && !c.cliente.toLowerCase().includes(cotSearchV)) return false;
+    return true;
+  });
+  var estChip = { pendiente: 'cx', aprobada: 'cm', rechazada: 'cr' };
+  var estLbl  = { pendiente: 'Pendiente', aprobada: 'Aprobada', rechazada: 'Rechazada' };
+  var tb = document.getElementById('cotTbody');
+  if (!tb) return;
+  tb.innerHTML = rows.length ? rows.map(function(c) {
+    var n = (c.items || []).length;
+    return '<tr>' +
+      '<td style="white-space:nowrap">' + c.fecha + '</td>' +
+      '<td><div class="tdm">' + c.cliente + '</div></td>' +
+      '<td>' + n + ' ítem' + (n !== 1 ? 's' : '') + '</td>' +
+      '<td><span class="amt ater">' + fmt(c.total) + '</span></td>' +
+      '<td><span class="chip ' + (estChip[c.estado] || 'cx') + '">' + (estLbl[c.estado] || c.estado) + '</span></td>' +
+      '<td style="white-space:nowrap">' + (c.validez || '—') + '</td>' +
+      '<td style="display:flex;gap:4px">' +
+        '<button class="btn bwa bxs" onclick="openCotWA(' + c.id + ')" title="Enviar WA"><i class="ti ti-brand-whatsapp"></i></button>' +
+        '<button class="btn bg2 bxs" onclick="openCotModal(' + c.id + ')" title="Editar"><i class="ti ti-edit"></i></button>' +
+        '<button class="btn bda bxs" onclick="delCot(' + c.id + ')" title="Eliminar"><i class="ti ti-trash"></i></button>' +
+      '</td></tr>';
+  }).join('') : '<tr><td colspan="7"><div class="empty"><i class="ti ti-file-invoice"></i><p>Sin cotizaciones</p></div></td></tr>';
+}
+
+function openCotModal(id) {
+  editCotId = id || null;
+  cotItems = [];
+  document.getElementById('cotModalTitle').textContent = id ? 'Editar Cotización' : 'Nueva Cotización';
+  var today = new Date().toISOString().slice(0, 10);
+  var validezD = new Date(); validezD.setDate(validezD.getDate() + 15);
+  if (id) {
+    var c = S.cotizaciones.find(function(x) { return x.id === id; });
+    if (!c) return;
+    document.getElementById('cotCliente').value = c.cliente;
+    document.getElementById('cotFecha').value = c.fecha;
+    document.getElementById('cotValidez').value = c.validez || '';
+    document.getElementById('cotEstado').value = c.estado || 'pendiente';
+    document.getElementById('cotNotas').value = c.notas || '';
+    cotItems = (c.items || []).map(function(it) { return { desc: it.desc || '', precio: it.precio || 0 }; });
+  } else {
+    document.getElementById('cotCliente').value = '';
+    document.getElementById('cotFecha').value = today;
+    document.getElementById('cotValidez').value = validezD.toISOString().slice(0, 10);
+    document.getElementById('cotEstado').value = 'pendiente';
+    document.getElementById('cotNotas').value = '';
+    cotItems = [{ desc: '', precio: 0 }];
+  }
+  renderCotItems();
+  document.getElementById('cotModal').classList.add('open');
+}
+
+function addCotItem() {
+  cotItems.push({ desc: '', precio: 0 });
+  renderCotItems();
+}
+
+function removeCotItem(i) {
+  cotItems.splice(i, 1);
+  renderCotItems();
+}
+
+function renderCotItems() {
+  var inStyle = 'border:1.5px solid var(--br);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;background:var(--sf2);outline:none';
+  document.getElementById('cotItemsList').innerHTML = cotItems.map(function(item, i) {
+    return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">' +
+      '<input type="text" value="' + (item.desc || '').replace(/"/g, '&quot;') + '" placeholder="Descripción" style="flex:2;' + inStyle + '" oninput="cotItems[' + i + '].desc=this.value;updCotTotal()">' +
+      '<input type="number" value="' + (item.precio || 0) + '" placeholder="Precio" style="width:110px;' + inStyle + '" oninput="cotItems[' + i + '].precio=parseFloat(this.value)||0;updCotTotal()">' +
+      (cotItems.length > 1 ? '<button class="btn bda bxs" onclick="removeCotItem(' + i + ')"><i class="ti ti-x"></i></button>' : '') +
+      '</div>';
+  }).join('');
+  updCotTotal();
+}
+
+function updCotTotal() {
+  var total = cotItems.reduce(function(s, it) { return s + (parseFloat(it.precio) || 0); }, 0);
+  var el = document.getElementById('cotTotalDisplay');
+  if (el) el.textContent = fmt(total);
+}
+
+async function saveCot() {
+  var cliente = document.getElementById('cotCliente').value.trim();
+  if (!cliente) { toast('Ingresa el nombre del cliente'); return; }
+  var items = cotItems.filter(function(it) { return it.desc && it.desc.trim(); });
+  if (!items.length) { toast('Agrega al menos un ítem con descripción'); return; }
+  var total = items.reduce(function(s, it) { return s + (parseFloat(it.precio) || 0); }, 0);
+  var payload = {
+    cliente: cliente,
+    fecha: document.getElementById('cotFecha').value,
+    validez: document.getElementById('cotValidez').value || null,
+    estado: document.getElementById('cotEstado').value,
+    items: items,
+    total: total,
+    notas: document.getElementById('cotNotas').value.trim() || null
+  };
+  if (!db) { toast('Sin conexión a la base de datos'); return; }
+  try {
+    if (editCotId) {
+      var r = await db.from('cotizaciones').update(payload).eq('id', editCotId).select();
+      if (r.error) throw r.error;
+      var idx = S.cotizaciones.findIndex(function(x) { return x.id === editCotId; });
+      if (idx >= 0) S.cotizaciones[idx] = r.data[0];
+      toast('Cotización actualizada');
+    } else {
+      var r = await db.from('cotizaciones').insert(payload).select();
+      if (r.error) throw r.error;
+      S.cotizaciones.unshift(r.data[0]);
+      toast('Cotización creada');
+    }
+    closeM('cotModal');
+    renderCotizaciones();
+  } catch(e) { toast('Error: ' + (e.message || JSON.stringify(e))); }
+}
+
+async function delCot(id) {
+  if (!confirm('¿Eliminar esta cotización?')) return;
+  if (db) await db.from('cotizaciones').delete().eq('id', id);
+  S.cotizaciones = S.cotizaciones.filter(function(c) { return c.id !== id; });
+  renderCotizaciones();
+  toast('Cotización eliminada');
+}
+
+function openCotWA(id) {
+  var c = S.cotizaciones.find(function(x) { return x.id === id; });
+  if (!c) return;
+  var pac = S.pacientes.find(function(p) { return p.nombre.toLowerCase().trim() === c.cliente.toLowerCase().trim(); });
+  var items = (c.items || []).filter(function(it) { return it.desc; });
+  var texto = '✨ *Cotización Mary Care*\n';
+  texto += '━━━━━━━━━━━━━━━━━━\n';
+  texto += '👤 Cliente: ' + c.cliente + '\n';
+  texto += '📅 Fecha: ' + c.fecha + '\n';
+  if (c.validez) texto += '⏳ Válida hasta: ' + c.validez + '\n';
+  texto += '\n*Detalle:*\n';
+  items.forEach(function(it) { texto += '• ' + it.desc + ' — ' + fmt(it.precio) + '\n'; });
+  texto += '━━━━━━━━━━━━━━━━━━\n';
+  texto += '*Total: ' + fmt(c.total) + '*\n';
+  if (c.notas) texto += '\n_' + c.notas + '_\n';
+  texto += '\n¡Gracias por confiar en Mary Care! 💆‍♀️';
+  document.getElementById('reportePreview').textContent = texto;
+  document.getElementById('reportePin').value = '';
+  document.getElementById('reportePin').style.borderColor = 'var(--br)';
+  document.getElementById('reportePinError').style.display = 'none';
+  var modal = document.getElementById('reporteModal');
+  modal.dataset.tel = pac && pac.tel ? pac.tel : '';
+  modal.dataset.texto = texto;
+  modal.dataset.clienteNombre = c.cliente;
+  document.getElementById('reporteModalTitle').innerHTML = '<i class="ti ti-brand-whatsapp" style="color:#25D366;margin-right:6px"></i>Cotización';
+  modal.classList.add('open');
+  setTimeout(function() { document.getElementById('reportePin').focus(); }, 300);
+}
 
 // ── PIN ─────────────────────────────────────────────────
 var PIN_CODE = '0827';
