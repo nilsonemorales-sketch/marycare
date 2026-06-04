@@ -504,7 +504,7 @@ tbody tr:hover td{background:var(--bg)}
 
 <!-- MODAL DEUDA -->
 <div class="mb" id="deudaModal"><div class="modal">
-  <div class="mh"><div class="mt">Registrar Deuda</div><button class="mc" onclick="closeM('deudaModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mh"><div class="mt" id="deudaModalTitle">Registrar Deuda</div><button class="mc" onclick="closeM('deudaModal')"><i class="ti ti-x"></i></button></div>
   <div class="mbody">
     <div class="fr2"><div class="fld"><label>Tipo</label><select id="dTipo"><option value="cobrar">Me deben</option><option value="pagar">Debo</option></select></div><div class="fld"><label>Fecha</label><input type="date" id="dFecha"></div></div>
     <div class="fld"><label>Persona *</label><input type="text" id="dPersona" placeholder="Nombre"></div>
@@ -512,6 +512,34 @@ tbody tr:hover td{background:var(--bg)}
     <div class="fld"><label>Monto (RD$) *</label><input type="number" id="dMonto" placeholder="0" min="0"></div>
   </div>
   <div class="mf"><button class="btn bg2" onclick="closeM('deudaModal')">Cancelar</button><button class="btn bt" onclick="saveDeuda()"><i class="ti ti-check"></i>Guardar</button></div>
+</div></div>
+
+<!-- MODAL EDITAR MOVIMIENTO -->
+<div class="mb" id="editMovModal"><div class="modal" style="max-width:420px">
+  <div class="mh"><div class="mt">Editar Movimiento</div><button class="mc" onclick="closeM('editMovModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mbody">
+    <div class="fr2">
+      <div class="fld"><label>Tipo</label><select id="emTipo"><option value="servicio">Servicio</option><option value="producto">Producto</option></select></div>
+      <div class="fld"><label>Fecha</label><input type="date" id="emFecha"></div>
+    </div>
+    <div class="fld"><label>Cliente *</label><input type="text" id="emCliente" placeholder="Nombre del cliente"></div>
+    <div class="fld"><label>Concepto *</label><input type="text" id="emConcepto" placeholder="Servicio o producto"></div>
+    <div class="fr2">
+      <div class="fld"><label>Monto (RD$) *</label><input type="number" id="emMonto" placeholder="0" min="0"></div>
+      <div class="fld"><label>Método de pago</label>
+        <select id="emPago">
+          <option value="efectivo">💵 Efectivo</option>
+          <option value="transferencia">🏦 Transferencia</option>
+          <option value="cxc">📋 C×Cobrar</option>
+        </select>
+      </div>
+    </div>
+    <div class="fld"><label>Notas</label><textarea id="emNotas" style="height:56px" placeholder="Observaciones..."></textarea></div>
+  </div>
+  <div class="mf">
+    <button class="btn bg2" onclick="closeM('editMovModal')">Cancelar</button>
+    <button class="btn bt" onclick="saveEditMov()"><i class="ti ti-check"></i>Guardar cambios</button>
+  </div>
 </div></div>
 
 <!-- MODAL CATÁLOGO -->
@@ -714,7 +742,7 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 // Force-reload si hay versión vieja en caché
 (function() {
-  var VER = '17';
+  var VER = '18';
   try {
     var p = new URLSearchParams(location.search);
     if (p.get('v') !== VER) { location.replace(location.pathname + '?v=' + VER); }
@@ -745,6 +773,8 @@ var restockCatId = null;
 var reporteSesId = null;
 var editSesId = null;
 var abonoDeudaId = null;
+var editMovId = null;
+var editDeudaId = null;
 
 // ── UTILS ───────────────────────────────────────────────
 function fmt(n) {
@@ -940,7 +970,7 @@ function renderMovimientos() {
       '<td><span class="chip ' + (m.tipo === 'servicio' ? 'cm' : 'cg') + '">' + (m.tipo === 'servicio' ? 'Servicio' : 'Producto') + '</span></td>' +
       '<td><span class="chip ' + (pCh[m.pago] || 'cx') + '">' + (pLb[m.pago] || m.pago) + '</span></td>' +
       '<td><span class="amt apos">+' + fmt(m.monto) + '</span></td>' +
-      '<td style="display:flex;gap:4px"><button class="btn bwa bxs" onclick="openMovWAModal(' + m.id + ')" title="Enviar comprobante WA"><i class="ti ti-brand-whatsapp"></i></button><button class="btn bda bxs" onclick="delMov(' + m.id + ')"><i class="ti ti-trash"></i></button></td>' +
+      '<td style="display:flex;gap:4px"><button class="btn bg2 bxs" onclick="openEditMovModal(' + m.id + ')" title="Editar"><i class="ti ti-edit"></i></button><button class="btn bwa bxs" onclick="openMovWAModal(' + m.id + ')" title="Enviar comprobante WA"><i class="ti ti-brand-whatsapp"></i></button><button class="btn bda bxs" onclick="delMov(' + m.id + ')"><i class="ti ti-trash"></i></button></td>' +
       '</tr>';
   }).join('') : '<tr><td colspan="7"><div class="empty"><i class="ti ti-receipt"></i><p>Sin movimientos</p></div></td></tr>');
 }
@@ -1198,6 +1228,7 @@ function renderDeudas() {
       '<td><span class="chip ' + tCh[d.tipo] + '">' + tLb[d.tipo] + '</span></td>' +
       '<td>' + estadoBadge + '</td>' +
       '<td style="display:flex;gap:4px">' +
+      '<button class="btn bg2 bxs" onclick="openDeudaModal(' + d.id + ')" title="Editar deuda"><i class="ti ti-edit"></i></button>' +
       (d.estado === 'pendiente' ? '<button class="btn bg2 bxs" onclick="openAbonoModal(' + d.id + ')" title="Registrar abono"><i class="ti ti-coin"></i></button>' : '') +
       (d.estado === 'pendiente' ? '<button class="btn bgo bxs" onclick="marcarPagada(' + d.id + ')" title="Marcar como pagada"><i class="ti ti-check"></i></button>' : '') +
       '<button class="btn bda bxs" onclick="elimDeuda(' + d.id + ')"><i class="ti ti-trash"></i></button></td></tr>';
@@ -1251,34 +1282,41 @@ async function saveAbono() {
   var total = parseFloat(d.monto || 0);
   var nuevoPagado = Math.min(pagado + abono, total);
   var nuevoEstado = nuevoPagado >= total ? 'pagada' : 'pendiente';
+  var metodoLbl = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta' }[metodo] || metodo;
   if (!db) { toast('Sin conexión'); return; }
+
+  // 1. Registrar el abono como movimiento de ingreso (siempre primero)
+  var hoy = new Date().toISOString().slice(0, 10);
+  var movPayload = {
+    fecha: hoy,
+    cliente: d.persona,
+    concepto: 'Abono — ' + (d.concepto || 'deuda'),
+    tipo: 'servicio',
+    pago: metodo === 'tarjeta' ? 'transferencia' : metodo,
+    monto: abono
+  };
+  try {
+    var rm = await db.from('movimientos').insert(movPayload).select();
+    if (rm.error) throw rm.error;
+    if (rm.data && rm.data[0]) S.movimientos.unshift(rm.data[0]);
+  } catch(e) {
+    toast('Error al registrar ingreso: ' + (e.message || JSON.stringify(e)));
+    return;
+  }
+
+  // 2. Actualizar el estado de la deuda (intenta actualizar, ignora si la columna no existe aún)
   try {
     var r = await db.from('deudas').update({ monto_pagado: nuevoPagado, metodo_abono: metodo, estado: nuevoEstado }).eq('id', d.id);
-    if (r.error) throw r.error;
-    Object.assign(d, { monto_pagado: nuevoPagado, metodo_abono: metodo, estado: nuevoEstado });
-
-    // Registrar el abono como movimiento de ingreso
-    var hoy = new Date().toISOString().slice(0, 10);
-    var movPayload = {
-      fecha: hoy,
-      cliente: d.persona,
-      concepto: 'Abono — ' + (d.concepto || 'deuda'),
-      tipo: d.tipo === 'cobrar' ? 'servicio' : 'servicio',
-      pago: metodo === 'tarjeta' ? 'transferencia' : metodo,
-      monto: abono
-    };
-    var rm = await db.from('movimientos').insert(movPayload).select();
-    if (!rm.error && rm.data && rm.data[0]) {
-      S.movimientos.unshift(rm.data[0]);
-    }
-
-    closeM('abonoModal');
-    var metodoLbl = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta' }[metodo] || metodo;
-    toast(nuevoEstado === 'pagada' ? '¡Deuda saldada! · ' + metodoLbl : 'Abono registrado (' + metodoLbl + ') · Resta: ' + fmt(total - nuevoPagado));
-    renderAll();
+    if (!r.error) Object.assign(d, { monto_pagado: nuevoPagado, metodo_abono: metodo, estado: nuevoEstado });
   } catch(e) {
-    toast('Error al guardar: ' + (e.message || JSON.stringify(e)));
+    // Si falla por columna faltante, al menos actualiza el estado
+    await db.from('deudas').update({ estado: nuevoEstado }).eq('id', d.id);
+    d.estado = nuevoEstado;
   }
+
+  closeM('abonoModal');
+  renderAll();
+  toast(nuevoEstado === 'pagada' ? '¡Deuda saldada! · ' + metodoLbl : 'Abono registrado (' + metodoLbl + ') · Resta: ' + fmt(total - nuevoPagado));
 }
 async function marcarPagada(id) {
   if (db) await db.from('deudas').update({ estado: 'pagada' }).eq('id', id);
@@ -1571,24 +1609,50 @@ async function saveMov() {
   closeM('movModal'); renderAll(); toast('Movimiento guardado');
 }
 
-function openDeudaModal() {
-  document.getElementById('dFecha').value = new Date().toISOString().split('T')[0];
-  ['dPersona', 'dConcepto', 'dMonto'].forEach(function(id) { document.getElementById(id).value = ''; });
+function openDeudaModal(id) {
+  editDeudaId = id || null;
+  var titleEl = document.getElementById('deudaModalTitle');
+  if (titleEl) titleEl.textContent = editDeudaId ? 'Editar Deuda' : 'Registrar Deuda';
+  if (editDeudaId) {
+    var d = S.deudas.find(function(x) { return x.id === editDeudaId; });
+    if (!d) return;
+    document.getElementById('dTipo').value = d.tipo || 'cobrar';
+    document.getElementById('dFecha').value = d.fecha || '';
+    document.getElementById('dPersona').value = d.persona || '';
+    document.getElementById('dConcepto').value = d.concepto || '';
+    document.getElementById('dMonto').value = d.monto || '';
+  } else {
+    document.getElementById('dFecha').value = new Date().toISOString().split('T')[0];
+    document.getElementById('dTipo').value = 'cobrar';
+    ['dPersona', 'dConcepto', 'dMonto'].forEach(function(fid) { document.getElementById(fid).value = ''; });
+  }
   document.getElementById('deudaModal').classList.add('open');
 }
 async function saveDeuda() {
   var tipo = document.getElementById('dTipo').value;
   var persona = document.getElementById('dPersona').value.trim();
   var monto = parseFloat(document.getElementById('dMonto').value) || 0;
-  var concepto = document.getElementById('dConcepto').value;
+  var concepto = document.getElementById('dConcepto').value.trim();
   var fecha = document.getElementById('dFecha').value;
-  if (!persona || !monto) { toast('Completa los campos'); return; }
-  var obj = { tipo: tipo, persona: persona, concepto: concepto, monto: monto, estado: 'pendiente', fecha: fecha };
-  if (db) {
-    var r = await db.from('deudas').insert(obj).select().single();
-    if (!r.error) S.deudas.unshift(r.data);
-  } else { obj.id = Date.now(); S.deudas.unshift(obj); }
-  closeM('deudaModal'); renderDeudas(); toast('Registrada');
+  if (!persona || !monto) { toast('Completa los campos obligatorios'); return; }
+  var payload = { tipo: tipo, persona: persona, concepto: concepto, monto: monto, fecha: fecha };
+  if (!db) { toast('Sin conexión'); return; }
+  try {
+    if (editDeudaId) {
+      var r = await db.from('deudas').update(payload).eq('id', editDeudaId);
+      if (r.error) throw r.error;
+      var d = S.deudas.find(function(x) { return x.id === editDeudaId; });
+      if (d) Object.assign(d, payload);
+      toast('Deuda actualizada');
+    } else {
+      var obj = Object.assign({ estado: 'pendiente' }, payload);
+      var r = await db.from('deudas').insert(obj).select().single();
+      if (r.error) throw r.error;
+      S.deudas.unshift(r.data);
+      toast('Deuda registrada');
+    }
+    closeM('deudaModal'); renderDeudas();
+  } catch(e) { toast('Error: ' + (e.message || JSON.stringify(e))); }
 }
 
 function openCatModal(id) {
@@ -2313,6 +2377,47 @@ function exportRep(type) {
   toast('CSV descargado');
 }
 
+
+// ── EDITAR MOVIMIENTO ────────────────────────────────────
+function openEditMovModal(id) {
+  var m = S.movimientos.find(function(x) { return x.id === id; });
+  if (!m) return;
+  editMovId = id;
+  document.getElementById('emTipo').value = m.tipo || 'servicio';
+  document.getElementById('emFecha').value = m.fecha || '';
+  document.getElementById('emCliente').value = m.cliente || '';
+  document.getElementById('emConcepto').value = m.concepto || '';
+  document.getElementById('emMonto').value = m.monto || '';
+  document.getElementById('emPago').value = m.pago || 'efectivo';
+  document.getElementById('emNotas').value = m.notas || '';
+  document.getElementById('editMovModal').classList.add('open');
+}
+async function saveEditMov() {
+  var m = S.movimientos.find(function(x) { return x.id === editMovId; });
+  if (!m) return;
+  var cliente = document.getElementById('emCliente').value.trim();
+  var concepto = document.getElementById('emConcepto').value.trim();
+  var monto = parseFloat(document.getElementById('emMonto').value) || 0;
+  if (!cliente || !concepto || !monto) { toast('Completa todos los campos'); return; }
+  var payload = {
+    tipo: document.getElementById('emTipo').value,
+    fecha: document.getElementById('emFecha').value,
+    cliente: cliente,
+    concepto: concepto,
+    monto: monto,
+    pago: document.getElementById('emPago').value,
+    notas: document.getElementById('emNotas').value.trim() || null
+  };
+  if (!db) { toast('Sin conexión'); return; }
+  try {
+    var r = await db.from('movimientos').update(payload).eq('id', editMovId);
+    if (r.error) throw r.error;
+    Object.assign(m, payload);
+    closeM('editMovModal');
+    renderAll();
+    toast('Movimiento actualizado');
+  } catch(e) { toast('Error: ' + (e.message || JSON.stringify(e))); }
+}
 
 // ── COMPROBANTE WA (MOVIMIENTOS) ────────────────────────
 function openMovWAModal(id) {
