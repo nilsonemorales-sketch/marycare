@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte de Desarrollo — Mary Care</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', Arial, sans-serif; font-size: 13px; color: #2C2C2C; background: #fff; }
+
+  /* ── PAGE LAYOUT ── */
+  .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 18mm 18mm 14mm; background: #fff; }
+  @media print {
+    body { background: #fff; }
+    .page { width: 100%; margin: 0; padding: 14mm 16mm; }
+    .pb { page-break-before: always; }
+    .no-break { page-break-inside: avoid; }
+  }
+
+  /* ── COVER ── */
+  .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 250mm; text-align: center; }
+  .cover-logo { width: 72px; height: 72px; border-radius: 50%; background: #7A4D35; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+  .cover-logo svg { width: 44px; height: 44px; }
+  .cover h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 32px; color: #7A4D35; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .cover .sub { font-size: 15px; color: #888; margin-bottom: 32px; }
+  .cover-divider { width: 60px; height: 3px; background: #7A4D35; border-radius: 2px; margin: 0 auto 28px; }
+  .cover-meta { font-size: 12px; color: #aaa; line-height: 2; }
+  .cover-meta strong { color: #555; }
+
+  /* ── TYPOGRAPHY ── */
+  h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 20px; color: #7A4D35; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 2px solid #F0E6DF; }
+  h3 { font-size: 13px; font-weight: 600; color: #3C2A1E; margin: 16px 0 8px; letter-spacing: 0.3px; }
+  h4 { font-size: 11px; font-weight: 600; color: #7A4D35; text-transform: uppercase; letter-spacing: 1.2px; margin: 12px 0 6px; }
+  p { line-height: 1.7; color: #444; margin-bottom: 8px; }
+  ul { padding-left: 18px; margin-bottom: 10px; }
+  li { line-height: 1.8; color: #444; }
+  section { margin-bottom: 28px; }
+
+  /* ── FEATURE CARDS ── */
+  .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .feat { background: #FBF6F2; border-radius: 10px; padding: 14px 16px; border-left: 4px solid #7A4D35; }
+  .feat .feat-title { font-weight: 600; font-size: 13px; color: #3C2A1E; margin-bottom: 4px; }
+  .feat .feat-desc { font-size: 11.5px; color: #666; line-height: 1.6; }
+  .feat-icon { font-size: 18px; margin-bottom: 6px; }
+
+  /* ── BADGE / CHIP ── */
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin: 2px; }
+  .badge-new { background: #E8F8EF; color: #1A7F4B; }
+  .badge-fix { background: #FFF3CD; color: #856404; }
+  .badge-imp { background: #E8EAFF; color: #3B4FCC; }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 14px; }
+  th { background: #7A4D35; color: #fff; padding: 8px 10px; text-align: left; font-weight: 600; font-size: 11px; letter-spacing: 0.5px; }
+  td { padding: 8px 10px; border-bottom: 1px solid #F0E6DF; color: #444; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #FBF6F2; }
+
+  /* ── SQL BLOCK ── */
+  .sql { background: #1E1E2E; color: #CDD6F4; border-radius: 8px; padding: 14px 16px; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.8; margin: 10px 0 14px; }
+  .sql .kw { color: #89B4FA; font-weight: 600; }
+  .sql .str { color: #A6E3A1; }
+  .sql .cm { color: #6C7086; font-style: italic; }
+
+  /* ── INFO BOX ── */
+  .info { background: #EEF4FF; border-radius: 8px; padding: 12px 14px; border-left: 4px solid #4A7FCC; margin: 10px 0; font-size: 12px; color: #1E3A6E; line-height: 1.7; }
+  .warn { background: #FFFBEB; border-radius: 8px; padding: 12px 14px; border-left: 4px solid #D97706; margin: 10px 0; font-size: 12px; color: #78350F; line-height: 1.7; }
+
+  /* ── TIMELINE ── */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before { content: ''; position: absolute; left: 6px; top: 4px; bottom: 0; width: 2px; background: #F0E6DF; }
+  .tl-item { position: relative; margin-bottom: 16px; }
+  .tl-item::before { content: ''; position: absolute; left: -22px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: #7A4D35; }
+  .tl-item .tl-title { font-weight: 600; font-size: 12px; color: #3C2A1E; }
+  .tl-item .tl-desc { font-size: 11.5px; color: #666; line-height: 1.6; margin-top: 2px; }
+
+  /* ── FOOTER ── */
+  .footer { text-align: center; font-size: 10px; color: #bbb; padding-top: 14px; border-top: 1px solid #F0E6DF; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════ PORTADA ══════════ -->
+<div class="page">
+  <div class="cover">
+    <div class="cover-logo">
+      <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="18" cy="18" r="18" fill="#7A4D35"/>
+        <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(201,169,139,.22)" stroke-width="1"/>
+        <circle cx="18" cy="10" r="1.8" fill="rgba(201,169,139,.65)"/>
+        <path d="M10 25 L10 15 L18 21.5 L26 15 L26 25" fill="none" stroke="#C9A98B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1>Mary Care</h1>
+    <div class="sub">Sistema de Gestión Clínica</div>
+    <div class="cover-divider"></div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;color:#3C2A1E;margin-bottom:10px">Reporte de Desarrollo</div>
+    <div style="font-size:14px;color:#888;margin-bottom:40px">Módulos, mejoras y correcciones implementadas</div>
+    <div class="cover-meta">
+      <strong>Aplicación:</strong> Mary Care SPA · Clínica de Estética<br>
+      <strong>Propietaria:</strong> María Frías<br>
+      <strong>Versión actual:</strong> v18<br>
+      <strong>Fecha:</strong> Junio 2026<br>
+      <strong>Plataforma:</strong> Web / PWA (iOS &amp; Android)<br>
+      <strong>Base de datos:</strong> Supabase (PostgreSQL)
+    </div>
+  </div>
+  <div class="footer">Mary Care · Sistema de Gestión · Documentación Técnica</div>
+</div>
+
+<!-- ══════════ RESUMEN EJECUTIVO ══════════ -->
+<div class="page pb">
+  <h2>1. Resumen Ejecutivo</h2>
+  <section>
+    <p>
+      Se desarrolló una <strong>aplicación web de gestión clínica (SPA)</strong> completa para el negocio
+      de estética <em>Mary Care</em>, de la propietaria María Frías. La aplicación funciona como
+      Progressive Web App (PWA), es decir, puede instalarse en el teléfono como si fuera una app nativa
+      tanto en iPhone como en Android, sin necesidad de tienda de aplicaciones.
+    </p>
+    <p>
+      Toda la información se guarda de forma segura en la nube mediante <strong>Supabase</strong>,
+      una base de datos PostgreSQL, lo que garantiza que los datos estén siempre disponibles desde
+      cualquier dispositivo.
+    </p>
+  </section>
+
+  <h2>2. Módulos del Sistema</h2>
+  <section>
+    <div class="feat-grid">
+      <div class="feat no-break">
+        <div class="feat-icon">📊</div>
+        <div class="feat-title">Dashboard</div>
+        <div class="feat-desc">Panel principal con KPIs del mes: ingresos por servicios, productos, clientes únicos y cuentas por cobrar. Gráficas semanales y últimos movimientos.</div>
+      </div>
+      <div class="feat no-break">
+        <div class="feat-icon">💳</div>
+        <div class="feat-title">Movimientos</div>
+        <div class="feat-desc">Registro de ingresos por servicios y productos. Filtros por tipo y método de pago. Exportación a CSV. Edición y envío de comprobante por WhatsApp.</div>
+      </div>
+      <div class="feat no-break">
+        <div class="feat-icon">👥</div>
+        <div class="feat-title">Clientes</div>
+        <div class="feat-desc">Ranking automático de clientes por total gastado y número de visitas. Estadísticas de ticket promedio y clienta top del mes.</div>
+      </div>
+      <div class="feat no-break">
+        <div class="feat-icon">📦</div>
+        <div class="feat-title">Catálogo</div>
+        <div class="feat-desc">Inventario de productos con precio de venta, costo, margen y cantidad en stock. Control automático de inventario al vender.</div>
+      </div>
+      <div class="feat no-break">
+        <div class="feat-icon">🕐</div>
+        <div class="feat-title">Deudas</div>
+        <div class="feat-desc">Seguimiento de cuentas por cobrar y por pagar. Abonos parciales con método de pago. Alertas de deudas atrasadas. Edición de registros.</div>
+      </div>
+      <div class="feat no-break">
+        <div class="feat-icon">📋</div>
+        <div class="feat-title">Expedientes</div>
+        <div class="feat-desc">Ficha clínica completa GlowCheck 360 por paciente: datos personales, tipo de piel, antecedentes, medicación, hábitos y evaluación cosmética.</div>
+      </div>
+      <div class="feat no-break">
+        <div class="feat-icon">🗓️</div>
+        <div class="feat-title">Sesiones</div>
+        <div class="feat-desc">Registro de citas y tratamientos por paciente. Edición de sesiones. Reporte automático por WhatsApp con resumen del tratamiento y próxima cita.</div>
+      </div>
+      <div class="feat no-break">
+        <div class="feat-icon">💰</div>
+        <div class="feat-title">Gastos &amp; Costos</div>
+        <div class="feat-desc">Control de gastos del negocio por categoría. Gráficas de tendencia de 6 meses. Cálculo de margen neto e ingresos vs. gastos.</div>
+      </div>
+      <div class="feat no-break">
+        <div class="feat-icon">📝</div>
+        <div class="feat-title">Cotizaciones</div>
+        <div class="feat-desc">Creación de presupuestos con ítems de servicios y productos. Estados (Pendiente / Aprobada / Rechazada). Envío de cotización por WhatsApp con PIN.</div>
+      </div>
+      <div class="feat no-break">
+        <div class="feat-icon">📈</div>
+        <div class="feat-title">Reportería</div>
+        <div class="feat-desc">6 reportes: Resumen del mes, Servicios, Productos, Clientes, Semanal, Clínico y Mensual (con selector de mes/año y comparativa de ingresos vs. gastos).</div>
+      </div>
+    </div>
+  </section>
+  <div class="footer">Mary Care · Sistema de Gestión · Documentación Técnica</div>
+</div>
+
+<!-- ══════════ FUNCIONALIDADES IMPLEMENTADAS ══════════ -->
+<div class="page pb">
+  <h2>3. Funcionalidades Implementadas</h2>
+
+  <section class="no-break">
+    <h3>3.1 Control de Inventario Automático</h3>
+    <span class="badge badge-new">Nuevo</span>
+    <p>
+      Al registrar una venta de productos, el sistema descuenta automáticamente las unidades vendidas
+      del inventario del catálogo. También se puede registrar reabastecimiento manualmente desde el
+      catálogo, sumando unidades al stock disponible.
+    </p>
+    <ul>
+      <li>Alerta visual cuando un producto tiene stock bajo o agotado</li>
+      <li>El margen de ganancia se calcula automáticamente (precio venta − costo)</li>
+    </ul>
+  </section>
+
+  <section class="no-break">
+    <h3>3.2 Reporte de Sesión por WhatsApp</h3>
+    <span class="badge badge-new">Nuevo</span>
+    <p>
+      Desde el módulo de Sesiones, se puede enviar al cliente un reporte detallado de su visita
+      directamente por WhatsApp. El mensaje incluye: tratamiento realizado, productos aplicados,
+      evolución, notas y fecha de próxima cita.
+    </p>
+    <p>
+      El envío requiere <strong>autorización con PIN (0827)</strong> para evitar envíos accidentales.
+    </p>
+  </section>
+
+  <section class="no-break">
+    <h3>3.3 Comprobante de Pago por WhatsApp</h3>
+    <span class="badge badge-new">Nuevo</span>
+    <p>
+      Desde el módulo de Movimientos, cada registro tiene un botón de WhatsApp que genera
+      automáticamente un comprobante de pago formateado con: cliente, fecha, servicio/producto,
+      método de pago y monto total. También requiere PIN de autorización.
+    </p>
+  </section>
+
+  <section class="no-break">
+    <h3>3.4 Módulo de Gastos &amp; Costos</h3>
+    <span class="badge badge-new">Nuevo</span>
+    <p>
+      Registro detallado de todos los gastos del negocio, clasificados por categoría:
+      Productos e insumos, Local y servicios, Equipamiento, Marketing, Personal, Capacitación,
+      Mantenimiento y Otros.
+    </p>
+    <ul>
+      <li>KPIs de margen neto e ingresos vs. gastos del mes actual</li>
+      <li>Gráfica de tendencia de los últimos 6 meses</li>
+      <li>Filtros por categoría y búsqueda por concepto</li>
+    </ul>
+  </section>
+
+  <section class="no-break">
+    <h3>3.5 Módulo de Cotizaciones</h3>
+    <span class="badge badge-new">Nuevo</span>
+    <p>
+      Creación de presupuestos personalizados para clientes con múltiples ítems (servicios y productos).
+      Cada cotización tiene fecha de validez, estado y cálculo automático del total.
+    </p>
+    <ul>
+      <li>Estados: Pendiente, Aprobada, Rechazada</li>
+      <li>Envío de cotización formateada por WhatsApp con PIN de autorización</li>
+      <li>Edición y eliminación de cotizaciones</li>
+    </ul>
+  </section>
+
+  <section class="no-break">
+    <h3>3.6 Reporte Mensual</h3>
+    <span class="badge badge-new">Nuevo</span>
+    <p>
+      Nuevo tipo de reporte en Reportería con selector de mes y año. Muestra un análisis completo
+      del período seleccionado:
+    </p>
+    <ul>
+      <li>Ingresos totales, Gastos totales, Margen neto y % de margen</li>
+      <li>Total de sesiones y clientes atendidos en el mes</li>
+      <li>Top 5 servicios más vendidos del mes</li>
+      <li>Top 5 clientes que más gastaron en el mes</li>
+    </ul>
+  </section>
+
+  <section class="no-break">
+    <h3>3.7 Abonos Parciales en Deudas</h3>
+    <span class="badge badge-new">Nuevo</span> <span class="badge badge-imp">Mejorado</span>
+    <p>
+      Sistema de pagos parciales para deudas por cobrar. Al registrar un abono:
+    </p>
+    <ul>
+      <li>Se selecciona el método de pago (Efectivo, Transferencia, Tarjeta)</li>
+      <li>Se muestra cuánto queda pendiente en tiempo real</li>
+      <li>Se crea automáticamente un movimiento de ingreso (el balance se actualiza)</li>
+      <li>Cuando el abono cubre el total, la deuda se marca automáticamente como pagada</li>
+    </ul>
+  </section>
+
+  <section class="no-break">
+    <h3>3.8 Edición de Registros</h3>
+    <span class="badge badge-new">Nuevo</span>
+    <p>
+      Se añadió edición en los módulos que lo necesitaban para corregir errores de entrada:
+    </p>
+    <table>
+      <thead><tr><th>Módulo</th><th>Campos editables</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Movimientos</strong></td><td>Tipo, fecha, cliente, concepto, monto, método de pago, notas</td></tr>
+        <tr><td><strong>Deudas</strong></td><td>Tipo (cobrar/pagar), fecha, persona, concepto, monto</td></tr>
+        <tr><td><strong>Sesiones</strong></td><td>Fecha, hora, paciente, servicio, evolución, notas, próxima cita</td></tr>
+        <tr><td><strong>Catálogo</strong></td><td>Nombre, precio, costo, categoría, cantidad en inventario</td></tr>
+        <tr><td><strong>Gastos</strong></td><td>Fecha, concepto, categoría, monto, notas</td></tr>
+        <tr><td><strong>Cotizaciones</strong></td><td>Cliente, fecha, validez, estado, ítems, notas</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="footer">Mary Care · Sistema de Gestión · Documentación Técnica</div>
+</div>
+
+<!-- ══════════ SEGURIDAD ══════════ -->
+<div class="page pb">
+  <h2>4. Seguridad y Acceso</h2>
+
+  <section>
+    <h3>4.1 PIN de Acceso</h3>
+    <p>
+      La aplicación requiere un <strong>PIN de 4 dígitos</strong> para acceder. La sesión se mantiene
+      activa mientras el navegador esté abierto; al cerrar el navegador se solicita el PIN nuevamente.
+    </p>
+    <div class="warn">
+      <strong>PIN actual:</strong> 0827 — Se recomienda no compartirlo. Está codificado directamente
+      en la aplicación y puede cambiarse modificando el valor <code>PIN_CODE</code> en el código fuente.
+    </div>
+
+    <h3>4.2 PIN de Autorización para WhatsApp</h3>
+    <p>
+      El envío de mensajes por WhatsApp (reportes de sesión, comprobantes de pago y cotizaciones)
+      requiere ingresar el mismo PIN de acceso como confirmación. Esto evita envíos accidentales
+      a clientes.
+    </p>
+
+    <h3>4.3 Anti-Caché (PWA)</h3>
+    <p>
+      La aplicación incluye un sistema de versiones que fuerza la recarga automática cuando hay una
+      actualización disponible. Esto es especialmente importante en iOS donde el navegador guarda
+      versiones antiguas en caché. La versión actual es <strong>v18</strong>.
+    </p>
+  </section>
+
+  <h2>5. Base de Datos — Migraciones SQL</h2>
+  <section>
+    <p>
+      La base de datos es <strong>Supabase (PostgreSQL)</strong>. Las siguientes migraciones deben
+      ejecutarse en el <em>SQL Editor</em> del panel de Supabase para que todas las funciones
+      estén operativas:
+    </p>
+
+    <div class="sql">
+<span class="cm">-- 1. Agregar costo e inventario al catálogo</span><br>
+<span class="kw">ALTER TABLE</span> catalogo <span class="kw">ADD COLUMN IF NOT EXISTS</span> costo numeric <span class="kw">DEFAULT</span> 0;<br>
+<span class="kw">ALTER TABLE</span> catalogo <span class="kw">ADD COLUMN IF NOT EXISTS</span> cantidad integer <span class="kw">DEFAULT</span> 0;<br>
+<br>
+<span class="cm">-- 2. Agregar hora a las sesiones</span><br>
+<span class="kw">ALTER TABLE</span> sesiones <span class="kw">ADD COLUMN IF NOT EXISTS</span> hora time;<br>
+<span class="kw">ALTER TABLE</span> sesiones <span class="kw">ADD COLUMN IF NOT EXISTS</span> proxima_hora time;<br>
+<br>
+<span class="cm">-- 3. Abonos parciales + método de pago en deudas</span><br>
+<span class="kw">ALTER TABLE</span> deudas <span class="kw">ADD COLUMN IF NOT EXISTS</span> monto_pagado numeric <span class="kw">DEFAULT</span> 0;<br>
+<span class="kw">ALTER TABLE</span> deudas <span class="kw">ADD COLUMN IF NOT EXISTS</span> metodo_abono text <span class="kw">DEFAULT</span> <span class="str">'efectivo'</span>;<br>
+<br>
+<span class="cm">-- 4. Tabla de gastos</span><br>
+<span class="kw">CREATE TABLE IF NOT EXISTS</span> gastos (<br>
+&nbsp;&nbsp;id bigint generated always as identity primary key,<br>
+&nbsp;&nbsp;fecha date not null default current_date,<br>
+&nbsp;&nbsp;concepto text not null,<br>
+&nbsp;&nbsp;categoria text default <span class="str">'Otros'</span>,<br>
+&nbsp;&nbsp;monto numeric default 0,<br>
+&nbsp;&nbsp;notas text,<br>
+&nbsp;&nbsp;created_at timestamptz default now()<br>
+);<br>
+<span class="kw">ALTER TABLE</span> gastos <span class="kw">DISABLE ROW LEVEL SECURITY</span>;<br>
+<br>
+<span class="cm">-- 5. Tabla de cotizaciones</span><br>
+<span class="kw">CREATE TABLE IF NOT EXISTS</span> cotizaciones (<br>
+&nbsp;&nbsp;id bigint generated always as identity primary key,<br>
+&nbsp;&nbsp;fecha date not null default current_date,<br>
+&nbsp;&nbsp;cliente text not null,<br>
+&nbsp;&nbsp;items jsonb not null default <span class="str">'[]'</span>,<br>
+&nbsp;&nbsp;total numeric default 0,<br>
+&nbsp;&nbsp;notas text,<br>
+&nbsp;&nbsp;validez date,<br>
+&nbsp;&nbsp;estado text default <span class="str">'pendiente'</span>,<br>
+&nbsp;&nbsp;created_at timestamptz default now()<br>
+);<br>
+<span class="kw">ALTER TABLE</span> cotizaciones <span class="kw">DISABLE ROW LEVEL SECURITY</span>;
+    </div>
+
+    <div class="info">
+      <strong>Nota importante:</strong> Supabase activa automáticamente la seguridad de filas (RLS) en
+      todas las tablas nuevas. Si alguna función muestra el error <em>"row-level security policy"</em>,
+      ejecutar <code>ALTER TABLE [nombre_tabla] DISABLE ROW LEVEL SECURITY;</code> en el SQL Editor.
+    </div>
+  </section>
+
+  <div class="footer">Mary Care · Sistema de Gestión · Documentación Técnica</div>
+</div>
+
+<!-- ══════════ HISTORIAL DE VERSIONES ══════════ -->
+<div class="page pb">
+  <h2>6. Historial de Versiones</h2>
+  <section>
+    <div class="timeline">
+      <div class="tl-item no-break">
+        <div class="tl-title">v1 – v7 · Fundamentos</div>
+        <div class="tl-desc">Estructura inicial de la SPA, módulos de Dashboard, Movimientos, Clientes, Catálogo, Deudas, Expedientes y Sesiones. Conexión a Supabase.</div>
+      </div>
+      <div class="tl-item no-break">
+        <div class="tl-title">v8 · Carrito de Productos</div>
+        <div class="tl-desc">Venta de múltiples productos en un mismo movimiento con carrito. Sistema de descuentos por porcentaje o monto fijo.</div>
+      </div>
+      <div class="tl-item no-break">
+        <div class="tl-title">v9 – v10 · Inventario Automático</div>
+        <div class="tl-desc">Control de stock: descuento automático al vender, reabastecimiento manual. Corrección de caché en PWA de iOS.</div>
+      </div>
+      <div class="tl-item no-break">
+        <div class="tl-title">v11 · Reporte WA + Gastos</div>
+        <div class="tl-desc">Módulo de Gastos & Costos con KPIs y gráficas. Reporte de sesión por WhatsApp con PIN de autorización.</div>
+      </div>
+      <div class="tl-item no-break">
+        <div class="tl-title">v12 – v13 · UI y Logo</div>
+        <div class="tl-desc">Logo SVG de Mary Care, mejoras de estética general, corrección del campo de fecha en iOS, módulo de gastos corregido (RLS).</div>
+      </div>
+      <div class="tl-item no-break">
+        <div class="tl-title">v14 · Edición de Sesiones + Abonos + Catálogo</div>
+        <div class="tl-desc">Edición de sesiones con datos pre-cargados. Abonos parciales en deudas con chip de "Abonado / Resta". Eliminación suave de catálogo.</div>
+      </div>
+      <div class="tl-item no-break">
+        <div class="tl-title">v15 · WhatsApp en Movimientos + Cotizaciones + Reporte Mensual</div>
+        <div class="tl-desc">Comprobante de pago por WA en cada movimiento. Módulo completo de Cotizaciones. Reporte mensual con selector de período en Reportería.</div>
+      </div>
+      <div class="tl-item no-break">
+        <div class="tl-title">v16 · Método de Pago en Abonos</div>
+        <div class="tl-desc">Campo de método de pago (Efectivo / Transferencia / Tarjeta) en el modal de abono. Icono del método visible en el estado de cada deuda.</div>
+      </div>
+      <div class="tl-item no-break">
+        <div class="tl-title">v17 · Abono Actualiza Balance</div>
+        <div class="tl-desc">Al registrar un abono se crea automáticamente un movimiento de ingreso, actualizando el balance total en tiempo real.</div>
+      </div>
+      <div class="tl-item no-break">
+        <div class="tl-title">v18 · Edición de Movimientos y Deudas</div>
+        <div class="tl-desc">Botón de edición en cada fila de Movimientos y Deudas para corregir errores. Fix definitivo del abono: el ingreso se registra siempre antes de actualizar la deuda.</div>
+      </div>
+    </div>
+  </section>
+
+  <h2>7. Arquitectura Técnica</h2>
+  <section>
+    <table>
+      <thead><tr><th>Componente</th><th>Tecnología</th><th>Detalle</th></tr></thead>
+      <tbody>
+        <tr><td>Frontend</td><td>HTML5 / Vanilla JS</td><td>SPA de un solo archivo (index.html), sin dependencias de framework</td></tr>
+        <tr><td>Estilos</td><td>CSS custom</td><td>Variables CSS, diseño responsivo mobile-first, paleta terra/mint/gold</td></tr>
+        <tr><td>Iconos</td><td>Tabler Icons</td><td>CDN, más de 4,000 íconos SVG</td></tr>
+        <tr><td>Base de datos</td><td>Supabase (PostgreSQL)</td><td>7 tablas: movimientos, catalogo, deudas, pacientes, sesiones, gastos, cotizaciones</td></tr>
+        <tr><td>Auth</td><td>PIN local</td><td>PIN de 4 dígitos, sesión en sessionStorage</td></tr>
+        <tr><td>WhatsApp</td><td>wa.me API</td><td>Enlace directo con mensaje pre-formateado, sin API de terceros</td></tr>
+        <tr><td>PWA</td><td>Meta tags + anti-caché</td><td>Instalable en iOS/Android, fuerza recarga en nueva versión</td></tr>
+        <tr><td>Hosting</td><td>GitHub Pages / servidor</td><td>Archivo estático, no requiere servidor de aplicaciones</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="footer">Mary Care · Sistema de Gestión · Documentación Técnica · v18 · Junio 2026</div>
+</div>
+
+</body>
+</html>
