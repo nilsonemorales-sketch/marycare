@@ -714,7 +714,7 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 // Force-reload si hay versión vieja en caché
 (function() {
-  var VER = '16';
+  var VER = '17';
   try {
     var p = new URLSearchParams(location.search);
     if (p.get('v') !== VER) { location.replace(location.pathname + '?v=' + VER); }
@@ -1256,9 +1256,26 @@ async function saveAbono() {
     var r = await db.from('deudas').update({ monto_pagado: nuevoPagado, metodo_abono: metodo, estado: nuevoEstado }).eq('id', d.id);
     if (r.error) throw r.error;
     Object.assign(d, { monto_pagado: nuevoPagado, metodo_abono: metodo, estado: nuevoEstado });
-    closeM('abonoModal'); renderDeudas();
+
+    // Registrar el abono como movimiento de ingreso
+    var hoy = new Date().toISOString().slice(0, 10);
+    var movPayload = {
+      fecha: hoy,
+      cliente: d.persona,
+      concepto: 'Abono — ' + (d.concepto || 'deuda'),
+      tipo: d.tipo === 'cobrar' ? 'servicio' : 'servicio',
+      pago: metodo === 'tarjeta' ? 'transferencia' : metodo,
+      monto: abono
+    };
+    var rm = await db.from('movimientos').insert(movPayload).select();
+    if (!rm.error && rm.data && rm.data[0]) {
+      S.movimientos.unshift(rm.data[0]);
+    }
+
+    closeM('abonoModal');
     var metodoLbl = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta' }[metodo] || metodo;
     toast(nuevoEstado === 'pagada' ? '¡Deuda saldada! · ' + metodoLbl : 'Abono registrado (' + metodoLbl + ') · Resta: ' + fmt(total - nuevoPagado));
+    renderAll();
   } catch(e) {
     toast('Error al guardar: ' + (e.message || JSON.stringify(e)));
   }
