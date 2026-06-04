@@ -554,7 +554,16 @@ tbody tr:hover td{background:var(--bg)}
   <div class="mh"><div class="mt">Registrar Abono</div><button class="mc" onclick="closeM('abonoModal')"><i class="ti ti-x"></i></button></div>
   <div class="mbody">
     <div id="abonoInfo" style="background:var(--sf2);border-radius:var(--r);padding:12px 14px;margin-bottom:14px"></div>
-    <div class="fld"><label>Monto del abono (RD$) *</label><input type="number" id="abonoMonto" placeholder="0" min="1" oninput="updateAbonoPreview()"></div>
+    <div class="fr2">
+      <div class="fld"><label>Monto del abono (RD$) *</label><input type="number" id="abonoMonto" placeholder="0" min="1" oninput="updateAbonoPreview()"></div>
+      <div class="fld"><label>Método de pago</label>
+        <select id="abonoMetodo">
+          <option value="efectivo">💵 Efectivo</option>
+          <option value="transferencia">🏦 Transferencia</option>
+          <option value="tarjeta">💳 Tarjeta</option>
+        </select>
+      </div>
+    </div>
     <div id="abonoPreview" style="display:none;border-radius:8px;padding:10px 14px;font-size:12px;font-weight:500;margin-top:4px"></div>
   </div>
   <div class="mf"><button class="btn bg2" onclick="closeM('abonoModal')">Cancelar</button><button class="btn bt" onclick="saveAbono()"><i class="ti ti-check"></i>Guardar abono</button></div>
@@ -705,7 +714,7 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 // Force-reload si hay versión vieja en caché
 (function() {
-  var VER = '15';
+  var VER = '16';
   try {
     var p = new URLSearchParams(location.search);
     if (p.get('v') !== VER) { location.replace(location.pathname + '?v=' + VER); }
@@ -1174,10 +1183,11 @@ function renderDeudas() {
     var pagado = parseFloat(d.monto_pagado || 0);
     var total = parseFloat(d.monto || 0);
     var tieneAbono = pagado > 0 && d.estado !== 'pagada';
+    var metodoLbl = { efectivo: '💵', transferencia: '🏦', tarjeta: '💳' }[d.metodo_abono] || '';
     var estadoBadge = d.estado === 'pagada'
-      ? '<span class="chip cm">Pagada</span>'
+      ? '<span class="chip cm">Pagada ' + metodoLbl + '</span>'
       : tieneAbono
-        ? '<span class="chip cg" style="font-size:9px">Abonado ' + fmt(pagado) + '</span> <span class="chip cr" style="font-size:9px">Resta ' + fmt(total - pagado) + '</span>'
+        ? '<span class="chip cg" style="font-size:9px">Abonado ' + fmt(pagado) + ' ' + metodoLbl + '</span> <span class="chip cr" style="font-size:9px">Resta ' + fmt(total - pagado) + '</span>'
         : isAtrasada && deudaFilterV === 'todas'
           ? '<span class="chip ct2">Pendiente</span> <span class="chip cr" style="font-size:9px"><i class="ti ti-clock-exclamation" style="font-size:9px"></i>Atrasada</span>'
           : '<span class="chip ct2">Pendiente</span>';
@@ -1236,17 +1246,22 @@ async function saveAbono() {
   if (!d) return;
   var abono = parseFloat(document.getElementById('abonoMonto').value) || 0;
   if (abono < 1) { toast('Ingresa un monto válido'); return; }
+  var metodo = document.getElementById('abonoMetodo').value;
   var pagado = parseFloat(d.monto_pagado || 0);
   var total = parseFloat(d.monto || 0);
   var nuevoPagado = Math.min(pagado + abono, total);
   var nuevoEstado = nuevoPagado >= total ? 'pagada' : 'pendiente';
-  if (db) {
-    var r = await db.from('deudas').update({ monto_pagado: nuevoPagado, estado: nuevoEstado }).eq('id', d.id);
-    if (r.error) { toast('Error: ' + r.error.message); return; }
+  if (!db) { toast('Sin conexión'); return; }
+  try {
+    var r = await db.from('deudas').update({ monto_pagado: nuevoPagado, metodo_abono: metodo, estado: nuevoEstado }).eq('id', d.id);
+    if (r.error) throw r.error;
+    Object.assign(d, { monto_pagado: nuevoPagado, metodo_abono: metodo, estado: nuevoEstado });
+    closeM('abonoModal'); renderDeudas();
+    var metodoLbl = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta' }[metodo] || metodo;
+    toast(nuevoEstado === 'pagada' ? '¡Deuda saldada! · ' + metodoLbl : 'Abono registrado (' + metodoLbl + ') · Resta: ' + fmt(total - nuevoPagado));
+  } catch(e) {
+    toast('Error al guardar: ' + (e.message || JSON.stringify(e)));
   }
-  Object.assign(d, { monto_pagado: nuevoPagado, estado: nuevoEstado });
-  closeM('abonoModal'); renderDeudas();
-  toast(nuevoEstado === 'pagada' ? '¡Deuda saldada por completo!' : 'Abono registrado · Resta: ' + fmt(total - nuevoPagado));
 }
 async function marcarPagada(id) {
   if (db) await db.from('deudas').update({ estado: 'pagada' }).eq('id', id);

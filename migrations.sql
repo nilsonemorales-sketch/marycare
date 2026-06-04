@@ -9,8 +9,9 @@ ALTER TABLE catalogo ADD COLUMN IF NOT EXISTS cantidad integer DEFAULT 0;
 ALTER TABLE sesiones ADD COLUMN IF NOT EXISTS hora time;
 ALTER TABLE sesiones ADD COLUMN IF NOT EXISTS proxima_hora time;
 
--- 3. Abonos parciales en deudas ← NUEVA
+-- 3. Abonos parciales + método de pago en deudas
 ALTER TABLE deudas ADD COLUMN IF NOT EXISTS monto_pagado numeric DEFAULT 0;
+ALTER TABLE deudas ADD COLUMN IF NOT EXISTS metodo_abono text DEFAULT 'efectivo';
 
 -- 4. Tabla de gastos/costos del negocio ← NUEVA
 CREATE TABLE IF NOT EXISTS gastos (
