@@ -174,48 +174,76 @@ tbody tr:hover td{background:var(--bg)}
 .pin-btn.del{font-size:18px}
 .pin-btn.empty{border:none;background:transparent;cursor:default}
 
-/* ── VISUAL POLISH v20 ── */
+/* ── VISUAL POLISH v21 ── */
 /* Backdrop blur en modales */
-.mb{backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
-/* Scrollbar delgada */
-::-webkit-scrollbar{width:5px;height:4px}
+.mb{backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+/* Scrollbar elegante */
+::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--nude2);border-radius:10px}
+::-webkit-scrollbar-thumb{background:rgba(201,169,139,.35);border-radius:10px}
 ::-webkit-scrollbar-thumb:hover{background:var(--nude)}
-/* KPI hover lift */
-.kpi{background:linear-gradient(145deg,#fff 0%,var(--sf2) 100%);transition:box-shadow .2s,transform .2s}
-.kpi:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,18,10,.1)}
-/* Card hover sutil */
+/* Sidebar: gradiente cálido rico */
+.sidebar{background:linear-gradient(175deg,#2C1A0E 0%,#1A0C06 60%,#120A05 100%)}
+.sb-brand{background:rgba(201,169,139,.07);border-bottom:1px solid rgba(201,169,139,.12)}
+.sb-name{font-size:14px;letter-spacing:2.5px;color:#C9A98B}
+.sb-sub{font-size:9px;color:rgba(201,169,139,.4);letter-spacing:2.5px}
+.sb-lbl{color:rgba(201,169,139,.28);font-size:9px;padding:0 12px;margin:14px 0 4px}
+.ni{color:rgba(201,169,139,.42);font-size:12.5px}
+.ni:hover{color:rgba(201,169,139,.85);background:rgba(201,169,139,.07)}
+.ni.active{color:#C9A98B;background:rgba(201,169,139,.13);border-left:3px solid var(--terra);padding-left:9px;font-weight:500}
+.sb-foot{padding:14px 12px;border-top:1px solid rgba(201,169,139,.1)}
+.sb-bal{background:linear-gradient(135deg,#7A4D35 0%,#5C3420 100%);border-radius:12px;padding:12px 16px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.sb-bal .sl{font-size:8px;letter-spacing:2.5px;color:rgba(255,220,190,.6);text-transform:uppercase;margin-bottom:4px}
+.sb-bal .sv{font-family:'Playfair Display',serif;font-size:22px;color:#fff;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.3)}
+/* KPI cards por tipo */
+.kpi{transition:box-shadow .2s,transform .2s;border-radius:var(--r)}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,18,10,.12)}
+.kpi-serv{background:linear-gradient(135deg,#EAF3EE 0%,#fff 65%)!important;border-left:3px solid var(--mint)!important}
+.kpi-prod{background:linear-gradient(135deg,#F5EDD8 0%,#fff 65%)!important;border-left:3px solid var(--gold)!important}
+.kpi-total{background:linear-gradient(135deg,#FDF0E8 0%,#fff 65%)!important;border-left:3px solid var(--terra)!important}
+.kpi-cli{background:linear-gradient(135deg,#EDE5F5 0%,#fff 65%)!important;border-left:3px solid var(--violet)!important}
+/* Card hover */
 .card{transition:box-shadow .2s}
+.card:hover{box-shadow:0 2px 8px rgba(30,18,10,.08),0 6px 24px rgba(30,18,10,.07)}
+/* Card header más premium */
+.ch{background:linear-gradient(to right,rgba(244,237,229,.5),transparent)}
+.ct{font-size:14px;color:var(--ink);font-weight:500}
+/* Tabla cabeceras */
+th{background:var(--sf2);font-size:9px;letter-spacing:1.8px;color:var(--terra2);border-bottom:2px solid var(--nude2)}
+tbody tr{transition:background .1s}
+tbody tr:hover td{background:linear-gradient(to right,rgba(201,169,139,.06),transparent)}
+/* Topbar premium */
+.topbar{background:#fff;border-bottom:2px solid var(--nude2)}
+.tb-title{font-size:18px;font-weight:400;color:var(--ink)}
 /* Botones feedback */
-.bt:active,.bp:active,.btn:active{opacity:.88;transform:scale(.97)}
-/* Sidebar activo con borde izquierdo */
-.ni.active{border-left:3px solid var(--terra);padding-left:9px}
-/* Toast más polished */
-.toast{border-radius:14px;box-shadow:0 6px 24px rgba(30,18,10,.3);font-weight:500;letter-spacing:.2px}
-/* Bottom nav indicador */
+.bt:active,.bp:active,.btn:active{opacity:.86;transform:scale(.97)}
+/* Toast premium */
+.toast{border-radius:14px;box-shadow:0 6px 28px rgba(30,18,10,.32);font-weight:500;letter-spacing:.2px;padding:10px 20px}
+/* Bottom nav indicator */
 .bni{position:relative;transition:color .2s}
-.bni.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:18px;height:3px;background:var(--terra);border-radius:2px}
-/* Topbar mejorado */
-.topbar{background:linear-gradient(to right,var(--sf),var(--bg));border-bottom:1px solid var(--br)}
-/* Alerts */
+.bni.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:20px;height:3px;background:var(--terra);border-radius:2px}
+/* Alert */
 .alert-btn-wrap{position:relative}
-.alert-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid #fff;padding:0 2px;pointer-events:none;animation:pulse-badge .6s ease}
-@keyframes pulse-badge{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+.alert-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid #fff;padding:0 2px;pointer-events:none;animation:pulse-badge .5s ease}
+@keyframes pulse-badge{0%{transform:scale(0)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
 .alert-panel{position:absolute;top:calc(100% + 8px);right:0;width:310px;background:var(--sf);border:1px solid var(--br);border-radius:var(--rl);box-shadow:0 8px 32px rgba(30,18,10,.18);z-index:400;overflow:hidden;animation:fadeDown .15s ease}
 @keyframes fadeDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-.alert-item{padding:10px 16px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;border-bottom:1px solid var(--br);transition:background .15s}
+.alert-item{padding:11px 16px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;border-bottom:1px solid var(--br);transition:background .15s}
 .alert-item:hover{background:var(--sf2)}
 .alert-item:last-child{border-bottom:none}
-/* Inputs más polished */
-.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--terra);box-shadow:0 0 0 3px rgba(160,103,74,.1)}
-/* Rows tabla */
-tbody tr{transition:background .1s}
-tbody tr:hover td{background:var(--sf2)}
-/* Chips más definidos */
+/* Inputs focus premium */
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--terra);box-shadow:0 0 0 3px rgba(160,103,74,.12)}
+/* Chips */
 .chip{font-weight:600;letter-spacing:.3px}
 /* Placeholders */
-::placeholder{color:var(--ink3);opacity:.7}
+::placeholder{color:var(--ink3);opacity:.65}
+/* pH mejorado */
+.ph h1{font-size:24px}
+.ph p{font-size:12px;color:var(--nude)}
+/* Selector de reportes */
+.rcard.sel{border-color:var(--terra);background:linear-gradient(135deg,#FDF0E8 0%,#fff 100%);box-shadow:0 2px 12px rgba(160,103,74,.15)}
+/* Balance pill del topbar */
+.tb-pill{background:linear-gradient(135deg,#F5EDD8,#EDD9B0);color:var(--gold);border:1px solid #DEC888;font-weight:700}
 </style>
 </head>
 <body>
@@ -285,7 +313,7 @@ tbody tr:hover td{background:var(--sf2)}
     <button class="ni" onclick="goPage('reportes',this)"><i class="ti ti-chart-bar"></i>Reportería</button>
   </nav>
   <div class="sb-foot">
-    <div class="sb-bal"><div class="sl">Balance Mayo 2026</div><div class="sv" id="sbBal">—</div></div>
+    <div class="sb-bal"><div class="sl" id="sbBalLabel">Balance</div><div class="sv" id="sbBal">—</div></div>
   </div>
 </aside>
 <main class="main">
@@ -318,10 +346,10 @@ tbody tr:hover td{background:var(--sf2)}
         <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:18px;padding:2px"><i class="ti ti-x"></i></button>
       </div>
       <div class="kg">
-        <div class="kpi"><div class="ka" style="background:var(--mint)"></div><div class="kl">Servicios</div><div class="kv apos" id="kServ">—</div><div class="ks" id="kcServ">—</div></div>
-        <div class="kpi"><div class="ka" style="background:var(--gold)"></div><div class="kl">Productos</div><div class="kv" style="color:var(--gold)" id="kProd">—</div><div class="ks" id="kcProd">—</div></div>
-        <div class="kpi"><div class="ka" style="background:var(--terra)"></div><div class="kl">Total cobrado</div><div class="kv ater" id="kTotal">—</div><div class="ks" id="kTotalSub">Este mes · solo recibido</div></div>
-        <div class="kpi"><div class="ka" style="background:var(--violet)"></div><div class="kl">Clientes únicos</div><div class="kv" style="color:var(--violet)" id="kCli">—</div><div class="ks" id="kcxc">—</div></div>
+        <div class="kpi kpi-serv"><div class="ka" style="background:var(--mint)"></div><div class="kl">Servicios</div><div class="kv apos" id="kServ">—</div><div class="ks" id="kcServ">—</div></div>
+        <div class="kpi kpi-prod"><div class="ka" style="background:var(--gold)"></div><div class="kl">Productos</div><div class="kv" style="color:var(--gold)" id="kProd">—</div><div class="ks" id="kcProd">—</div></div>
+        <div class="kpi kpi-total"><div class="ka" style="background:var(--terra)"></div><div class="kl">Total cobrado</div><div class="kv ater" id="kTotal">—</div><div class="ks" id="kTotalSub">Este mes · solo recibido</div></div>
+        <div class="kpi kpi-cli"><div class="ka" style="background:var(--violet)"></div><div class="kl">Clientes únicos</div><div class="kv" style="color:var(--violet)" id="kCli">—</div><div class="ks" id="kcxc">—</div></div>
       </div>
       <div class="g2" style="margin-bottom:14px">
         <div class="card"><div class="ch"><div class="ct">Ingresos por semana</div></div><div class="cb"><div class="bch" id="dWeekChart"></div><div class="leg"><div class="li"><div class="ld" style="background:var(--mint)"></div>Servicios</div><div class="li"><div class="ld" style="background:var(--gold)"></div>Productos</div></div></div></div>
@@ -796,7 +824,7 @@ tbody tr:hover td{background:var(--sf2)}
 <script>
 // Force-reload si hay versión vieja en caché
 (function() {
-  var VER = '20';
+  var VER = '22';
   try {
     var p = new URLSearchParams(location.search);
     if (p.get('v') !== VER) { location.replace(location.pathname + '?v=' + VER); }
@@ -941,6 +969,8 @@ function getStats() {
 // ── RENDER ALL ──────────────────────────────────────────
 function renderAll() {
   var st = getStats();
+  var _now = new Date(), _meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('sbBalLabel').textContent = 'Balance ' + _meses[_now.getMonth()] + ' ' + _now.getFullYear();
   document.getElementById('sbBal').textContent = fmt(st.cobrado);
   document.getElementById('tbBal').textContent = fmt(st.cobrado);
   renderDash(st);
