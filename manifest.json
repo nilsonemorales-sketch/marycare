@@ -1,0 +1,23 @@
+{
+  "name": "Mary Care — Sistema de Gestión",
+  "short_name": "Mary Care",
+  "description": "Gestión clínica y comercial de Mary Care by Maria Frias",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF9F7",
+  "theme_color": "#FAF9F7",
+  "lang": "es-DO",
+  "dir": "ltr",
+  "categories": ["business", "medical", "productivity"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Nuevo movimiento", "short_name": "Cobrar", "url": "./index.html#nuevo", "description": "Registrar un servicio o venta" },
+    { "name": "Agenda de hoy", "short_name": "Agenda", "url": "./index.html#agenda", "description": "Ver las citas del día" }
+  ]
+}
