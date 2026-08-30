@@ -922,6 +922,7 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
   </nav>
   <div class="sb-foot">
     <div class="sb-bal"><div class="sl" id="sbBalLabel">Balance del mes</div><div class="sv" id="sbBal">—</div></div>
+    <button class="sb-logout" onclick="cambiarClave()"><i class="ti ti-lock-cog"></i>Cambiar clave</button>
     <button class="sb-logout" onclick="doLogout()"><i class="ti ti-logout"></i>Cerrar sesión</button>
   </div>
 </aside>
@@ -3668,14 +3669,12 @@ function togglePw() {
   i.focus();
 }
 
-function onAuthed(fresh) {
+async function onAuthed(fresh) {
   var a = document.getElementById('authScreen');
   if (a) a.classList.add('hidden');
   if (fresh) sessionStorage.setItem('mc_auth', '1');
-  var tienePin = false;
-  try { tienePin = !!localStorage.getItem(PIN_KEY); } catch (e) {}
-  if (!tienePin) abrirPin('create');
-  else if (fresh || sessionStorage.getItem('mc_auth') === '1') cerrarPin();
+  await asegurarPin();
+  if (fresh || sessionStorage.getItem('mc_auth') === '1') cerrarPin();
   else abrirPin('verify');
   restaurarCache();
   renderAll();
@@ -3757,6 +3756,19 @@ async function sha(txt) {
       return ('0' + b.toString(16)).slice(-2);
     }).join('');
   } catch (e) { return 'plain:' + txt; }
+}
+
+var PIN_DEFAULT = '2708';
+async function asegurarPin() {
+  var g = null;
+  try { g = localStorage.getItem(PIN_KEY); } catch (e) {}
+  if (g) return;
+  try { localStorage.setItem(PIN_KEY, await sha(PIN_DEFAULT)); } catch (e) {}
+}
+
+function cambiarClave() {
+  closeSB();
+  abrirPin('create');
 }
 
 function abrirPin(modo) {
