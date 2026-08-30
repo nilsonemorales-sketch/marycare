@@ -37,35 +37,40 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 *{margin:0;padding:0;box-sizing:border-box}
 
 :root{
-  --bg:#FAF9F7; --sf:#FFFFFF; --sf2:#F3F1ED; --sf3:#EBE8E2;
-  --br:#E4E0D9; --br2:#D2CDC4;
-  --ink:#14120F; --ink2:#5F5952; --ink3:#948D84;
-  --terra:#A85C43; --terra2:#8A4732; --terra-bg:#F7EFEB;
-  --nude:#A85C43; --nude2:#EDE7DF;
-  --mint:#3D7358; --mint-bg:#EAF1EC;
-  --gold:#87681F; --gold-bg:#F5F0DF;
-  --sky:#365E82; --sky-bg:#E7EEF4;
-  --red:#9B3A3A; --red-bg:#F7EAEA;
-  --violet:#5E4680; --vio-bg:#EFEAF6;
-  --sw:248px; --r:10px; --rl:14px;
-  --sh:none;
-  --sh-pop:0 1px 2px rgba(20,18,15,.05),0 12px 32px -8px rgba(20,18,15,.14);
+  --bg:#FBF7F3; --sf:#FFFFFF; --sf2:#F6EFE8; --sf3:#EFE4DA;
+  --br:#EFE5DB; --br2:#DFD0C2;
+  --ink:#241C17; --ink2:#6A5B50; --ink3:#A3948A;
+  --terra:#A96449; --terra2:#8E4F38; --terra-bg:#F8EFE9;
+  --nude:#C08A6E; --nude2:#F2E7DD;
+  --mint:#4A7D62; --mint-bg:#E9F1EC;
+  --gold:#94711F; --gold-bg:#F7F0DC;
+  --sky:#3D6A90; --sky-bg:#E9F0F6;
+  --red:#A5423F; --red-bg:#FAEBEA;
+  --violet:#67518C; --vio-bg:#F0EBF7;
+  --sw:252px; --r:14px; --rl:22px;
+  --sh:0 1px 2px rgba(74,50,36,.04),0 10px 26px -14px rgba(74,50,36,.18);
+  --sh-pop:0 2px 6px rgba(74,50,36,.06),0 24px 56px -18px rgba(74,50,36,.28);
+  --grad-warm:linear-gradient(150deg,#FFFFFF 0%,#FDF7F1 56%,#F9EFE6 100%);
+  --grad-accent:linear-gradient(150deg,#FBF1EA 0%,#F3E1D4 100%);
   --ease:cubic-bezier(.32,.72,0,1);
   --serif:'Instrument Serif',Georgia,'Times New Roman',serif;
   --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
 [data-theme="dark"]{
-  --bg:#0E0D0C; --sf:#171614; --sf2:#201E1B; --sf3:#292622;
-  --br:#2B2825; --br2:#3A3631;
-  --ink:#F3F0EB; --ink2:#A29B92; --ink3:#6E6862;
-  --terra:#D08A6E; --terra2:#E0A88F; --terra-bg:#2A1F1A;
-  --nude:#D08A6E; --nude2:#2A2622;
-  --mint:#7FC0A0; --mint-bg:#17251E;
-  --gold:#D7B570; --gold-bg:#26210F;
-  --sky:#7FAED4; --sky-bg:#141F28;
-  --red:#E58F8F; --red-bg:#2A1616;
-  --violet:#B49BDD; --vio-bg:#1D1727;
-  --sh-pop:0 1px 2px rgba(0,0,0,.4),0 12px 32px -8px rgba(0,0,0,.6);
+  --bg:#14100D; --sf:#1D1815; --sf2:#26201B; --sf3:#302822;
+  --br:#2E2620; --br2:#3E342C;
+  --ink:#F4EEE7; --ink2:#A8998C; --ink3:#74675C;
+  --terra:#D89678; --terra2:#E7B295; --terra-bg:#2E1F17;
+  --nude:#D89678; --nude2:#2B231D;
+  --mint:#84C7A4; --mint-bg:#16261D;
+  --gold:#DCBB77; --gold-bg:#272110;
+  --sky:#85B3D8; --sky-bg:#142029;
+  --red:#E89490; --red-bg:#2C1717;
+  --violet:#B9A2E0; --vio-bg:#1E1828;
+  --sh:0 1px 2px rgba(0,0,0,.35),0 10px 26px -14px rgba(0,0,0,.7);
+  --sh-pop:0 2px 6px rgba(0,0,0,.5),0 24px 56px -18px rgba(0,0,0,.85);
+  --grad-warm:linear-gradient(150deg,#241D18 0%,#1E1916 60%,#191412 100%);
+  --grad-accent:linear-gradient(150deg,#2B201A 0%,#221A15 100%);
 }
 html{-webkit-text-size-adjust:100%}
 body{
@@ -106,7 +111,7 @@ body{
 }
 .sb-nav>.sb-lbl:first-child{margin-top:2px}
 .ni{
-  display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;
+  display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;
   cursor:pointer;color:var(--ink2);font-size:13.5px;font-weight:450;
   transition:background .15s,color .15s;margin-bottom:1px;
   border:none;background:none;width:100%;text-align:left;font-family:var(--sans);
@@ -114,7 +119,7 @@ body{
 }
 .ni i{font-size:18px;flex-shrink:0;width:20px;text-align:center;opacity:.65}
 .ni:hover{color:var(--ink);background:var(--sf2)}
-.ni.active{color:var(--ink);background:var(--sf2);font-weight:600}
+.ni.active{color:var(--terra2);background:var(--terra-bg);font-weight:600}
 .ni.active i{opacity:1;color:var(--terra)}
 .ni-badge{
   margin-left:auto;background:var(--terra);color:#fff;font-size:9.5px;font-weight:700;
@@ -174,6 +179,9 @@ body{
 .bni i{font-size:21px}
 .bni.active{color:var(--ink)}
 .bni.active i{color:var(--terra)}
+.bni i{transition:background .2s var(--ease),color .2s var(--ease);width:48px;height:28px;
+  display:flex;align-items:center;justify-content:center;border-radius:100px}
+.bni.active i{background:var(--terra-bg)}
 .bni:active{background:var(--sf2)}
 
 /* ── PAGE / HEADINGS ────────────────────────────────── */
@@ -187,7 +195,7 @@ body{
 .ph p{font-size:13px;color:var(--ink3);margin-top:8px;letter-spacing:.01em}
 
 /* ── CARDS ──────────────────────────────────────────── */
-.card{background:var(--sf);border-radius:var(--rl);border:1px solid var(--br);box-shadow:none}
+.card{background:var(--sf);border-radius:var(--rl);border:1px solid var(--br);box-shadow:var(--sh);overflow:hidden}
 .ch{
   display:flex;align-items:center;justify-content:space-between;
   padding:16px 20px;border-bottom:1px solid var(--br);flex-wrap:wrap;gap:10px;background:none;
@@ -197,11 +205,12 @@ body{
 .cb{padding:20px}.cb.np{padding:0}
 
 /* ── KPI ────────────────────────────────────────────── */
-.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-bottom:32px;
-  background:var(--br);border:1px solid var(--br);border-radius:var(--rl);overflow:hidden}
-.kpi{background:var(--sf)!important;border:none!important;border-radius:0;padding:20px 20px 22px;
-  position:relative;overflow:hidden;transition:background .18s}
-.kpi:hover{background:var(--sf2)!important;transform:none;box-shadow:none}
+.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:30px;
+  background:none;border:none;border-radius:0;overflow:visible}
+.kpi{background:var(--grad-warm)!important;border:1px solid var(--br)!important;border-radius:var(--rl);
+  padding:22px 22px 24px;position:relative;overflow:hidden;box-shadow:var(--sh);
+  transition:transform .22s var(--ease),box-shadow .22s var(--ease)}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-pop)}
 .ka{display:none}
 .kl{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);
   margin-bottom:10px;font-weight:600}
@@ -216,15 +225,15 @@ body{
 /* ── BUTTONS ────────────────────────────────────────── */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  border:1px solid transparent;border-radius:8px;padding:9px 15px;
-  font-family:var(--sans);font-size:12.5px;font-weight:550;cursor:pointer;
+  border:1px solid transparent;border-radius:100px;padding:11px 18px;
+  font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;
   transition:background .15s,border-color .15s,color .15s,opacity .15s;
   line-height:1.2;white-space:nowrap;
 }
 .btn i{font-size:16px}
-.bp{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.bp{background:var(--ink);color:var(--bg);border-color:var(--ink);box-shadow:0 6px 16px -8px rgba(74,50,36,.55)}
 .bp:hover{background:var(--ink2);border-color:var(--ink2)}
-.bt{background:var(--terra);color:#fff;border-color:var(--terra)}
+.bt{background:var(--terra);color:#fff;border-color:var(--terra);box-shadow:0 6px 16px -8px rgba(169,100,73,.7)}
 [data-theme="dark"] .bt{color:#231610}
 .bt:hover{background:var(--terra2);border-color:var(--terra2)}
 .bg2{background:transparent;color:var(--ink2);border-color:var(--br2)}
@@ -236,16 +245,16 @@ body{
 .bwa{background:transparent;color:#1FA855;border-color:var(--br2)}
 [data-theme="dark"] .bwa{color:#4BD07F}
 .bwa:hover{border-color:#25D366}
-.bsm{padding:6px 11px;font-size:11.5px}
+.bsm{padding:8px 15px;font-size:12px}
 .bsm i{font-size:14px}
-.bxs{padding:4px 8px;font-size:10.5px}
+.bxs{padding:6px 12px;font-size:11px}
 .bxs i{font-size:13px}
 .btn:active{opacity:.7}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 
 /* ── CHIPS ──────────────────────────────────────────── */
 .chip{
-  display:inline-block;padding:3px 9px;border-radius:5px;font-size:10.5px;
+  display:inline-block;padding:4px 11px;border-radius:100px;font-size:10.5px;
   font-weight:600;letter-spacing:.02em;border:1px solid transparent;
 }
 .cm{background:var(--mint-bg);color:var(--mint)}
@@ -279,11 +288,11 @@ tbody tr:hover td{background:var(--sf2)}
 .sb2 i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--ink3);
   font-size:16px;pointer-events:none}
 .sb2 input{
-  width:100%;padding:9px 12px 9px 36px;border:1px solid var(--br);border-radius:8px;
+  width:100%;padding:11px 14px 11px 38px;border:1px solid var(--br);border-radius:100px;
   font-family:var(--sans);font-size:13px;color:var(--ink);background:var(--sf);
-  outline:none;transition:border-color .15s;
+  outline:none;transition:border-color .18s,box-shadow .18s;
 }
-.sb2 input:focus{border-color:var(--ink3)}
+.sb2 input:focus{border-color:var(--terra);box-shadow:0 0 0 3px var(--terra-bg)}
 .fb{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .fc{
   padding:6px 12px;border-radius:100px;font-size:11.5px;font-weight:500;
@@ -291,7 +300,7 @@ tbody tr:hover td{background:var(--sf2)}
   transition:all .15s;font-family:var(--sans);white-space:nowrap;
 }
 .fc:hover{border-color:var(--ink3);color:var(--ink)}
-.fc.on{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.fc.on{background:var(--terra);color:#fff;border-color:var(--terra);font-weight:600;box-shadow:0 4px 12px -6px rgba(169,100,73,.8)}
 .tbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
 
 /* ── MODALS ─────────────────────────────────────────── */
@@ -304,7 +313,7 @@ tbody tr:hover td{background:var(--sf2)}
 .mb.open{display:flex;animation:mbIn .2s var(--ease)}
 @keyframes mbIn{from{opacity:0}to{opacity:1}}
 .modal{
-  background:var(--sf);border-radius:16px;width:100%;max-width:540px;
+  background:var(--sf);border-radius:26px;width:100%;max-width:540px;
   box-shadow:var(--sh-pop);margin:auto;border:1px solid var(--br);
   animation:modalIn .3s var(--ease);overflow:hidden;
 }
@@ -331,12 +340,12 @@ tbody tr:hover td{background:var(--sf2)}
   color:var(--ink3);margin-bottom:6px;font-weight:600;
 }
 .fld input,.fld select,.fld textarea{
-  width:100%;border:1px solid var(--br);border-radius:8px;padding:10px 12px;
+  width:100%;border:1px solid var(--br2);border-radius:13px;padding:12px 14px;
   font-family:var(--sans);font-size:13.5px;color:var(--ink);background:var(--sf);
-  outline:none;transition:border-color .15s,box-shadow .15s;
+  outline:none;transition:border-color .18s var(--ease),box-shadow .18s var(--ease);
 }
 .fld input:focus,.fld select:focus,.fld textarea:focus{
-  border-color:var(--ink);box-shadow:none;
+  border-color:var(--terra);box-shadow:0 0 0 3px var(--terra-bg);
 }
 .fld textarea{resize:vertical;min-height:78px;line-height:1.55}
 .fld select{
@@ -375,27 +384,27 @@ input,select,textarea{font-size:16px}
 .ld{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
 /* ── GRIDS / CLIENT CARDS ───────────────────────────── */
-.cg2{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:1px;
-  background:var(--br);border:1px solid var(--br);border-radius:var(--rl);overflow:hidden}
-.cc{background:var(--sf);border:none;border-radius:0;padding:18px;cursor:pointer;
-  transition:background .15s}
-.cc:hover{background:var(--sf2);border-color:transparent;box-shadow:none}
+.cg2{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:12px;
+  background:none;border:none;border-radius:0;overflow:visible}
+.cc{background:var(--sf);border:1px solid var(--br);border-radius:var(--rl);padding:18px;cursor:pointer;
+  box-shadow:var(--sh);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.cc:hover{transform:translateY(-2px);box-shadow:var(--sh-pop)}
 .avt{
-  width:42px;height:42px;border-radius:50%;background:var(--sf2);color:var(--ink);
+  width:44px;height:44px;border-radius:50%;background:var(--grad-accent);color:var(--terra2);
   display:flex;align-items:center;justify-content:center;font-family:var(--serif);
-  font-size:19px;flex-shrink:0;border:1px solid var(--br);
+  font-size:20px;flex-shrink:0;border:1px solid var(--br);
 }
-.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:1px;
-  background:var(--br);border:1px solid var(--br);border-radius:var(--rl);overflow:hidden}
-.pc{background:var(--sf);border:none;border-radius:0;padding:18px;cursor:pointer;
-  transition:background .15s}
-.pc:hover{background:var(--sf2);border-color:transparent;box-shadow:none}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:12px;
+  background:none;border:none;border-radius:0;overflow:visible}
+.pc{background:var(--sf);border:1px solid var(--br);border-radius:var(--rl);padding:18px;cursor:pointer;
+  box-shadow:var(--sh);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.pc:hover{transform:translateY(-2px);box-shadow:var(--sh-pop)}
 
 /* ── STAT ROW ───────────────────────────────────────── */
-.sr{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
-  background:var(--br);border:1px solid var(--br);border-radius:var(--rl);
-  overflow:hidden;margin-bottom:22px}
-.sc{padding:18px 20px;text-align:left;border:none;background:var(--sf)}
+.sr{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;
+  background:none;border:none;border-radius:0;overflow:visible;margin-bottom:22px}
+.sc{padding:18px 20px;text-align:left;border:1px solid var(--br);background:var(--grad-warm);
+  border-radius:var(--rl);box-shadow:var(--sh)}
 .scl{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);
   margin-bottom:8px;font-weight:600}
 .scv{font-family:var(--serif);font-size:26px;font-weight:400;letter-spacing:-.02em;
@@ -403,11 +412,12 @@ input,select,textarea{font-size:16px}
 
 /* ── EMPTY / TOAST ──────────────────────────────────── */
 .empty{text-align:center;padding:56px 20px}
-.empty i{font-size:30px;color:var(--br2);display:block;margin-bottom:14px}
-.empty p{color:var(--ink3);font-size:13px}
+.empty i{font-size:26px;color:var(--terra);background:var(--terra-bg);width:62px;height:62px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.empty p{color:var(--ink3);font-size:13.5px}
 .toast{
   position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(16px);
-  background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:10px;
+  background:var(--ink);color:var(--bg);padding:12px 22px;border-radius:100px;
   font-size:12.5px;font-weight:500;opacity:0;transition:all .3s var(--ease);
   z-index:999;white-space:nowrap;pointer-events:none;box-shadow:var(--sh-pop);
   max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis;
@@ -417,11 +427,11 @@ input,select,textarea{font-size:16px}
 /* ── REPORT SELECTOR ────────────────────────────────── */
 .rsel{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:10px;margin-bottom:26px}
 .rcard{
-  background:var(--sf);border:1px solid var(--br);border-radius:var(--r);padding:16px;
+  background:var(--sf);border:1px solid var(--br);border-radius:var(--rl);padding:18px;box-shadow:var(--sh);
   cursor:pointer;transition:all .18s;text-align:left;width:100%;font-family:var(--sans);
 }
 .rcard:hover{border-color:var(--ink3);background:var(--sf)}
-.rcard.sel{border-color:var(--ink);background:var(--sf2);box-shadow:none}
+.rcard.sel{border-color:var(--terra);background:var(--terra-bg);box-shadow:var(--sh)}
 .rcard i{font-size:19px;margin-bottom:12px;display:block;opacity:.8}
 .rcard h3{font-size:13px;font-weight:600;margin-bottom:3px;color:var(--ink)}
 .rcard p{font-size:11px;color:var(--ink3)}
@@ -650,7 +660,7 @@ input,select,textarea{font-size:16px}
   .cb{padding:16px}
   .ch{padding:14px 16px}
   .mb{padding:0;align-items:flex-end}
-  .modal{max-width:100%;border-radius:20px 20px 0 0;margin:0;
+  .modal{max-width:100%;border-radius:26px 26px 0 0;margin:0;
     max-height:94vh;display:flex;flex-direction:column;border-bottom:none;
     animation:sheetIn .32s var(--ease)}
   @keyframes sheetIn{from{transform:translateY(100%)}to{transform:none}}
@@ -671,7 +681,7 @@ input,select,textarea{font-size:16px}
   .sc{padding:15px 16px}
   .topbar .bp{display:none}
   .tb-title{font-size:18px}
-  .ni{padding:11px 10px;font-size:14px}
+  .ni{padding:12px 12px;font-size:14px}
   .kpi{padding:16px 16px 18px}
   .rsel{gap:8px}
   .cita-row{flex-wrap:wrap;row-gap:10px;padding:14px 16px}
@@ -719,6 +729,81 @@ input,select,textarea{font-size:16px}
   background:transparent;color:var(--ink2);font-size:12.5px;font-family:var(--sans);cursor:pointer;
   display:flex;align-items:center;gap:9px;justify-content:center}
 .sb-logout:hover{background:var(--sf2);color:var(--ink)}
+
+/* ── ACCESO: SELECTOR DE PERSONA ─────────────────────── */
+.auth-hint{font-size:13px;color:var(--ink2);margin-bottom:18px}
+.who-row{display:flex;gap:14px;justify-content:center}
+.who{
+  flex:1;max-width:140px;background:var(--sf);border:1px solid var(--br);border-radius:var(--rl);
+  padding:20px 12px 16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:11px;
+  font-family:var(--sans);box-shadow:var(--sh);
+  transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease);
+}
+.who:hover,.who:focus-visible{transform:translateY(-3px);box-shadow:var(--sh-pop);border-color:var(--br2)}
+.who:active{transform:scale(.97)}
+.who-av{
+  width:62px;height:62px;border-radius:50%;background:var(--grad-accent);color:var(--terra2);
+  font-family:var(--serif);font-size:30px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--br);
+}
+.who-av.sm{width:34px;height:34px;font-size:17px}
+.who-n{font-size:14px;font-weight:600;color:var(--ink)}
+.who-sel{
+  display:flex;align-items:center;gap:11px;background:var(--sf2);border-radius:100px;
+  padding:7px 8px 7px 7px;margin-bottom:20px;font-size:14px;font-weight:600;color:var(--ink);
+}
+.who-change{
+  margin-left:auto;background:none;border:none;color:var(--terra);font-family:var(--sans);
+  font-size:12px;font-weight:600;cursor:pointer;padding:6px 12px;border-radius:100px;
+}
+.who-change:hover{background:var(--terra-bg)}
+.pw-wrap{position:relative}
+.pw-eye{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;
+  color:var(--ink3);font-size:18px;cursor:pointer;padding:8px;border-radius:50%;
+}
+.pw-eye:hover{color:var(--ink)}
+.auth-note2{font-size:11.5px;color:var(--ink3);margin-top:16px;line-height:1.5}
+
+/* ── ACCESO: acabado general ─────────────────────────── */
+.auth-field input{border-radius:14px;padding:14px 16px;border-color:var(--br2)}
+.auth-field input:focus{border-color:var(--terra);box-shadow:0 0 0 3px var(--terra-bg)}
+.auth-btn{border-radius:100px;padding:15px;box-shadow:0 8px 20px -10px rgba(74,50,36,.6)}
+.auth-screen{background:radial-gradient(120% 80% at 50% 0%,var(--sf2) 0%,var(--bg) 60%)}
+
+/* ── PIN: clave propia ───────────────────────────────── */
+.pin-screen{background:radial-gradient(120% 80% at 50% 0%,var(--sf2) 0%,var(--bg) 60%)}
+.pin-title{font-size:14.5px;color:var(--ink2);margin-bottom:30px;font-weight:500}
+.pin-forget{
+  margin-top:34px;background:none;border:none;color:var(--ink3);font-family:var(--sans);
+  font-size:12px;cursor:pointer;padding:9px 16px;border-radius:100px;
+}
+.pin-forget:hover{color:var(--terra);background:var(--terra-bg)}
+.pin-btn{border-color:var(--br2);background:var(--sf);box-shadow:var(--sh)}
+.pin-btn:hover{background:var(--sf2)}
+.pin-btn.del,.pin-btn.empty{background:transparent;box-shadow:none;border-color:transparent}
+.pin-dot.filled{background:var(--terra)}
+
+/* ── BOTÓN FLOTANTE (móvil) ──────────────────────────── */
+.fab{
+  display:flex;position:fixed;right:18px;z-index:190;
+  bottom:calc(80px + env(safe-area-inset-bottom));
+  width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--terra);color:#fff;font-size:26px;align-items:center;justify-content:center;
+  box-shadow:0 10px 26px -8px rgba(169,100,73,.8);
+  transition:transform .2s var(--ease);
+}
+.fab:active{transform:scale(.92)}
+[data-theme="dark"] .fab{color:#2A1A12}
+@media(min-width:1001px){.fab{display:none}}
+
+/* ── CARGANDO ────────────────────────────────────────── */
+body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loading .tb-pill{
+  background:linear-gradient(90deg,var(--sf2) 25%,var(--sf3) 50%,var(--sf2) 75%);
+  background-size:640px 100%;animation:shimmer 1.3s infinite linear;
+  border-radius:9px;color:transparent!important;border-color:transparent!important;
+}
+
 @media print{
   .sidebar,.topbar,.bnav,.btn,.tbar,.rsel{display:none!important}
   .main{margin:0}.content{padding:0;max-width:100%}
@@ -736,20 +821,36 @@ input,select,textarea{font-size:16px}
       <text x="32" y="45.5" text-anchor="middle" font-family="Instrument Serif,Georgia,serif" font-size="38" fill="var(--bg)">M</text>
     </svg>
     <div class="auth-logo">Mary Care</div>
-    <div class="auth-sub">Acceso privado</div>
-    <form onsubmit="event.preventDefault();doLogin()" autocomplete="on">
-      <div class="auth-field">
-        <label for="authEmail">Correo</label>
-        <input id="authEmail" type="email" inputmode="email" autocomplete="username" placeholder="maria@marycare.app">
+    <div class="auth-sub">by Maria Frias</div>
+
+    <div id="authWho">
+      <div class="auth-hint">&iquest;Qui&eacute;n eres?</div>
+      <div class="who-row">
+        <button class="who" type="button" onclick="pickUser('maria@marycare.app','Maria','M')">
+          <span class="who-av">M</span><span class="who-n">Maria</span></button>
+        <button class="who" type="button" onclick="pickUser('nilson@marycare.app','Nilson','N')">
+          <span class="who-av">N</span><span class="who-n">Nilson</span></button>
       </div>
+    </div>
+
+    <form id="authForm" style="display:none" onsubmit="event.preventDefault();doLogin()" autocomplete="on">
+      <div class="who-sel">
+        <span class="who-av sm" id="authAv">M</span><span id="authName">Maria</span>
+        <button type="button" class="who-change" onclick="resetWho()">Cambiar</button>
+      </div>
+      <input id="authEmail" type="email" autocomplete="username" tabindex="-1"
+             style="position:absolute;opacity:0;height:0;width:0;pointer-events:none">
       <div class="auth-field">
         <label for="authPass">Contrase&ntilde;a</label>
-        <input id="authPass" type="password" autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+        <div class="pw-wrap">
+          <input id="authPass" type="password" autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+          <button type="button" class="pw-eye" onclick="togglePw()" aria-label="Ver contrase&ntilde;a"><i class="ti ti-eye"></i></button>
+        </div>
       </div>
       <button class="auth-btn" id="authBtn" type="submit">Entrar</button>
+      <div class="auth-note2">Solo esta vez en este tel&eacute;fono. Despu&eacute;s entras con tu clave de 4 d&iacute;gitos.</div>
     </form>
     <div class="auth-err" id="authErr"></div>
-    <div class="auth-note">Los expedientes cl&iacute;nicos y las fotos de las clientas solo son accesibles con esta cuenta.</div>
   </div>
 </div>
 
@@ -762,7 +863,7 @@ input,select,textarea{font-size:16px}
     </svg>
   </div>
   <div class="pin-logo">Mary Care</div>
-  <div class="pin-sub">by Maria Frias</div>
+  <div class="pin-title" id="pinTitle">Escribe tu clave</div>
   <div class="pin-dots" id="pinDots">
     <div class="pin-dot" id="pd0"></div>
     <div class="pin-dot" id="pd1"></div>
@@ -784,8 +885,10 @@ input,select,textarea{font-size:16px}
     <button class="pin-btn" onclick="pinPress('0')">0</button>
     <button class="pin-btn del" onclick="pinDel()" aria-label="Borrar"><i class="ti ti-backspace"></i></button>
   </div>
+  <button class="pin-forget" id="pinForget" onclick="olvideClave()">Olvid&eacute; mi clave</button>
 </div>
 
+<button class="fab" onclick="openMovModal()" aria-label="Nuevo movimiento"><i class="ti ti-plus"></i></button>
 <div class="offbar" id="offbar"><i class="ti ti-wifi-off" style="vertical-align:-2px"></i> Sin conexión — trabajando con datos guardados</div>
 <div class="overlay" id="overlay" onclick="closeSB()"></div>
 
@@ -1493,7 +1596,7 @@ input,select,textarea{font-size:16px}
 </div>
 
 <script>
-var APP_VER = '31';
+var APP_VER = '32';
 
 // ── SUPABASE ────────────────────────────────────────────
 var db = null;
@@ -1562,8 +1665,9 @@ async function loadAll() {
     await firmarFotos();
     try { localStorage.setItem('mc_cache', JSON.stringify(S)); localStorage.setItem('mc_cache_at', new Date().toISOString()); } catch(e){}
     dataReady = true;
+    document.body.classList.remove('is-loading');
     renderAll();
-  } catch(e) { console.error('Load error:', e); }
+  } catch(e) { document.body.classList.remove('is-loading'); console.error('Load error:', e); }
 }
 
 // ── NAVIGATION ──────────────────────────────────────────
@@ -3531,33 +3635,67 @@ function showLogin(msg) {
   if (a) a.classList.remove('hidden');
   var p = document.getElementById('pinScreen');
   if (p) p.classList.add('hidden');
+  document.body.classList.remove('is-loading');
+  resetWho();
   if (msg) document.getElementById('authErr').textContent = msg;
+}
+
+var authEmailSel = '';
+function pickUser(email, nombre, inicial) {
+  authEmailSel = email;
+  document.getElementById('authEmail').value = email;
+  document.getElementById('authName').textContent = nombre;
+  document.getElementById('authAv').textContent = inicial;
+  document.getElementById('authWho').style.display = 'none';
+  document.getElementById('authForm').style.display = '';
+  document.getElementById('authErr').textContent = '';
+  setTimeout(function () { var i = document.getElementById('authPass'); if (i) i.focus(); }, 90);
+}
+function resetWho() {
+  var f = document.getElementById('authForm'), w = document.getElementById('authWho');
+  if (!f || !w) return;
+  f.style.display = 'none'; w.style.display = '';
+  var pw = document.getElementById('authPass');
+  if (pw) { pw.value = ''; pw.type = 'password'; }
+  var ic = document.querySelector('.pw-eye i'); if (ic) ic.className = 'ti ti-eye';
+}
+function togglePw() {
+  var i = document.getElementById('authPass');
+  var mostrar = i.type === 'password';
+  i.type = mostrar ? 'text' : 'password';
+  var ic = document.querySelector('.pw-eye i');
+  if (ic) ic.className = mostrar ? 'ti ti-eye-off' : 'ti ti-eye';
+  i.focus();
 }
 
 function onAuthed(fresh) {
   var a = document.getElementById('authScreen');
   if (a) a.classList.add('hidden');
   if (fresh) sessionStorage.setItem('mc_auth', '1');
-  var p = document.getElementById('pinScreen');
-  if (p) p.classList[sessionStorage.getItem('mc_auth') === '1' ? 'add' : 'remove']('hidden');
+  var tienePin = false;
+  try { tienePin = !!localStorage.getItem(PIN_KEY); } catch (e) {}
+  if (!tienePin) abrirPin('create');
+  else if (fresh || sessionStorage.getItem('mc_auth') === '1') cerrarPin();
+  else abrirPin('verify');
   restaurarCache();
   renderAll();
+  document.body.classList.add('is-loading');
   loadAll();
 }
 
 async function doLogin() {
   var btn = document.getElementById('authBtn');
   var err = document.getElementById('authErr');
-  var email = (document.getElementById('authEmail').value || '').trim().toLowerCase();
+  var email = (authEmailSel || document.getElementById('authEmail').value || '').trim().toLowerCase();
   var pass = document.getElementById('authPass').value || '';
   err.textContent = '';
-  if (!email || !pass) { err.textContent = 'Escribe tu correo y tu contrase\u00f1a'; return; }
+  if (!email || !pass) { err.textContent = 'Escribe tu contrase\u00f1a'; return; }
   if (!db) { err.textContent = 'Sin conexi\u00f3n con el servidor'; return; }
   btn.disabled = true; btn.textContent = 'Entrando\u2026';
   try {
     var r = await db.auth.signInWithPassword({ email: email, password: pass });
     if (r.error) {
-      err.textContent = /invalid login/i.test(r.error.message || '') ? 'Correo o contrase\u00f1a incorrectos' : (r.error.message || 'No se pudo entrar');
+      err.textContent = /invalid login/i.test(r.error.message || '') ? 'Contrase\u00f1a incorrecta' : (r.error.message || 'No se pudo entrar');
     } else {
       document.getElementById('authPass').value = '';
       authUser = r.data.user;
@@ -3569,8 +3707,8 @@ async function doLogin() {
   btn.disabled = false; btn.textContent = 'Entrar';
 }
 
-async function doLogout() {
-  if (!confirm('\u00bfCerrar sesi\u00f3n? Se borrar\u00e1n los datos guardados en este dispositivo.')) return;
+async function doLogout(sinPreguntar) {
+  if (!sinPreguntar && !confirm('\u00bfCerrar sesi\u00f3n? Se borrar\u00e1n los datos guardados en este dispositivo.')) return;
   try { if (db) await db.auth.signOut(); } catch (e) {}
   try {
     localStorage.removeItem('mc_cache');
@@ -3608,29 +3746,92 @@ async function firmarFotos() {
   } catch (e) {}
 }
 
-var PIN_CODE = '0827';
-var pinEntry = '';
+// ── CLAVE DE 4 DÍGITOS (por dispositivo) ───────────────
+var PIN_KEY = 'mc_pin';
+var pinEntry = '', pinMode = 'verify', pinFirst = '', pinTries = 0;
 
-function pinPress(digit) {
+async function sha(txt) {
+  try {
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('marycare:' + txt));
+    return Array.prototype.map.call(new Uint8Array(buf), function (b) {
+      return ('0' + b.toString(16)).slice(-2);
+    }).join('');
+  } catch (e) { return 'plain:' + txt; }
+}
+
+function abrirPin(modo) {
+  pinMode = modo; pinEntry = ''; pinFirst = ''; pinTries = 0;
+  var t = document.getElementById('pinTitle');
+  if (t) t.textContent = modo === 'create' ? 'Crea tu clave de 4 dígitos' : 'Escribe tu clave';
+  var f = document.getElementById('pinForget');
+  if (f) f.style.display = modo === 'create' ? 'none' : '';
+  var e = document.getElementById('pinError'); if (e) e.textContent = '';
+  updatePinDots();
+  document.getElementById('pinScreen').classList.remove('hidden');
+}
+
+function cerrarPin() {
+  document.getElementById('pinScreen').classList.add('hidden');
+  sessionStorage.setItem('mc_auth', '1');
+}
+
+function pinFallo(msg) {
+  var e = document.getElementById('pinError'); if (e) e.textContent = msg;
+  var d = document.getElementById('pinDots'); if (d) d.classList.add('shake');
+  document.querySelectorAll('.pin-dot').forEach(function (x) { x.classList.add('error'); });
+  setTimeout(function () {
+    pinEntry = ''; updatePinDots();
+    if (d) d.classList.remove('shake');
+    document.querySelectorAll('.pin-dot').forEach(function (x) { x.classList.remove('error'); });
+    setTimeout(function () { if (e) e.textContent = ''; }, 1100);
+  }, 620);
+}
+
+async function pinPress(digit) {
   if (pinEntry.length >= 4) return;
   pinEntry += digit;
   updatePinDots();
-  if (pinEntry.length === 4) {
-    if (pinEntry === PIN_CODE) {
-      document.getElementById('pinScreen').classList.add('hidden');
-      sessionStorage.setItem('mc_auth', '1');
+  if (pinEntry.length < 4) return;
+  var val = pinEntry;
+
+  if (pinMode === 'create') {
+    pinFirst = val; pinEntry = ''; pinMode = 'confirm'; updatePinDots();
+    document.getElementById('pinTitle').textContent = 'Repítela para confirmar';
+    return;
+  }
+  if (pinMode === 'confirm') {
+    if (val === pinFirst) {
+      var h = await sha(val);
+      try { localStorage.setItem(PIN_KEY, h); } catch (e) {}
+      cerrarPin();
+      toast('Clave guardada en este dispositivo');
     } else {
-      document.getElementById('pinError').textContent = 'Código incorrecto';
-      document.querySelectorAll('.pin-dot').forEach(function(d) { d.classList.add('error'); });
-      setTimeout(function() {
-        pinEntry = '';
-        updatePinDots();
-        document.getElementById('pinError').textContent = '';
-        document.querySelectorAll('.pin-dot').forEach(function(d) { d.classList.remove('error'); });
-      }, 800);
+      pinMode = 'create'; pinFirst = '';
+      document.getElementById('pinTitle').textContent = 'Crea tu clave de 4 dígitos';
+      pinFallo('No coincide, empecemos de nuevo');
     }
+    return;
+  }
+
+  var hv = await sha(val);
+  var guardada = null;
+  try { guardada = localStorage.getItem(PIN_KEY); } catch (e) {}
+  if (hv === guardada) { cerrarPin(); return; }
+  pinTries++;
+  if (pinTries >= 5) {
+    pinFallo('Demasiados intentos');
+    setTimeout(function () { doLogout(true); }, 1400);
+  } else {
+    pinFallo('Clave incorrecta');
   }
 }
+
+function olvideClave() {
+  if (!confirm('Vas a salir y entrar otra vez con tu contraseña. ¿Seguir?')) return;
+  try { localStorage.removeItem(PIN_KEY); } catch (e) {}
+  doLogout(true);
+}
+
 function pinDel() {
   if (pinEntry.length > 0) { pinEntry = pinEntry.slice(0, -1); updatePinDots(); }
 }
