@@ -914,6 +914,12 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
     font-size:7.5pt;color:#8A6E80;border-top:.3mm solid #EDE5EC;background:#fff}
 }
 
+
+/* KPI de tres columnas: que la cifra no se corte en el teléfono */
+@media(max-width:520px){
+  .kg[style*="repeat(3"]{grid-template-columns:1fr 1fr!important}
+  .kv{font-size:var(--mc-t-lg);overflow-wrap:anywhere}
+}
 </style>
 </head>
 <body class="mc">
@@ -1093,6 +1099,7 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
         <div class="sb2" style="flex:1;max-width:260px"><i class="ti ti-search"></i><input type="text" placeholder="Buscar..." oninput="catSearch(this.value)"></div>
         <div class="fb">
           <button class="fc on" onclick="catFilter('all',this)">Todos</button>
+          <button class="fc" onclick="catFilter('Servicio',this)">Servicios</button>
           <button class="fc" onclick="catFilter('GDC',this)">GDC</button>
           <button class="fc" onclick="catFilter('Roche',this)">LRP</button>
           <button class="fc" onclick="catFilter('Kit',this)">Kits</button>
@@ -1122,6 +1129,7 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
           <button class="btn bp bsm" style="margin-left:auto" onclick="openDeudaModal()"><i class="ti ti-plus"></i>Registrar</button>
         </div>
       </div>
+      <div id="deudaReparar"></div>
       <div id="deudaTbody"></div>
     </div>
 
@@ -1813,7 +1821,7 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
 </div>
 
 <script>
-var APP_VER = '39';
+var APP_VER = '40';
 
 // ── SUPABASE ────────────────────────────────────────────
 var db = null;
@@ -1933,7 +1941,7 @@ function contadorDe(pagina) {
     if (pagina === 'deudas') return (S.deudas || []).filter(function (d) {
       return d.tipo === 'cobrar' && d.estado === 'pendiente' && (diasDesde(d.fecha) || 0) >= 15;
     }).length;
-    if (pagina === 'inventario') return (S.catalogo || []).filter(function (p) {
+    if (pagina === 'inventario') return soloProductos(S.catalogo).filter(function (p) {
       var m = p.stock_min == null ? 3 : p.stock_min;
       return p.cantidad != null && p.cantidad <= m;
     }).length;
@@ -2084,10 +2092,31 @@ function minLaborables(k) {
 function citasActivas(k) {
   return (S.citas || []).filter(function (c) { return c.fecha === k && c.estado !== 'cancelada'; });
 }
+function duracionCatalogo(servicio) {
+  var c = (S.catalogo || []).find(function (p) { return normNom(p.name) === normNom(servicio); });
+  return (c && c.duracion_min) ? parseInt(c.duracion_min, 10) : 60;
+}
 function minVendidos(k) {
-  return citasActivas(k).reduce(function (a, c) { return a + (parseInt(c.duracion_min, 10) || 60); }, 0);
+  return citasActivas(k).reduce(function (a, c) { return a + (parseInt(c.duracion_min, 10) || duracionCatalogo(c.servicio)); }, 0);
 }
 function recibido(m) { return m.pago === 'efectivo' || m.pago === 'transferencia'; }
+function precioCatalogo(servicio) {
+  var c = (S.catalogo || []).find(function (p) { return normNom(p.name) === normNom(servicio); });
+  return c ? parseFloat(c.price || 0) : 0;
+}
+function precioHistorico(servicio) {
+  var n = normNom(servicio);
+  if (!n) return 0;
+  var m = (S.movimientos || []).filter(function (x) {
+    return x.tipo === 'servicio' && normNom(x.concepto) === n && parseFloat(x.monto || 0) > 0;
+  }).sort(function (a, b) { return String(b.fecha).localeCompare(String(a.fecha)); })[0];
+  return m ? parseFloat(m.monto) : 0;
+}
+function precioCita(c) {
+  var p = parseFloat(c.precio || 0);
+  if (p > 0) return p;
+  return precioCatalogo(c.servicio) || precioHistorico(c.servicio);
+}
 function cobradoEn(k) {
   return (S.movimientos || []).filter(function (m) { return m.fecha === k && recibido(m); })
     .reduce(function (a, m) { return a + parseFloat(m.monto || 0); }, 0);
@@ -2218,7 +2247,7 @@ function renderDash(st) {
   /* ── 10.2 · Hoy ──────────────────────────────────────── */
   var lab = minLaborables(hoy), ven = minVendidos(hoy);
   var cHoy = citasActivas(hoy);
-  var proy = cHoy.reduce(function (a, c) { return a + parseFloat(c.precio || 0); }, 0);
+  var proy = cHoy.reduce(function (a, c) { return a + precioCita(c); }, 0);
   var sinConf = cHoy.filter(function (c) { return c.estado === 'pendiente'; }).length;
   var cobHoy = cobradoEn(hoy);
 
@@ -2688,7 +2717,10 @@ function renderCatalogo() {
   if (catFilterV !== 'all') list = list.filter(function(p) { return p.cat && p.cat.toLowerCase().includes(catFilterV.toLowerCase()); });
   var cc = { GDC: 'ct2', 'La Roche Posay': 'cs', Kit: 'cg', Serum: 'cv', Eucerin: 'cm', Suplemento: 'cx', Cosmética: 'cx' };
   var sub = document.getElementById('catSubtitle');
-  if (sub) sub.textContent = list.length + ' producto' + (list.length !== 1 ? 's' : '');
+  if (sub) {
+    var ns = list.filter(esServicio).length, np = list.length - ns;
+    sub.textContent = np + ' producto' + (np !== 1 ? 's' : '') + ' · ' + ns + ' servicio' + (ns !== 1 ? 's' : '');
+  }
   setHTML('catGrid', list.map(function(p) {
     var margenHtml = '';
     if (p.costo && p.price && p.costo < p.price) {
@@ -2697,7 +2729,9 @@ function renderCatalogo() {
       margenHtml = '<div class="mcat-margin" style="color:' + mColor + '"><i class="ti ti-trending-up" style="font-size:10px"></i> ' + margen + '% margen · Costo: ' + fmt(p.costo) + '</div>';
     }
     var stockHtml = '';
-    if (p.cantidad !== undefined && p.cantidad !== null) {
+    if (esServicio(p)) {
+      stockHtml = '<span class="stock-chip stock-ok">' + (p.duracion_min || 60) + ' min</span>';
+    } else if (p.cantidad !== undefined && p.cantidad !== null) {
       var _e = stockEstado(p);
       var sc = _e === 'ok' ? 'stock-ok' : _e === 'bajo' ? 'stock-low' : 'stock-zero';
       var sl = p.cantidad > 0 ? p.cantidad + ' uds.' : 'Sin stock';
@@ -2712,7 +2746,7 @@ function renderCatalogo() {
       stockHtml + '</div>' +
       '<div style="display:flex;gap:5px;margin-top:8px">' +
       '<button class="btn bg2 bxs" style="flex:1;justify-content:center" onclick="openCatModal(' + p.id + ')"><i class="ti ti-edit"></i>Editar</button>' +
-      '<button class="btn bgo bxs" style="flex:1;justify-content:center" onclick="openRestockModal(' + p.id + ')"><i class="ti ti-package-import"></i>Entrada</button>' +
+      (esServicio(p) ? '' : '<button class="btn bgo bxs" style="flex:1;justify-content:center" onclick="openRestockModal(' + p.id + ')"><i class="ti ti-package-import"></i>Entrada</button>') +
       '<button class="btn bda bxs" onclick="delCat(' + p.id + ')" title="Eliminar producto"><i class="ti ti-trash"></i></button>' +
       '</div>' +
       '</div>';
@@ -2752,6 +2786,7 @@ function renderDeudas() {
   var sub = document.getElementById('dfSubtitle');
   if (sub) sub.textContent = vencidas ? vencidas + (vencidas === 1 ? ' pasada de 15 días' : ' pasadas de 15 días') : '';
 
+  renderDeudasSinIngreso();
   setHTML('deudaTbody', list.length ? list.map(function(d) {
     var dias = diasDesde(d.fecha);
     var saldo = deudaSaldo(d);
@@ -2771,7 +2806,7 @@ function renderDeudas() {
       '<div class="mc-actions" onclick="event.stopPropagation()">' +
         (tel ? '<button class="mc-btn" onclick="cobroWA(' + d.id + ')">Cobrar por WhatsApp</button>' : '') +
         '<button class="mc-btn mc-btn--quiet" onclick="openAbonoModal(' + d.id + ')">Abono</button>' +
-        '<button class="mc-btn mc-btn--quiet" onclick="marcarPagada(' + d.id + ')">Pagada</button>' +
+        '<button class="mc-btn mc-btn--quiet" onclick="saldarDeuda(' + d.id + ')">Saldar</button>' +
         '<button class="mc-btn mc-btn--quiet" onclick="openDeudaModal(' + d.id + ')">Editar</button>' +
         '<button class="mc-btn mc-btn--danger" onclick="elimDeuda(' + d.id + ')">Eliminar</button>' +
       '</div></div>';
@@ -2862,11 +2897,61 @@ async function saveAbono() {
   renderAll();
   toast(nuevoEstado === 'pagada' ? '¡Deuda saldada! · ' + metodoLbl : 'Abono registrado (' + metodoLbl + ') · Resta: ' + fmt(total - nuevoPagado));
 }
-async function marcarPagada(id) {
-  if (db) await db.from('deudas').update({ estado: 'pagada' }).eq('id', id);
-  var d = S.deudas.find(function(x) { return x.id === id; });
-  if (d) d.estado = 'pagada';
-  renderDeudas(); toast('Marcada como pagada');
+function saldarDeuda(id) {
+  var d = S.deudas.find(function (x) { return x.id === id; });
+  if (!d) return;
+  openAbonoModal(id);
+  var inp = document.getElementById('abonoMonto');
+  if (inp) { inp.value = String(deudaSaldo(d)); updateAbonoPreview(); }
+}
+
+/* Deudas marcadas pagadas sin que el dinero se registrara como ingreso */
+function deudasSinIngreso() {
+  return (S.deudas || []).filter(function (d) {
+    return d.tipo === 'cobrar' && d.estado === 'pagada' && parseFloat(d.monto_pagado || 0) === 0 && parseFloat(d.monto || 0) > 0;
+  });
+}
+function renderDeudasSinIngreso() {
+  if (!document.getElementById('deudaReparar')) return;
+  var l = deudasSinIngreso();
+  if (!l.length) { setHTML('deudaReparar', ''); return; }
+  var tot = l.reduce(function (a, d) { return a + parseFloat(d.monto || 0); }, 0);
+  setHTML('deudaReparar',
+    '<div class="bday-banner" style="border-left-color:var(--mc-warn);margin-bottom:12px">' +
+      '<i class="ti ti-alert-triangle" style="color:var(--mc-warn)"></i>' +
+      '<div style="flex:1;min-width:200px">' +
+        '<div style="font-weight:600;font-size:13.5px">' + l.length + (l.length === 1 ? ' cuenta quedó saldada sin registrar el dinero' : ' cuentas quedaron saldadas sin registrar el dinero') + '</div>' +
+        '<div style="font-size:11.5px;color:var(--mc-muted);margin-top:3px">Son ' + fmt(tot) + ' que entraron pero no aparecen en lo cobrado del mes. Registra cada una con la forma en que te pagaron.</div>' +
+      '</div></div>' +
+    l.map(function (d) {
+      var ini = String(d.persona || '?').trim().charAt(0).toUpperCase();
+      return '<div class="mc-item" onclick="this.classList.toggle(\'is-open\')">' +
+        '<div class="mc-item-head"><div class="mc-avatar">' + esc(ini) + '</div>' +
+        '<div class="mc-item-body"><b>' + esc(d.persona) + '</b>' +
+        '<span>' + esc(d.concepto || 'Sin concepto') + ' · ' + esc(fechaLarga(d.fecha)) + '</span></div>' +
+        '<div class="mc-item-meta"><span class="amt ater">' + fmt(d.monto) + '</span></div></div>' +
+        '<div class="mc-actions" onclick="event.stopPropagation()">' +
+        '<button class="mc-btn" onclick="repararDeuda(' + d.id + ')">Registrar el ingreso</button>' +
+        '<button class="mc-btn mc-btn--quiet" onclick="volverAPendiente(' + d.id + ')">Sigue debiendo</button>' +
+        '</div></div>';
+    }).join(''));
+}
+function repararDeuda(id) {
+  var d = S.deudas.find(function (x) { return x.id === id; });
+  if (!d) return;
+  d.estado = 'pendiente';
+  saldarDeuda(id);
+}
+async function volverAPendiente(id) {
+  var d = S.deudas.find(function (x) { return x.id === id; });
+  if (!d) return;
+  if (db) {
+    var r = await db.from('deudas').update({ estado: 'pendiente' }).eq('id', id);
+    if (r.error) { toast('No se pudo cambiar. Revisa la conexión e intenta otra vez.'); return; }
+  }
+  d.estado = 'pendiente';
+  renderAll();
+  toast('Volvió a las cuentas abiertas');
 }
 async function elimDeuda(id) {
   if (!confirm('¿Eliminar?')) return;
@@ -3287,7 +3372,8 @@ async function saveCat() {
   var reco = (document.getElementById('cpReco').value || '').split(',')
     .map(function(x) { return x.trim(); }).filter(function(x) { return x.length; });
   var obj = { name: name, price: price, cat: cat, costo: costo, cantidad: cantidad, stock_min: stockMin,
-    duracion_min: duracion, reco_para: reco, active: true };
+    duracion_min: duracion, reco_para: reco, active: true,
+    tipo: (editCatId && (S.catalogo || []).find(function (x) { return x.id === editCatId; }) || {}).tipo || 'producto' };
   if (editCatId) {
     if (db) {
       var r2 = await db.from('catalogo').update(obj).eq('id', editCatId).select().single();
@@ -3527,7 +3613,8 @@ async function saveSes() {
     if (!yaExiste) {
       var citaObj = {
         paciente_id: pac ? pac.id : null, cliente: nombre, tel: pac ? pac.tel : null,
-        fecha: prox, hora: proxHora || '10:00', duracion_min: 60, servicio: servicio,
+        fecha: prox, hora: proxHora || '10:00',
+        duracion_min: duracionCatalogo(servicio), servicio: servicio, precio: precioCatalogo(servicio) || precioHistorico(servicio),
         estado: 'pendiente', notas: 'Agendada desde la sesión del ' + fecha
       };
       if (db) {
@@ -5303,7 +5390,10 @@ function invFilter(v, el) {
   renderInvTabla();
 }
 
+function esServicio(p) { return (p && p.tipo) === 'servicio'; }
+function soloProductos(l) { return (l || []).filter(function (p) { return !esServicio(p); }); }
 function stockEstado(p) {
+  if (esServicio(p)) return 'ok';
   var q = p.cantidad || 0, min = p.stock_min == null ? 3 : p.stock_min;
   if (q <= 0) return 'cero';
   if (q <= min) return 'bajo';
@@ -5311,7 +5401,7 @@ function stockEstado(p) {
 }
 
 function renderInventario() {
-  var cat = (S.catalogo || []);
+  var cat = soloProductos(S.catalogo);
   var valor = 0, venta = 0, unid = 0, bajos = 0;
   cat.forEach(function (p) {
     var q = p.cantidad || 0;
@@ -5728,8 +5818,9 @@ async function crearCitasPendientes() {
         : pacientePorNombre(ses.paciente_nombre);
       var obj = {
         paciente_id: ses.paciente_id || null, cliente: ses.paciente_nombre, tel: pac ? pac.tel : null,
-        fecha: ses.proxima, hora: ses.proxima_hora || '10:00', duracion_min: 60,
-        servicio: ses.servicio, estado: 'pendiente', notas: 'Creada desde la sesión del ' + ses.fecha
+        fecha: ses.proxima, hora: ses.proxima_hora || '10:00', duracion_min: duracionCatalogo(ses.servicio),
+        servicio: ses.servicio, precio: precioCatalogo(ses.servicio) || precioHistorico(ses.servicio),
+        estado: 'pendiente', notas: 'Creada desde la sesión del ' + ses.fecha
       };
       if (db) {
         var r = await db.from('citas').insert(obj).select().single();
