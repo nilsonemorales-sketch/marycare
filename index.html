@@ -812,6 +812,108 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
 .des-nota{font-size:12.5px;line-height:1.5;color:var(--mc-muted);background:var(--mc-soft);border-radius:var(--mc-r-item);padding:11px 13px}
 .des-nota--ojo{background:rgba(201,122,17,.10);color:var(--mc-warn)}
 
+
+/* ── INICIO v39 ──────────────────────────────────────── */
+.mc-hero-delta{margin:6px 0 0;font-size:var(--mc-t-sm);font-weight:600;opacity:.95}
+.mc-curvas{margin:14px 0 0;height:92px}
+.mc-curvas svg{width:100%;height:92px;display:block;overflow:visible}
+.mc-curvas .prev{fill:none;stroke:rgba(255,255,255,.5);stroke-width:1.6;stroke-dasharray:3 3.5;vector-effect:non-scaling-stroke}
+.mc-curvas .act{fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.mc-curvas .pt{fill:#fff}
+.mc-curvas .ptp{fill:rgba(255,255,255,.55)}
+.mc-leyenda{display:flex;gap:16px;margin-top:8px;font-size:11px;opacity:.8}
+.mc-leyenda span{display:flex;align-items:center;gap:6px}
+.mc-leyenda i{width:14px;height:0;border-top:2px solid #fff;display:block}
+.mc-leyenda i.pun{border-top-style:dotted;opacity:.7}
+.mc-hero-frase{margin:12px 0 0;font-size:var(--mc-t-sm);line-height:1.5;opacity:.9}
+
+.mc-mets{display:grid;grid-template-columns:1fr 1fr;gap:var(--mc-gap);margin:0 var(--mc-pad)}
+.mc-met{background:var(--mc-surface);border-radius:var(--mc-r-item);box-shadow:var(--mc-sh-1);padding:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s ease}
+.mc-met:active{transform:scale(.985)}
+.mc-met.wide{grid-column:1 / -1}
+.mc-met-lab{font-size:var(--mc-t-xs);color:var(--mc-muted);display:block}
+.mc-met-val{display:block;margin-top:3px;font-size:var(--mc-t-xl);font-weight:700;letter-spacing:var(--mc-track-tight)}
+.mc-met-val.sm{font-size:var(--mc-t-lg)}
+.mc-met-val.is-ok{color:var(--mc-ok)}
+.mc-met-val.is-warn{color:var(--mc-warn)}
+.mc-met-val.is-alert{color:var(--mc-alert)}
+.mc-met-sub{display:block;margin-top:2px;font-size:11.5px;color:var(--mc-muted)}
+.mc-met-exp{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--mc-hair);font-size:11.5px;line-height:1.5;color:var(--mc-muted)}
+.mc-met.is-open .mc-met-exp{display:block}
+.mc-met--nd .mc-met-val{font-size:var(--mc-t-sm);font-weight:600;color:var(--mc-muted);letter-spacing:0}
+
+.mc-hueco{display:flex;align-items:center;gap:10px;margin:0 var(--mc-pad) var(--mc-gap);padding:12px 14px;background:var(--mc-surface);border-radius:var(--mc-r-item);box-shadow:var(--mc-sh-1);border-left:3px solid var(--mc-warn)}
+.mc-hueco b{font-size:var(--mc-t-md);font-weight:600}
+.mc-hueco span{font-size:var(--mc-t-xs);color:var(--mc-muted)}
+.mc-huecos-tit{margin:14px var(--mc-pad) 8px;font-size:var(--mc-t-xs);font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--mc-muted)}
+
+.mc-chart--ref{position:relative}
+.mc-chart--ref .ref{position:absolute;left:0;right:0;border-top:1px dashed var(--mc-hair);pointer-events:none}
+.mc-chart--ref .ref b{position:absolute;right:0;top:-14px;font-size:10px;font-weight:600;color:var(--mc-muted);background:var(--mc-surface);padding:0 3px}
+.mc-chart .col{cursor:pointer}
+.mc-chart .col.is-sel .bar{outline:2px solid var(--mc-g2);outline-offset:1px}
+.mc-chart .col.is-bajo .bar{background:rgba(201,122,17,.34)}
+.mc-chart-nota{margin:12px 0 0;font-size:11.5px;color:var(--mc-muted);text-align:center}
+
+.mc-split{display:flex;height:11px;border-radius:6px;overflow:hidden;background:var(--mc-soft);margin:10px 0 8px}
+.mc-split i{display:block;height:100%}
+.mc-split .nue{background:linear-gradient(90deg,var(--mc-g1),var(--mc-g2))}
+.mc-split .rec{background:var(--mc-soft)}
+.mc-split-leg{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mc-muted)}
+
+.mc-porcobrar{margin:18px var(--mc-pad) 8px;display:flex;justify-content:space-between;align-items:baseline;font-size:var(--mc-t-sm);color:var(--mc-muted)}
+.mc-porcobrar b{font-size:var(--mc-t-md);font-weight:600;color:var(--mc-ink)}
+
+.mc-hor{margin:0 var(--mc-pad) var(--mc-gap);padding:12px 14px;background:var(--mc-surface);border-radius:var(--mc-r-item);box-shadow:var(--mc-sh-1);display:flex;align-items:center;gap:10px}
+.mc-hor b{width:78px;flex-shrink:0;font-size:var(--mc-t-md);font-weight:600}
+.mc-hor input[type=time]{flex:1;min-width:0;padding:9px 8px;border-radius:var(--mc-r-ctrl);border:1px solid var(--mc-hair);background:var(--mc-surface);font-family:inherit;font-size:var(--mc-t-sm);color:var(--mc-ink)}
+.mc-hor.off input[type=time]{opacity:.35;pointer-events:none}
+.mc-sw{width:44px;height:26px;flex-shrink:0;border:0;border-radius:20px;background:var(--mc-soft);position:relative;cursor:pointer;transition:background .15s}
+.mc-sw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:var(--mc-sh-1);transition:transform .15s}
+.mc-sw.on{background:var(--mc-g1)}
+.mc-sw.on::after{transform:translateX(18px)}
+
+@media(max-width:360px){ .mc-mets{grid-template-columns:1fr} }
+
+
+/* ── DOCUMENTO IMPRIMIBLE · identidad ciruela ─────────── */
+#mcPrint{display:none}
+@media print{
+  @page{ size:A4; margin:0; }
+  html,body{background:#fff!important}
+  body>*:not(#mcPrint){display:none!important}
+  #mcPrint{display:block!important;position:static;font-family:var(--mc-font);color:#2A1424;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #mcPrint *{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}
+  .pr-band{height:18mm;padding:0 14mm;display:flex;align-items:center;gap:6mm;
+    background:linear-gradient(125deg,#8E2A5C 0%,#C2568F 46%,#E8A0A8 100%);color:#fff}
+  .pr-mono{width:11mm;height:11mm;border-radius:3mm;background:rgba(255,255,255,.22);
+    display:flex;align-items:center;justify-content:center;font-size:13pt;font-weight:800;letter-spacing:-.05em;flex-shrink:0}
+  .pr-band h1{margin:0;font-size:15pt;font-weight:700;letter-spacing:-.03em;line-height:1.15}
+  .pr-band p{margin:1mm 0 0;font-size:7.5pt;opacity:.85}
+  .pr-body{padding:9mm 14mm 22mm}
+  .pr-meta{display:flex;flex-wrap:wrap;gap:8mm;margin-bottom:7mm}
+  .pr-meta div{min-width:28mm}
+  .pr-meta span{display:block;font-size:7pt;letter-spacing:.1em;text-transform:uppercase;color:#8A6E80}
+  .pr-meta b{display:block;margin-top:1mm;font-size:10pt;font-weight:600}
+  .pr-h{margin:7mm 0 3mm;font-size:8pt;letter-spacing:.11em;text-transform:uppercase;color:#8A6E80;font-weight:600}
+  #mcPrint table{width:100%;border-collapse:collapse;font-size:9.5pt}
+  #mcPrint thead th{background:#F3EDF2;color:#2A1424;font-weight:600;font-size:8pt;
+    letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:2.6mm 3mm;border:0}
+  #mcPrint tbody td{padding:2.6mm 3mm;border:0;border-top:.3mm solid #EDE5EC;vertical-align:top}
+  #mcPrint th.num,#mcPrint td.num{text-align:right;white-space:nowrap}
+  #mcPrint tfoot td{padding:3mm;border-top:.5mm solid #EDE5EC;font-weight:700;font-size:11pt}
+  #mcPrint tr{break-inside:avoid}
+  .pr-tot{margin-top:6mm;display:flex;justify-content:flex-end;align-items:baseline;gap:5mm}
+  .pr-tot span{font-size:8pt;letter-spacing:.1em;text-transform:uppercase;color:#8A6E80}
+  .pr-tot b{font-size:17pt;font-weight:700;letter-spacing:-.03em}
+  .pr-nota{margin-top:7mm;padding:4mm 5mm;background:#F3EDF2;border-radius:3mm;font-size:9pt;line-height:1.5}
+  .pr-nota span{display:block;font-size:7pt;letter-spacing:.1em;text-transform:uppercase;color:#8A6E80;margin-bottom:1.5mm}
+  .pr-pie{position:fixed;left:0;right:0;bottom:0;height:14mm;padding:0 14mm;
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:7.5pt;color:#8A6E80;border-top:.3mm solid #EDE5EC;background:#fff}
+}
+
 </style>
 </head>
 <body class="mc">
@@ -920,36 +1022,35 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
       </div>
 
       <div class="mc-hero">
-        <div class="mc-hero-row">
-          <div style="flex:1;min-width:0">
-            <p class="mc-hero-lab">Por cobrar</p>
-            <p class="mc-hero-big" id="heroCobrar">—</p>
-            <p class="mc-hero-lab" id="heroCobrarSub" style="margin-top:5px">—</p>
-          </div>
-          <svg class="mc-ring" viewBox="0 0 66 66" aria-hidden="true">
-            <circle class="bgc" cx="33" cy="33" r="27"></circle>
-            <circle class="fgc" id="heroArc" cx="33" cy="33" r="27" stroke-dasharray="169.6" stroke-dashoffset="169.6"></circle>
-            <text x="33" y="33" text-anchor="middle" dominant-baseline="central" id="heroArcTxt">0/0</text>
-          </svg>
+        <p class="mc-hero-lab" id="mesLab">Este mes hasta hoy</p>
+        <p class="mc-hero-big" id="mesMonto">—</p>
+        <p class="mc-hero-delta" id="mesDelta"></p>
+        <div class="mc-curvas">
+          <svg id="mesCurvas" viewBox="0 0 320 92" preserveAspectRatio="none" aria-hidden="true"></svg>
         </div>
-        <div class="mc-hero-foot">
-          <div><span>Cobrado hoy</span><b id="heroHoy">—</b></div>
-          <div><span>Del mes</span><b id="heroMes">—</b></div>
-        </div>
-        <button class="mc-hero-btn" onclick="goPage('agenda')">Ver el día</button>
+        <div class="mc-leyenda"><span><i class="pun"></i>Mes pasado</span><span><i class="sol"></i>Este mes</span></div>
+        <p class="mc-hero-frase" id="mesFrase"></p>
       </div>
 
-      <h2 class="mc-sec">Hoy<small id="dashAgendaTitle">Sin citas</small></h2>
-      <div id="dashAgenda"></div>
+      <h2 class="mc-sec">Hoy<small>Lo que todavía se puede mover</small></h2>
+      <div class="mc-mets" id="metHoy"></div>
+      <div id="huecosHoy"></div>
 
-      <h2 class="mc-sec">Últimos 7 días<small>Cobrado por día</small></h2>
-      <div class="mc-card"><div class="mc-chart" id="dChart7"></div></div>
+      <h2 class="mc-sec">Esta semana<small>El pulso de los últimos siete días</small></h2>
+      <div class="mc-mets" id="metSem"></div>
+      <div class="mc-card" style="margin-top:8px">
+        <div class="mc-chart mc-chart--ref" id="ocupChart"></div>
+        <p class="mc-chart-nota" id="ocupNota">Toca un día para ver su ocupación</p>
+      </div>
 
-      <h2 class="mc-sec">Servicios del mes<small>Lo que más se vende</small></h2>
+      <h2 class="mc-sec">Este mes<small>La salud del negocio</small></h2>
+      <div class="mc-mets" id="metMes"></div>
+      <div class="mc-card" style="margin-top:8px" id="mesNuevas"></div>
+
+      <h2 class="mc-sec">Servicios por ingreso<small>Los cinco que más dejaron este mes</small></h2>
       <div class="mc-card" id="dRank"></div>
 
-      <h2 class="mc-sec">Últimos cobros<small>Los seis más recientes</small></h2>
-      <div id="dUltimos"></div>
+      <div class="mc-porcobrar" id="dPorCobrar"></div>
       <div style="height:10px"></div>
     </div>
 
@@ -1090,6 +1191,7 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
         <button onclick="goPage('cotizaciones')"><i class="ti ti-file-invoice"></i><b>Cotizaciones</b><span>Presupuestos</span></button>
         <button onclick="goPage('gastos')"><i class="ti ti-receipt"></i><b>Gastos</b><span>Egresos y fijos</span></button>
         <button onclick="goPage('reportes')"><i class="ti ti-report-analytics"></i><b>Reportería</b><span>Análisis y margen</span></button>
+        <button onclick="goPage('horario')"><i class="ti ti-clock-hour-4"></i><b>Horario del salón</b><span>Días y horas que abres</span></button>
         <button onclick="cambiarClave()"><i class="ti ti-lock-cog"></i><b>Cambiar clave</b><span>Los cuatro dígitos</span></button>
         <button onclick="doLogout()"><i class="ti ti-logout"></i><b>Cerrar sesión</b><span>Borra los datos del equipo</span></button>
       </div>
@@ -1097,6 +1199,23 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
         <div class="mc-card-head"><span id="sbBalLabel">Balance del mes</span></div>
         <b id="sbBal" style="font-size:30px;font-weight:700;letter-spacing:-.035em;display:block;margin-top:4px">—</b>
       </div>
+    </div>
+
+    <div class="page" id="page-horario">
+      <div class="ph"><h1>Horario del salón</h1><p>Los días que abres y a qué hora</p></div>
+      <div class="bday-banner" style="border-left-color:var(--mc-g2)">
+        <i class="ti ti-clock-hour-4" style="color:var(--mc-g1)"></i>
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:600;font-size:13.5px">De aquí salen la ocupación y los huecos</div>
+          <div style="font-size:11.5px;color:var(--mc-ink3);margin-top:3px">Sin el horario, el Inicio no puede decir cuánto del día está vendido ni qué horas quedaron vacías. El interruptor de la derecha abre o cierra el día.</div>
+        </div>
+      </div>
+      <div id="horLista"></div>
+      <div class="mc-card" style="margin-top:8px">
+        <div class="mc-card-head"><span>Horas de cabina disponibles</span></div>
+        <b id="horTotal" style="font-size:26px;font-weight:700;letter-spacing:-.035em;display:block;margin-top:4px">—</b>
+      </div>
+      <div style="height:10px"></div>
     </div>
 
     <div class="page" id="page-fusion">
@@ -1158,6 +1277,9 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
         <button class="rcard" onclick="selReport('clinico',this)"><i class="ti ti-file-medical" style="color:var(--violet)"></i><h3>Clínico</h3><p>Expedientes</p></button>
         <button class="rcard" onclick="selReport('mensual',this)"><i class="ti ti-calendar-month" style="color:var(--sky)"></i><h3>Mensual</h3><p>Por mes</p></button>
         <button class="rcard" onclick="selReport('margen',this)"><i class="ti ti-coins" style="color:var(--mint)"></i><h3>Margen</h3><p>Por servicio y por hora</p></button>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin:0 0 10px">
+        <button class="btn bgo bsm" onclick="reportePDF()"><i class="ti ti-file-type-pdf"></i>Guardar en PDF</button>
       </div>
       <div id="reportContent"></div>
     </div>
@@ -1691,7 +1813,7 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
 </div>
 
 <script>
-var APP_VER = '38';
+var APP_VER = '39';
 
 // ── SUPABASE ────────────────────────────────────────────
 var db = null;
@@ -1706,7 +1828,7 @@ try {
 } catch(e) { db = null; }
 
 // ── STATE ───────────────────────────────────────────────
-var S = { movimientos: [], catalogo: [], deudas: [], pacientes: [], sesiones: [], gastos: [], cotizaciones: [], citas: [], fotos: [], kardex: [], seguimientos: [], gastosFijos: [], alias: [] };
+var S = { movimientos: [], catalogo: [], deudas: [], pacientes: [], sesiones: [], gastos: [], cotizaciones: [], citas: [], fotos: [], kardex: [], seguimientos: [], gastosFijos: [], alias: [], config: {} };
 var mFilterV = 'all', mSearchV = '', catSearchV = '', catFilterV = 'all', deudaFilterV = 'activas';
 var cliSearchV = '', cliSortV = 'total', expFilterV = 'paciente', expSearchV = '';
 var currentReport = 'resumen';
@@ -1749,7 +1871,8 @@ async function loadAll() {
       db.from('inventario_mov').select('*').order('created_at', { ascending: false }).limit(60),
       db.from('seguimientos').select('*').order('fecha', { ascending: false }).limit(400),
       db.from('gastos_fijos').select('*').order('concepto'),
-      db.from('alias_clientas').select('*')
+      db.from('alias_clientas').select('*'),
+      db.from('config').select('*')
     ]);
     S.movimientos  = results[0].data || [];
     S.catalogo     = results[1].data || [];
@@ -1764,6 +1887,8 @@ async function loadAll() {
     S.seguimientos = (results[10] && results[10].data) || [];
     S.gastosFijos  = (results[11] && results[11].data) || [];
     S.alias        = (results[12] && results[12].data) || [];
+    S.config = {};
+    ((results[13] && results[13].data) || []).forEach(function (r) { S.config[r.clave] = r.valor; });
     await firmarFotos();
     try { localStorage.setItem('mc_cache', JSON.stringify(S)); localStorage.setItem('mc_cache_at', new Date().toISOString()); } catch(e){}
     dataReady = true;
@@ -1777,7 +1902,7 @@ var pageTitles = {
   dashboard: 'Resumen', movimientos: 'Movimientos', clientes: 'Clientas',
   catalogo: 'Catálogo', deudas: 'Deudas', expedientes: 'Expedientes',
   sesiones: 'Sesiones', gastos: 'Gastos & Costos', reportes: 'Reportería', cotizaciones: 'Cotizaciones',
-  agenda: 'Agenda', fotos: 'Antes y después', inventario: 'Inventario', recuperacion: 'Recuperación', fusion: 'Unir clientas', mas: 'Más'
+  agenda: 'Agenda', fotos: 'Antes y después', inventario: 'Inventario', recuperacion: 'Recuperación', fusion: 'Unir clientas', mas: 'Más', horario: 'Horario del salón'
 };
 
 var MC_DEST = {
@@ -1785,13 +1910,13 @@ var MC_DEST = {
   agenda:   ['agenda', 'sesiones'],
   clientas: ['clientes', 'expedientes', 'recuperacion', 'fusion', 'fotos'],
   cobros:   ['movimientos', 'deudas'],
-  mas:      ['mas', 'catalogo', 'inventario', 'cotizaciones', 'gastos', 'reportes']
+  mas:      ['mas', 'catalogo', 'inventario', 'cotizaciones', 'gastos', 'reportes', 'horario']
 };
 var MC_SUB = {
   agenda:   [['agenda', 'Citas'], ['sesiones', 'Sesiones']],
   clientas: [['clientes', 'Clientas'], ['expedientes', 'Fichas'], ['recuperacion', 'Recuperación'], ['fusion', 'Unir'], ['fotos', 'Antes y después']],
   cobros:   [['movimientos', 'Movimientos'], ['deudas', 'Deudas']],
-  mas:      [['mas', 'Todo'], ['catalogo', 'Catálogo'], ['inventario', 'Inventario'], ['cotizaciones', 'Cotizaciones'], ['gastos', 'Gastos'], ['reportes', 'Reportes']]
+  mas:      [['mas', 'Todo'], ['catalogo', 'Catálogo'], ['inventario', 'Inventario'], ['cotizaciones', 'Cotizaciones'], ['gastos', 'Gastos'], ['reportes', 'Reportes'], ['horario', 'Horario']]
 };
 
 function destDe(pagina) {
@@ -1915,6 +2040,7 @@ function renderAll() {
   renderInventario();
   renderRecuperacion();
   renderFusion();
+  renderHorario();
   renderBadgeFusion();
   renderRescate();
   renderBadges();
@@ -1934,56 +2060,364 @@ function renderAll() {
 }
 
 // ── DASHBOARD ───────────────────────────────────────────
+var HORARIO_DEF = { 0:{on:false,ini:'09:00',fin:'14:00'}, 1:{on:true,ini:'09:00',fin:'18:00'},
+  2:{on:true,ini:'09:00',fin:'18:00'}, 3:{on:true,ini:'09:00',fin:'18:00'},
+  4:{on:true,ini:'09:00',fin:'18:00'}, 5:{on:true,ini:'09:00',fin:'18:00'}, 6:{on:true,ini:'09:00',fin:'14:00'} };
+var DIAS_LARGO = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+var DIAS_CORTO = ['dom','lun','mar','mié','jue','vie','sáb'];
+var MESES_LARGO = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+var ocupSel = null;
+
+function horario() {
+  var h = (S.config && S.config.horario) || HORARIO_DEF;
+  var out = {};
+  for (var i = 0; i < 7; i++) out[i] = h[i] || h[String(i)] || HORARIO_DEF[i];
+  return out;
+}
+function minLaborables(k) {
+  var d = parseD(k); if (!d) return 0;
+  var h = horario()[d.getDay()];
+  if (!h || !h.on) return 0;
+  var m = toMin(h.fin) - toMin(h.ini);
+  return m > 0 ? m : 0;
+}
+function citasActivas(k) {
+  return (S.citas || []).filter(function (c) { return c.fecha === k && c.estado !== 'cancelada'; });
+}
+function minVendidos(k) {
+  return citasActivas(k).reduce(function (a, c) { return a + (parseInt(c.duracion_min, 10) || 60); }, 0);
+}
+function recibido(m) { return m.pago === 'efectivo' || m.pago === 'transferencia'; }
+function cobradoEn(k) {
+  return (S.movimientos || []).filter(function (m) { return m.fecha === k && recibido(m); })
+    .reduce(function (a, m) { return a + parseFloat(m.monto || 0); }, 0);
+}
+function cobradoRango(desde, hasta) {
+  return (S.movimientos || []).filter(function (m) {
+    var f = String(m.fecha || ''); return recibido(m) && f >= desde && f <= hasta;
+  }).reduce(function (a, m) { return a + parseFloat(m.monto || 0); }, 0);
+}
+function diaMas(n) { var d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() + n); return dKey(d); }
+function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+/* Huecos: bloques libres de 60 min o más dentro del horario */
+function huecosDe(k) {
+  var d = parseD(k); if (!d) return [];
+  var h = horario()[d.getDay()];
+  if (!h || !h.on) return [];
+  var ini = toMin(h.ini), fin = toMin(h.fin);
+  var ocup = citasActivas(k).map(function (c) {
+    var a = toMin(String(c.hora || '10:00').slice(0, 5));
+    return [a, a + (parseInt(c.duracion_min, 10) || 60)];
+  }).sort(function (x, y) { return x[0] - y[0]; });
+  var libres = [], cursor = ini;
+  ocup.forEach(function (r) {
+    if (r[0] > cursor) libres.push([cursor, Math.min(r[0], fin)]);
+    cursor = Math.max(cursor, r[1]);
+  });
+  if (cursor < fin) libres.push([cursor, fin]);
+  return libres.filter(function (r) { return r[1] - r[0] >= 60; })
+    .map(function (r) { return { ini: r[0], fin: r[1], min: r[1] - r[0] }; });
+}
+function minLbl(m) {
+  var hh = Math.floor(m / 60), mm = m % 60;
+  return (hh ? hh + 'h' : '') + (mm ? (hh ? ' ' : '') + mm + 'm' : (hh ? '' : '0m'));
+}
+function horaLbl(m) { return hhmm(pad2(Math.floor(m / 60)) + ':' + pad2(m % 60)); }
+
+/* Acumulado diario de un mes: arr[d] = cobrado acumulado hasta el día d */
+function acumMes(anio, mes) {
+  var dias = new Date(anio, mes + 1, 0).getDate();
+  var pre = anio + '-' + pad2(mes + 1);
+  var porDia = {};
+  (S.movimientos || []).forEach(function (m) {
+    if (!recibido(m)) return;
+    var f = String(m.fecha || '');
+    if (f.slice(0, 7) !== pre) return;
+    var d = parseInt(f.slice(8, 10), 10);
+    porDia[d] = (porDia[d] || 0) + parseFloat(m.monto || 0);
+  });
+  var arr = [0], acc = 0;
+  for (var d = 1; d <= dias; d++) { acc += (porDia[d] || 0); arr[d] = acc; }
+  return arr;
+}
+
+/* Tarjeta de métrica */
+function met(lab, val, sub, estado, exp, ancha) {
+  return '<div class="mc-met' + (ancha ? ' wide' : '') + '" onclick="this.classList.toggle(\'is-open\')">' +
+    '<span class="mc-met-lab">' + esc(lab) + '</span>' +
+    '<span class="mc-met-val' + (estado ? ' is-' + estado : '') + '">' + val + '</span>' +
+    (sub ? '<span class="mc-met-sub">' + sub + '</span>' : '') +
+    '<span class="mc-met-exp">' + exp + '</span></div>';
+}
+function metND(lab, exp, ancha) {
+  return '<div class="mc-met mc-met--nd' + (ancha ? ' wide' : '') + '" onclick="this.classList.toggle(\'is-open\')">' +
+    '<span class="mc-met-lab">' + esc(lab) + '</span>' +
+    '<span class="mc-met-val">Todavía sin datos suficientes</span>' +
+    '<span class="mc-met-exp">' + exp + '</span></div>';
+}
+
 function renderDash(st) {
   var hoy = hoyKey();
-  var mes = hoy.slice(0, 7);
+  var hd = parseD(hoy);
+  var anio = hd.getFullYear(), mesN = hd.getMonth(), dHoy = hd.getDate();
 
-  // Por cobrar: saldo real de las cuentas abiertas
-  var abiertas = (S.deudas || []).filter(function (d) { return d.tipo === 'cobrar' && d.estado === 'pendiente'; });
-  var porCobrar = abiertas.reduce(function (a, d) { return a + deudaSaldo(d); }, 0);
-  setText('heroCobrar', fmt(porCobrar));
-  setText('heroCobrarSub', abiertas.length
-    ? abiertas.length + (abiertas.length === 1 ? ' cuenta abierta' : ' cuentas abiertas')
-    : 'Nada pendiente');
+  /* ── 10.1 · el mes en curso contra el anterior ───────── */
+  var act = acumMes(anio, mesN);
+  var pAnio = mesN === 0 ? anio - 1 : anio, pMes = mesN === 0 ? 11 : mesN - 1;
+  var prev = acumMes(pAnio, pMes);
+  var prevAt = function (d) { return prev[Math.min(d, prev.length - 1)] || 0; };
+  var actual = act[dHoy] || 0, tramo = prevAt(dHoy), cierre = prev[prev.length - 1] || 0;
+  var dif = actual - tramo;
 
-  // Avance del día: citas atendidas de las de hoy
-  var citasHoy = (S.citas || []).filter(function (c) { return c.fecha === hoy && c.estado !== 'cancelada'; });
-  var hechas = citasHoy.filter(function (c) { return c.estado === 'completada'; }).length;
-  var avance = citasHoy.length ? hechas / citasHoy.length : 0;
-  var arco = document.getElementById('heroArc');
-  if (arco) arco.setAttribute('stroke-dashoffset', String(Math.round(169.6 * (1 - avance) * 10) / 10));
-  setText('heroArcTxt', hechas + '/' + citasHoy.length);
-
-  // Cobrado hoy y del mes (efectivo y transferencia)
-  var recibido = function (m) { return m.pago === 'efectivo' || m.pago === 'transferencia'; };
-  var cobHoy = (S.movimientos || []).filter(function (m) { return m.fecha === hoy && recibido(m); })
-    .reduce(function (a, m) { return a + parseFloat(m.monto || 0); }, 0);
-  var cobMes = (S.movimientos || []).filter(function (m) { return String(m.fecha || '').slice(0, 7) === mes && recibido(m); })
-    .reduce(function (a, m) { return a + parseFloat(m.monto || 0); }, 0);
-  setText('heroHoy', fmt(cobHoy));
-  setText('heroMes', fmt(cobMes));
-
-  // Últimos siete días
-  var dias = [], nombres = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
-  for (var i = 6; i >= 0; i--) {
-    var d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i);
-    var k = dKey(d);
-    var tot = (S.movimientos || []).filter(function (m) { return m.fecha === k && recibido(m); })
-      .reduce(function (a, m) { return a + parseFloat(m.monto || 0); }, 0);
-    dias.push({ k: k, lbl: nombres[d.getDay()], total: tot, hoy: k === hoy });
+  setText('mesLab', 'Cobrado en ' + MESES_LARGO[mesN] + ', hasta hoy');
+  setText('mesMonto', fmt(actual));
+  var el = document.getElementById('mesDelta');
+  if (el) {
+    if (!tramo && !actual) el.textContent = 'Sin cobros todavía este mes';
+    else if (!tramo) el.textContent = 'El mes pasado a esta altura no había cobros';
+    else el.textContent = (dif >= 0 ? '+' : '−') + fmt(Math.abs(dif)) +
+      '  ·  ' + (dif >= 0 ? '+' : '−') + Math.abs(Math.round(dif / tramo * 100)) + '% contra el mismo tramo de ' + MESES_LARGO[pMes];
   }
-  var maxD = Math.max.apply(null, dias.map(function (x) { return x.total; }).concat([1]));
-  setHTML('dChart7', dias.map(function (x) {
-    var h = Math.max(Math.round(x.total / maxD * 88), 4);
-    return '<div class="col' + (x.hoy ? ' is-today' : '') + '">' +
-      '<div class="bar" style="height:' + h + 'px" title="' + fmt(x.total) + '"></div>' +
-      '<div class="lbl">' + x.lbl + '</div></div>';
-  }).join(''));
 
-  // Ranking de servicios del mes
+  /* curvas acumuladas */
+  var diasMes = act.length - 1;
+  var maxY = Math.max(actual, cierre, 1);
+  var X = function (d) { return (diasMes > 1 ? (d - 1) / (diasMes - 1) : 0) * 320; };
+  var Y = function (v) { return 88 - (v / maxY) * 84; };
+  var ptsPrev = [], ptsAct = [], marcasP = [], marcasA = [];
+  for (var d = 1; d <= diasMes; d++) {
+    ptsPrev.push(X(d).toFixed(1) + ',' + Y(prevAt(d)).toFixed(1));
+    if (d % 3 === 1) marcasP.push('<circle class="ptp" cx="' + X(d).toFixed(1) + '" cy="' + Y(prevAt(d)).toFixed(1) + '" r="1.8"/>');
+  }
+  for (var d2 = 1; d2 <= dHoy; d2++) {
+    ptsAct.push(X(d2).toFixed(1) + ',' + Y(act[d2] || 0).toFixed(1));
+    if (d2 % 3 === 1 && d2 !== dHoy) marcasA.push('<circle class="pt" cx="' + X(d2).toFixed(1) + '" cy="' + Y(act[d2]).toFixed(1) + '" r="1.8" opacity=".7"/>');
+  }
+  setHTML('mesCurvas',
+    '<polyline class="prev" points="' + ptsPrev.join(' ') + '"/>' + marcasP.join('') +
+    (ptsAct.length > 1 ? '<polyline class="act" points="' + ptsAct.join(' ') + '"/>' : '') + marcasA.join('') +
+    (dHoy >= 1 ? '<circle class="pt" cx="' + X(dHoy).toFixed(1) + '" cy="' + Y(actual).toFixed(1) + '" r="3.6"/>' : ''));
+
+  /* frase derivada */
+  var frase = '';
+  if (actual || tramo) {
+    if (dif >= 0) {
+      var desde = 0;
+      for (var dd = dHoy; dd >= 1; dd--) { if ((act[dd] || 0) > prevAt(dd)) desde = dd; else break; }
+      frase = desde && desde < dHoy
+        ? 'Van ' + fmt(Math.abs(dif)) + ' por encima de ' + MESES_LARGO[pMes] + ', y el mes está arriba desde el día ' + desde + '.'
+        : 'Van ' + fmt(Math.abs(dif)) + ' por encima de ' + MESES_LARGO[pMes] + ' en el mismo tramo.';
+      if (actual > cierre && cierre > 0) frase += ' Ya se pasó todo lo que dejó ' + MESES_LARGO[pMes] + ' completo.';
+    } else {
+      frase = 'Faltan ' + fmt(Math.abs(dif)) + ' para alcanzar lo que llevaba ' + MESES_LARGO[pMes] + ' el día ' + dHoy + '.';
+    }
+  }
+  setText('mesFrase', frase);
+
+  /* ── 10.2 · Hoy ──────────────────────────────────────── */
+  var lab = minLaborables(hoy), ven = minVendidos(hoy);
+  var cHoy = citasActivas(hoy);
+  var proy = cHoy.reduce(function (a, c) { return a + parseFloat(c.precio || 0); }, 0);
+  var sinConf = cHoy.filter(function (c) { return c.estado === 'pendiente'; }).length;
+  var cobHoy = cobradoEn(hoy);
+
+  /* promedio del mismo día de la semana en el mes */
+  var mismos = [], dow = hd.getDay();
+  for (var q = 1; q <= diasMes; q++) {
+    var kq = anio + '-' + pad2(mesN + 1) + '-' + pad2(q);
+    if (kq >= hoy) break;
+    if (parseD(kq).getDay() === dow) mismos.push(cobradoEn(kq));
+  }
+  var promDow = mismos.length ? mismos.reduce(function (a, b) { return a + b; }, 0) / mismos.length : null;
+
+  var hoyHTML = '';
+  if (!lab) {
+    hoyHTML += met('Ocupación del día', 'Día libre', DIAS_LARGO[dow] + ' no es laborable', null,
+      'Los días laborables y su horario se ponen en Más → Horario del salón.', true);
+  } else {
+    var ocupHoy = Math.round(ven / lab * 100);
+    hoyHTML += met('Ocupación del día', ocupHoy + '%', minLbl(ven) + ' vendidos de ' + minLbl(lab),
+      ocupHoy < 70 ? 'warn' : 'ok',
+      'Cuánto del horario de hoy está vendido: los minutos de las citas divididos entre las horas que abre el salón. Bajo 70% se marca en ámbar.');
+  }
+  hoyHTML += met('Proyectado hoy', fmt(proy), cHoy.length + (cHoy.length === 1 ? ' cita' : ' citas'), null,
+    'La suma del precio de las citas de hoy que no están canceladas. Es lo que entra si el día se cumple completo.');
+  hoyHTML += met('Sin confirmar', String(sinConf), sinConf ? 'Falta confirmarlas' : 'Todas confirmadas',
+    sinConf >= 1 ? 'alert' : 'ok',
+    'Citas de hoy que siguen en pendiente. Una sola sin confirmar ya se marca en rojo: es la que más probable se cae.');
+  hoyHTML += promDow === null
+    ? met('Cobrado hoy', fmt(cobHoy), 'Primer ' + DIAS_CORTO[dow] + ' del mes', null,
+        'Lo cobrado hoy en efectivo y transferencia. Se compara contra el promedio de los otros ' + DIAS_LARGO[dow].toLowerCase() + 's del mes, pero todavía no hay con qué comparar.')
+    : met('Cobrado hoy', fmt(cobHoy), 'Promedio de los ' + DIAS_CORTO[dow] + ': ' + fmt(promDow),
+        cobHoy < promDow ? 'warn' : 'ok',
+        'Lo cobrado hoy contra el promedio de los otros ' + DIAS_LARGO[dow].toLowerCase() + 's de este mes.');
+  setHTML('metHoy', hoyHTML);
+
+  var hue = huecosDe(hoy);
+  setHTML('huecosHoy', hue.length
+    ? '<p class="mc-huecos-tit">Huecos de hoy · ' + hue.length + '</p>' + hue.map(function (h) {
+        return '<div class="mc-hueco"><div style="flex:1"><b>' + horaLbl(h.ini) + ' a ' + horaLbl(h.fin) + '</b>' +
+          '<span style="display:block">' + minLbl(h.min) + ' libres</span></div>' +
+          '<button class="mc-btn" style="flex:0 0 auto;padding:9px 14px" onclick="goPage(\'agenda\')">Llenar</button></div>';
+      }).join('')
+    : (lab ? '' : ''));
+
+  /* ── 10.3 · Esta semana ──────────────────────────────── */
+  var d7 = diaMas(-6), d14 = diaMas(-13), d8 = diaMas(-7);
+  var labS = 0, venS = 0, barras = [];
+  for (var i = 6; i >= 0; i--) {
+    var k = diaMas(-i), L = minLaborables(k), V = minVendidos(k);
+    labS += L; venS += V;
+    barras.push({ k: k, lbl: DIAS_CORTO[parseD(k).getDay()], lab: L, ven: V,
+      p: L ? Math.round(V / L * 100) : null, hoy: k === hoy });
+  }
+  var cob7 = cobradoRango(d7, hoy), cobPrev7 = cobradoRango(d14, d8);
+
+  /* ticket promedio: visitas cobradas = clienta + día distintos */
+  var visitas = function (desde, hasta) {
+    var set = {};
+    (S.movimientos || []).forEach(function (m) {
+      var f = String(m.fecha || '');
+      if (!recibido(m) || f < desde || f > hasta) return;
+      set[normNom(m.cliente) + '|' + f] = 1;
+    });
+    return Object.keys(set).length;
+  };
+  var v7 = visitas(d7, hoy), vPrev = visitas(d14, d8);
+  var tk = v7 ? cob7 / v7 : null, tkPrev = vPrev ? cobPrev7 / vPrev : null;
+
+  /* reagendan al salir */
+  var cerradas = (S.citas || []).filter(function (c) {
+    return c.estado === 'completada' && c.fecha >= d7 && c.fecha <= hoy;
+  });
+  var reag = cerradas.filter(function (c) {
+    if (c.reagendo === true) return true;
+    if (c.reagendo === false) return false;
+    return (S.citas || []).some(function (f) {
+      return f.id !== c.id && normNom(f.cliente) === normNom(c.cliente) && f.fecha > c.fecha &&
+        String(f.created_at || '').slice(0, 10) === c.fecha;
+    });
+  }).length;
+
+  var semHTML = '';
+  if (!labS) {
+    semHTML += metND('Ocupación', 'Necesita el horario del salón. Ponlo en Más → Horario del salón y esta métrica empieza a calcularse.', true);
+  } else {
+    var ocupS = Math.round(venS / labS * 100);
+    semHTML += met('Ocupación', ocupS + '%', minLbl(venS) + ' de ' + minLbl(labS),
+      ocupS >= 75 ? 'ok' : (ocupS >= 60 ? 'warn' : 'alert'),
+      'Los minutos vendidos de los últimos siete días divididos entre las horas que abrió el salón. Lo sano está entre 75% y 80%.');
+  }
+  semHTML += tk === null
+    ? metND('Ticket promedio', 'Se calcula dividiendo lo cobrado entre las visitas cobradas. Esta semana no hay visitas cobradas todavía.')
+    : met('Ticket promedio', fmt(tk),
+        tkPrev === null ? v7 + (v7 === 1 ? ' visita' : ' visitas') :
+        (tk >= tkPrev ? '+' : '−') + Math.abs(Math.round((tk - tkPrev) / tkPrev * 100)) + '% contra la semana pasada',
+        tkPrev === null ? null : (tk >= tkPrev ? 'ok' : 'warn'),
+        'Lo cobrado dividido entre las visitas cobradas: cuánto deja en promedio cada clienta que pasa. Se compara con los siete días anteriores.');
+  semHTML += !cerradas.length
+    ? metND('Reagendan al salir', 'De cada cita cerrada, si la clienta salió con la próxima puesta. Esta semana no hay citas cerradas todavía.')
+    : (function () {
+        var r = Math.round(reag / cerradas.length * 100);
+        return met('Reagendan al salir', r + '%', reag + ' de ' + cerradas.length + ' citas cerradas',
+          r >= 50 ? 'ok' : (r >= 35 ? 'warn' : 'alert'),
+          'De las citas que se cerraron, cuántas salieron con la próxima ya agendada. Lo sano es 50% o más: es la forma más barata de que vuelvan.');
+      })();
+  semHTML += met('Cobrado', fmt(cob7),
+    cobPrev7 ? ((cob7 >= cobPrev7 ? '+' : '−') + Math.abs(Math.round((cob7 - cobPrev7) / cobPrev7 * 100)) + '% contra los 7 anteriores') : 'Sin semana anterior con que comparar',
+    cobPrev7 ? (cob7 >= cobPrev7 ? 'ok' : 'warn') : null,
+    'Todo lo cobrado en efectivo y transferencia en los últimos siete días, contra los siete anteriores.');
+  setHTML('metSem', semHTML);
+
+  var conLab = barras.filter(function (b) { return b.lab; });
+  setHTML('ocupChart', conLab.length
+    ? '<div class="ref" style="bottom:71px"><b>75%</b></div>' +
+      barras.map(function (b, ix) {
+        var h = b.p === null ? 4 : Math.max(Math.round(Math.min(b.p, 130) / 130 * 88), 4);
+        return '<div class="col' + (b.hoy ? ' is-today' : '') + (b.p !== null && b.p < 75 ? ' is-bajo' : '') +
+          (ocupSel === b.k ? ' is-sel' : '') + '" onclick="ocupTap(\'' + b.k + '\')">' +
+          '<div class="bar" style="height:' + h + 'px"></div>' +
+          '<div class="lbl">' + b.lbl + '</div></div>';
+      }).join('')
+    : '');
+  var nota = document.getElementById('ocupNota');
+  if (nota) {
+    if (!conLab.length) nota.textContent = 'Falta el horario del salón para calcular la ocupación';
+    else if (!ocupSel) nota.textContent = 'Toca un día para ver su ocupación';
+    else {
+      var b = barras.filter(function (x) { return x.k === ocupSel; })[0];
+      nota.textContent = !b ? 'Toca un día para ver su ocupación'
+        : (b.lab ? DIAS_LARGO[parseD(b.k).getDay()] + ': ' + b.p + '% · ' + minLbl(b.ven) + ' de ' + minLbl(b.lab) +
+            (b.p < 75 ? ' · por debajo de lo sano' : ' · dentro de lo sano')
+          : DIAS_LARGO[parseD(b.k).getDay()] + ': día libre');
+    }
+  }
+
+  /* ── 10.4 · Este mes ─────────────────────────────────── */
+  var mesPre = anio + '-' + pad2(mesN + 1), pMesPre = pAnio + '-' + pad2(pMes + 1);
+  var clientasEn = function (pre) {
+    var s = {};
+    (S.movimientos || []).forEach(function (m) {
+      if (String(m.fecha || '').slice(0, 7) === pre && String(m.cliente || '').trim()) s[normNom(m.cliente)] = 1;
+    });
+    return Object.keys(s);
+  };
+  var cMes = clientasEn(mesPre), cPrevMes = clientasEn(pMesPre);
+
+  /* primera visita de cada clienta en toda la historia */
+  var primera = {};
+  (S.movimientos || []).forEach(function (m) {
+    var n = normNom(m.cliente), f = String(m.fecha || '');
+    if (!n || !f) return;
+    if (!primera[n] || f < primera[n]) primera[n] = f;
+  });
+  var nuevas = cMes.filter(function (n) { return String(primera[n] || '').slice(0, 7) === mesPre; }).length;
+
+  /* vuelven en 90 días */
+  var porCli = {};
+  (S.movimientos || []).forEach(function (m) {
+    var n = normNom(m.cliente), f = String(m.fecha || '');
+    if (!n || !f) return;
+    (porCli[n] = porCli[n] || {})[f] = 1;
+  });
+  var corte = diaMas(-90), eleg = 0, volv = 0;
+  Object.keys(porCli).forEach(function (n) {
+    var fs = Object.keys(porCli[n]).sort();
+    for (var i = 0; i < fs.length; i++) {
+      if (fs[i] > corte) break;
+      eleg++;
+      var lim = new Date(parseD(fs[i]).getTime() + 90 * 86400000);
+      if (fs[i + 1] && fs[i + 1] <= dKey(lim)) volv++;
+    }
+  });
+
+  var mesHTML = '';
+  mesHTML += eleg < 10
+    ? metND('Vuelven en 90 días', 'De cada visita, si la clienta regresó dentro de los 90 días siguientes. Hace falta más historial cerrado para que el número signifique algo.')
+    : (function () {
+        var r = Math.round(volv / eleg * 100);
+        return met('Vuelven en 90 días', r + '%', volv + ' de ' + eleg + ' visitas',
+          r >= 60 ? 'ok' : (r >= 40 ? 'warn' : 'alert'),
+          'De las visitas con más de 90 días encima, en cuántas la clienta volvió dentro de ese plazo. Sano: 60% o más. Bajo 40% es alarma.');
+      })();
+  mesHTML += met('Clientas atendidas', String(cMes.length),
+    cPrevMes.length ? ((cMes.length >= cPrevMes.length ? '+' : '−') + Math.abs(cMes.length - cPrevMes.length) + ' contra ' + MESES_LARGO[pMes]) : 'Primer mes con datos',
+    cPrevMes.length ? (cMes.length >= cPrevMes.length ? 'ok' : 'warn') : null,
+    'Clientas distintas que pasaron este mes, contra las del mes anterior completo.');
+  setHTML('metMes', mesHTML);
+
+  var recur = cMes.length - nuevas;
+  setHTML('mesNuevas', !cMes.length
+    ? '<div style="text-align:center;padding:8px 0"><b style="font-size:15px;font-weight:600">Todavía no hay clientas este mes</b><p style="margin:6px 0 0;font-size:13px;color:var(--mc-muted)">Se llena con el primer cobro.</p></div>'
+    : '<div class="mc-card-head"><b style="font-size:17px">Nuevas y recurrentes</b><span>' + cMes.length + (cMes.length === 1 ? ' clienta' : ' clientas') + '</span></div>' +
+      '<div class="mc-split"><i class="nue" style="width:' + pct(nuevas, cMes.length) + '%"></i><i class="rec" style="flex:1"></i></div>' +
+      '<div class="mc-split-leg"><span>' + nuevas + ' nueva' + (nuevas !== 1 ? 's' : '') + ' (' + pct(nuevas, cMes.length) + '%)</span><span>' + recur + ' que ya venía' + (recur !== 1 ? 'n' : '') + '</span></div>');
+
+  /* servicios por ingreso */
   var mapa = {};
   (S.movimientos || []).forEach(function (m) {
-    if (m.tipo !== 'servicio' || String(m.fecha || '').slice(0, 7) !== mes) return;
+    if (m.tipo !== 'servicio' || String(m.fecha || '').slice(0, 7) !== mesPre) return;
     mapa[m.concepto] = (mapa[m.concepto] || 0) + parseFloat(m.monto || 0);
   });
   var top = Object.keys(mapa).map(function (k) { return [k, mapa[k]]; })
@@ -1995,16 +2429,49 @@ function renderDash(st) {
       '<b>' + fmt(kv[1]) + '</b></div>';
   }).join('') : '<div style="text-align:center;padding:14px 0"><b style="font-size:15px;font-weight:600">Todavía no hay servicios este mes</b><p style="margin:6px 0 0;font-size:13px;color:var(--mc-muted)">Se llena con el primer cobro.</p></div>');
 
-  // Últimos cobros
-  setHTML('dUltimos', (S.movimientos || []).slice(0, 6).map(function (m) {
-    var ini = String(m.cliente || '?').trim().charAt(0).toUpperCase();
-    return '<div class="mc-item" onclick="goPage(\'movimientos\')">' +
-      '<div class="mc-item-head">' +
-      '<div class="mc-avatar">' + esc(ini) + '</div>' +
-      '<div class="mc-item-body"><b>' + esc(m.cliente) + '</b><span>' + esc(m.concepto) + '</span></div>' +
-      '<div class="mc-item-meta"><span class="amt apos">' + fmt(m.monto) + '</span></div>' +
-      '</div></div>';
-  }).join('') || '<div class="mc-empty"><b>Todavía no hay cobros</b><p>El primero aparece aquí.</p></div>');
+  /* por cobrar, al final y pequeño */
+  var abiertas = (S.deudas || []).filter(function (d) { return d.tipo === 'cobrar' && d.estado === 'pendiente'; });
+  var porCobrar = abiertas.reduce(function (a, d) { return a + deudaSaldo(d); }, 0);
+  setHTML('dPorCobrar', '<span>Por cobrar · ' + abiertas.length + (abiertas.length === 1 ? ' cuenta abierta' : ' cuentas abiertas') + '</span>' +
+    '<b onclick="goPage(\'deudas\')" style="cursor:pointer">' + fmt(porCobrar) + '</b>');
+}
+
+function ocupTap(k) { ocupSel = (ocupSel === k ? null : k); renderDash(); }
+
+/* ── HORARIO DEL SALÓN ──────────────────────────────────── */
+function renderHorario() {
+  if (!document.getElementById('horLista')) return;
+  var h = horario();
+  var orden = [1, 2, 3, 4, 5, 6, 0];
+  setHTML('horLista', orden.map(function (i) {
+    var d = h[i];
+    return '<div class="mc-hor' + (d.on ? '' : ' off') + '" id="hor' + i + '">' +
+      '<b>' + DIAS_LARGO[i] + '</b>' +
+      '<input type="time" value="' + esc(d.ini) + '" onchange="horSet(' + i + ',\'ini\',this.value)">' +
+      '<span style="color:var(--mc-muted);font-size:12px">a</span>' +
+      '<input type="time" value="' + esc(d.fin) + '" onchange="horSet(' + i + ',\'fin\',this.value)">' +
+      '<button class="mc-sw' + (d.on ? ' on' : '') + '" onclick="horToggle(' + i + ')" aria-label="Abrir o cerrar"></button>' +
+      '</div>';
+  }).join(''));
+  var tot = orden.reduce(function (a, i) { return a + (h[i].on ? Math.max(toMin(h[i].fin) - toMin(h[i].ini), 0) : 0); }, 0);
+  setText('horTotal', minLbl(tot) + ' a la semana');
+}
+function horLocal() {
+  if (!S.config) S.config = {};
+  if (!S.config.horario) S.config.horario = JSON.parse(JSON.stringify(HORARIO_DEF));
+  var h = S.config.horario, out = {};
+  for (var i = 0; i < 7; i++) out[i] = h[i] || h[String(i)] || HORARIO_DEF[i];
+  S.config.horario = out;
+  return out;
+}
+function horToggle(i) { var h = horLocal(); h[i].on = !h[i].on; guardarHorario(); }
+function horSet(i, campo, val) { if (!val) return; var h = horLocal(); h[i][campo] = val; guardarHorario(); }
+async function guardarHorario() {
+  renderHorario();
+  renderDash();
+  if (!db) return;
+  var r = await db.from('config').upsert({ clave: 'horario', valor: S.config.horario, updated_at: new Date().toISOString() }, { onConflict: 'clave' });
+  if (r.error) toast('No se guardó el horario. Revisa la conexión y cámbialo otra vez.');
 }
 
 function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
@@ -3414,6 +3881,7 @@ function renderReport(id, st) {
     var entries = Object.entries(st.servMap).sort(function(a, b) { return b[1] - a[1]; });
     var maxV = entries[0] ? entries[0][1] : 1;
     html = '<div class="card"><div class="ch"><div class="ct">Ranking servicios</div>' +
+      '<button class="btn bgo bsm" onclick="reportePDF()"><i class="ti ti-file-type-pdf"></i>PDF</button>' +
       '<button class="btn bgo bsm" onclick="exportRep(1)"><i class="ti ti-download"></i>CSV</button></div>' +
       '<div class="cb np"><div class="tw"><table><thead><tr><th>#</th><th>Servicio</th><th>Veces</th><th>Total</th></tr></thead><tbody>' +
       entries.map(function(kv, i) {
@@ -3424,6 +3892,7 @@ function renderReport(id, st) {
   } else if (id === 'productos') {
     var pe = Object.entries(st.prodMap).sort(function(a, b) { return b[1] - a[1]; });
     html = '<div class="card"><div class="ch"><div class="ct">Ranking productos</div>' +
+      '<button class="btn bgo bsm" onclick="reportePDF()"><i class="ti ti-file-type-pdf"></i>PDF</button>' +
       '<button class="btn bgo bsm" onclick="exportRep(2)"><i class="ti ti-download"></i>CSV</button></div>' +
       '<div class="cb np"><div class="tw"><table><thead><tr><th>#</th><th>Producto</th><th>Veces</th><th>Total</th></tr></thead><tbody>' +
       pe.map(function(kv, i) {
@@ -3434,6 +3903,7 @@ function renderReport(id, st) {
   } else if (id === 'clientes') {
     var cs = st.clientes.slice().sort(function(a, b) { return b.total - a.total; });
     html = '<div class="card"><div class="ch"><div class="ct">Ranking clientes</div>' +
+      '<button class="btn bgo bsm" onclick="reportePDF()"><i class="ti ti-file-type-pdf"></i>PDF</button>' +
       '<button class="btn bgo bsm" onclick="exportRep(3)"><i class="ti ti-download"></i>CSV</button></div>' +
       '<div class="cb np"><div class="tw"><table><thead><tr><th>#</th><th>Cliente</th><th>Visitas</th><th>Total</th></tr></thead><tbody>' +
       cs.map(function(c, i) {
@@ -3667,6 +4137,7 @@ function renderCotizaciones() {
       '<td style="white-space:nowrap">' + (c.validez || '—') + '</td>' +
       '<td style="display:flex;gap:4px">' +
         '<button class="btn bwa bxs" onclick="openCotWA(' + c.id + ')" title="Enviar WA"><i class="ti ti-brand-whatsapp"></i></button>' +
+        '<button class="btn bgo bxs" onclick="cotizacionPDF(' + c.id + ')" title="PDF"><i class="ti ti-file-type-pdf"></i></button>' +
         '<button class="btn bg2 bxs" onclick="openCotModal(' + c.id + ')" title="Editar"><i class="ti ti-edit"></i></button>' +
         '<button class="btn bda bxs" onclick="delCot(' + c.id + ')" title="Eliminar"><i class="ti ti-trash"></i></button>' +
       '</td></tr>';
@@ -5586,6 +6057,114 @@ function datosMargen(st) {
   });
 }
 
+/* ── DOCUMENTO IMPRIMIBLE ───────────────────────────────── */
+function fechaDoc(s) {
+  var d = parseD(s); if (!d) return '—';
+  return d.getDate() + ' de ' + MESES_LARGO[d.getMonth()] + ' de ' + d.getFullYear();
+}
+function fechaEmision() {
+  var d = new Date();
+  return d.getDate() + ' de ' + MESES_LARGO[d.getMonth()] + ' de ' + d.getFullYear();
+}
+function imprimirDoc(titulo, metas, cuerpo) {
+  var cont = document.getElementById('mcPrint');
+  if (!cont) { cont = document.createElement('div'); cont.id = 'mcPrint'; document.body.appendChild(cont); }
+  cont.innerHTML =
+    '<div class="pr-band"><div class="pr-mono">MC</div>' +
+      '<div><h1>' + esc(titulo) + '</h1><p>Mary Care by Maria Frias</p></div></div>' +
+    '<div class="pr-body">' +
+      (metas && metas.length ? '<div class="pr-meta">' + metas.map(function (m) {
+        return '<div><span>' + esc(m[0]) + '</span><b>' + esc(m[1]) + '</b></div>';
+      }).join('') + '</div>' : '') +
+      cuerpo +
+    '</div>' +
+    '<div class="pr-pie"><span>Mary Care by Maria Frias</span><span>Emitido el ' + fechaEmision() + '</span></div>';
+  var antes = document.title;
+  document.title = titulo.replace(/[\\/:*?"<>|]/g, '-');
+  setTimeout(function () {
+    window.print();
+    setTimeout(function () { document.title = antes; cont.innerHTML = ''; }, 400);
+  }, 60);
+}
+
+function cotizacionPDF(id) {
+  var c = (S.cotizaciones || []).find(function (x) { return x.id === id; });
+  if (!c) return;
+  var items = c.items || [];
+  var estLbl = { pendiente: 'Pendiente', aprobada: 'Aprobada', rechazada: 'Rechazada' };
+  var cuerpo =
+    '<div class="pr-h">Detalle</div>' +
+    '<table><thead><tr><th>Descripción</th><th class="num">Precio</th></tr></thead><tbody>' +
+    items.map(function (it) {
+      return '<tr><td>' + esc(it.desc) + '</td><td class="num">' + fmt(it.precio) + '</td></tr>';
+    }).join('') +
+    '</tbody></table>' +
+    '<div class="pr-tot"><span>Total</span><b>' + fmt(c.total) + '</b></div>' +
+    (c.notas ? '<div class="pr-nota"><span>Notas</span>' + esc(c.notas) + '</div>' : '');
+  imprimirDoc('Cotización', [
+    ['Cliente', c.cliente],
+    ['Fecha', fechaDoc(c.fecha)],
+    ['Válida hasta', fechaDoc(c.validez)],
+    ['Estado', estLbl[c.estado] || c.estado || '—']
+  ], cuerpo);
+}
+
+var REP_TIT = { resumen: 'Resumen del mes', margen: 'Margen por servicio', servicios: 'Ranking de servicios',
+  productos: 'Ranking de productos', clientes: 'Ranking de clientas', semanal: 'Comparativa semanal' };
+
+function reportePDF() {
+  var st = getStats();
+  var d = new Date();
+  var per = MESES_LARGO[d.getMonth()].charAt(0).toUpperCase() + MESES_LARGO[d.getMonth()].slice(1) + ' ' + d.getFullYear();
+  var id = currentReport, cuerpo = '';
+
+  if (id === 'servicios' || id === 'productos') {
+    var mapa = id === 'servicios' ? st.servMap : st.prodMap;
+    var base = id === 'servicios' ? st.servs : st.prods;
+    var e = Object.keys(mapa).map(function (k) { return [k, mapa[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+    cuerpo = '<table><thead><tr><th>#</th><th>' + (id === 'servicios' ? 'Servicio' : 'Producto') + '</th><th class="num">Veces</th><th class="num">Total</th></tr></thead><tbody>' +
+      e.map(function (kv, i) {
+        var cnt = base.filter(function (m) { return m.concepto === kv[0]; }).length;
+        return '<tr><td>' + (i + 1) + '</td><td>' + esc(kv[0]) + '</td><td class="num">' + cnt + '</td><td class="num">' + fmt(kv[1]) + '</td></tr>';
+      }).join('') + '</tbody></table>' +
+      '<div class="pr-tot"><span>Total</span><b>' + fmt(e.reduce(function (a, kv) { return a + kv[1]; }, 0)) + '</b></div>';
+  } else if (id === 'clientes') {
+    var cs = st.clientes.slice().sort(function (a, b) { return b.total - a.total; });
+    cuerpo = '<table><thead><tr><th>#</th><th>Clienta</th><th class="num">Visitas</th><th class="num">Total</th></tr></thead><tbody>' +
+      cs.map(function (c, i) {
+        return '<tr><td>' + (i + 1) + '</td><td>' + esc(c.nombre) + '</td><td class="num">' + c.visitas + '</td><td class="num">' + fmt(c.total) + '</td></tr>';
+      }).join('') + '</tbody></table>' +
+      '<div class="pr-tot"><span>Total</span><b>' + fmt(cs.reduce(function (a, c) { return a + c.total; }, 0)) + '</b></div>';
+  } else if (id === 'margen') {
+    var fils = (typeof datosMargen === "function") ? datosMargen(st) : [];
+    cuerpo = '<table><thead><tr><th>Servicio</th><th class="num">Veces</th><th class="num">Ingreso</th><th class="num">Margen</th><th class="num">Por hora</th></tr></thead><tbody>' +
+      (fils.length ? fils.map(function (f) {
+        return '<tr><td>' + esc(f.nombre) + '</td><td class="num">' + f.veces + '</td><td class="num">' + fmt(f.total) + '</td>' +
+          '<td class="num">' + (f.tieneCosto ? fmt(f.margen) + '  ' + f.pct + '%' : 'falta el costo') + '</td>' +
+          '<td class="num">' + (f.tieneCosto ? fmt(f.porHora) : '—') + '</td></tr>';
+      }).join('') : '<tr><td colspan="5">Sin servicios cobrados este mes.</td></tr>') +
+      '</tbody></table>';
+  } else {
+    cuerpo =
+      '<div class="pr-h">Ingresos</div>' +
+      '<table><tbody>' +
+      '<tr><td>Servicios</td><td class="num">' + fmt(st.sumS) + '</td></tr>' +
+      '<tr><td>Productos</td><td class="num">' + fmt(st.sumP) + '</td></tr>' +
+      '<tr><td>Facturado</td><td class="num">' + fmt(st.total) + '</td></tr>' +
+      '<tr><td>Cobrado (efectivo y transferencia)</td><td class="num">' + fmt(st.cobrado) + '</td></tr>' +
+      '<tr><td>Quedó a crédito</td><td class="num">' + fmt(st.cxc) + '</td></tr>' +
+      '</tbody></table>' +
+      '<div class="pr-h">Servicios más vendidos</div>' +
+      '<table><thead><tr><th>Servicio</th><th class="num">Total</th></tr></thead><tbody>' +
+      Object.keys(st.servMap).map(function (k) { return [k, st.servMap[k]]; })
+        .sort(function (a, b) { return b[1] - a[1]; }).slice(0, 10)
+        .map(function (kv) { return '<tr><td>' + esc(kv[0]) + '</td><td class="num">' + fmt(kv[1]) + '</td></tr>'; }).join('') +
+      '</tbody></table>' +
+      '<div class="pr-tot"><span>Cobrado en el mes</span><b>' + fmt(st.cobrado) + '</b></div>';
+  }
+  imprimirDoc(REP_TIT[id] || 'Reporte', [['Período', per], ['Clientas del mes', String(st.clientes.length)]], cuerpo);
+}
+
 /* ── BADGES ────────────────────────────────────────────── */
 function renderBadges() {
   var rec = dormidasPorContactar().length;
@@ -6112,5 +6691,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 </script>
+<div id="mcPrint"></div>
 </body>
 </html>
