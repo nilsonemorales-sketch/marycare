@@ -6,8 +6,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FAF9F7",
-  "theme_color": "#FAF9F7",
+  "background_color": "#F6F3F6",
+  "theme_color": "#8E2A5C",
   "lang": "es-DO",
   "dir": "ltr",
   "categories": ["business", "medical", "productivity"],
@@ -17,7 +17,7 @@
     { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Nuevo movimiento", "short_name": "Cobrar", "url": "./index.html#nuevo", "description": "Registrar un servicio o venta" },
+    { "name": "Nuevo cobro", "short_name": "Cobrar", "url": "./index.html#nuevo", "description": "Registrar un servicio o una venta" },
     { "name": "Agenda de hoy", "short_name": "Agenda", "url": "./index.html#agenda", "description": "Ver las citas del día" }
   ]
 }
