@@ -797,6 +797,21 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
   .card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
 }
 
+
+/* separar uniones */
+.des-h{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mc-muted);margin:16px 0 8px}
+.des-lista{max-height:300px;overflow-y:auto;border:1px solid var(--mc-hair);border-radius:var(--mc-r-item);padding:4px}
+.des-row{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:var(--mc-r-ctrl);cursor:pointer}
+.des-row+.des-row{border-top:1px solid var(--mc-hair)}
+.des-row:active{background:var(--mc-soft)}
+.des-row input{width:18px;height:18px;flex-shrink:0;accent-color:var(--mc-g1)}
+.des-row .des-t{flex:1;min-width:0}
+.des-row .des-t b{display:block;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.des-row .des-t span{display:block;font-size:11.5px;color:var(--mc-muted);margin-top:1px}
+.des-row .des-m{font-size:13px;font-weight:600;color:var(--mc-g1);flex-shrink:0}
+.des-nota{font-size:12.5px;line-height:1.5;color:var(--mc-muted);background:var(--mc-soft);border-radius:var(--mc-r-item);padding:11px 13px}
+.des-nota--ojo{background:rgba(201,122,17,.10);color:var(--mc-warn)}
+
 </style>
 </head>
 <body class="mc">
@@ -1105,6 +1120,7 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
         </div>
       </div>
       <div id="fusTbody"></div>
+      <div id="fusUniones"></div>
     </div>
 
     <div class="page" id="page-recuperacion">
@@ -1675,7 +1691,7 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
 </div>
 
 <script>
-var APP_VER = '37';
+var APP_VER = '38';
 
 // ── SUPABASE ────────────────────────────────────────────
 var db = null;
@@ -5686,6 +5702,7 @@ function fusSearch(v) { fusSearchV = String(v || '').toLowerCase(); renderFusion
 
 function renderFusion() {
   if (!document.getElementById('fusTbody')) return;
+  renderUniones();
   var todos = nombresSueltos();
   var conSug = todos.filter(function (x) { return x.sug && x.sug.confianza >= 78; });
   setText('fusKTotal', String(todos.length));
@@ -5723,19 +5740,22 @@ function renderFusion() {
   }).join('') : '<div class="mc-empty"><b>Todas las clientas están unidas</b><p>Cada cobro tiene su ficha. Esta pantalla ya no hace falta.</p></div>');
 }
 
-async function guardarAlias(alias, pacienteId, ignorar) {
+async function guardarAlias(alias, pacienteId, ignorar, extra) {
   var obj = { alias: alias, paciente_id: pacienteId || null, ignorar: !!ignorar };
+  if (extra) for (var kx in extra) obj[kx] = extra[kx];
   var ya = aliasDe(alias);
   if (db) {
     if (ya && ya.id) {
       var ru = await db.from('alias_clientas').update(obj).eq('id', ya.id).select().single();
-      if (!ru.error) { var i = S.alias.findIndex(function (a) { return a.id === ya.id; }); if (i >= 0) S.alias[i] = ru.data; return; }
+      if (!ru.error) { var i = S.alias.findIndex(function (a) { return a.id === ya.id; }); if (i >= 0) S.alias[i] = ru.data; return ru.data; }
     }
     var r = await db.from('alias_clientas').insert(obj).select().single();
-    if (!r.error) { S.alias.push(r.data); return; }
+    if (!r.error) { S.alias.push(r.data); return r.data; }
   }
-  obj.id = Date.now();
-  if (ya) { Object.assign(ya, obj); } else { S.alias.push(obj); }
+  obj.id = (ya && ya.id) || Date.now();
+  if (ya) { Object.assign(ya, obj); return ya; }
+  S.alias.push(obj);
+  return obj;
 }
 
 async function vincularAlias(nombre, pacienteId) {
@@ -5751,10 +5771,142 @@ async function vincularAlias(nombre, pacienteId) {
   }
   afectados.forEach(function (m) { m.paciente_id = f.id; m.cliente = f.nombre; });
   deudasAf.forEach(function (d) { d.paciente_id = f.id; d.persona = f.nombre; });
-  await guardarAlias(nombre, f.id, false);
+  await guardarAlias(nombre, f.id, false, {
+    nombre_previo: nombre,
+    movimientos_ids: afectados.map(function (m) { return m.id; }),
+    deudas_ids: deudasAf.map(function (d) { return d.id; })
+  });
   renderAll();
   toast(afectados.length + ' cobro' + (afectados.length !== 1 ? 's' : '') + ' unido' + (afectados.length !== 1 ? 's' : '') + ' a ' + f.nombre.split(' ')[0]);
 }
+
+/* ── UNIONES HECHAS · SEPARAR DE NUEVO ──────────────────── */
+function unionesHechas() {
+  return (S.alias || []).filter(function (a) {
+    return a.paciente_id && !a.ignorar && fichaPorId(a.paciente_id);
+  }).map(function (a) {
+    return { a: a, ficha: fichaPorId(a.paciente_id), ids: (a.movimientos_ids || []).map(String) };
+  }).sort(function (x, y) { return (y.a.id || 0) - (x.a.id || 0); });
+}
+
+function renderUniones() {
+  if (!document.getElementById('fusUniones')) return;
+  var u = unionesHechas();
+  if (!u.length) { setHTML('fusUniones', ''); return; }
+  setHTML('fusUniones',
+    '<div class="mc-sec">Uniones hechas · ' + u.length +
+    '<small>Si alguna quedó mal, sepárala aquí y vuelve a la lista de arriba</small></div>' +
+    u.map(function (x) {
+      var prev = x.a.nombre_previo || x.a.alias;
+      var ini = String(prev || '?').trim().charAt(0).toUpperCase();
+      var mismo = normNom(prev) === normNom(x.ficha.nombre);
+      var chip = x.ids.length
+        ? '<span class="mc-chip mc-chip--ok">' + x.ids.length + (x.ids.length !== 1 ? ' cobros' : ' cobro') + '</span>'
+        : '<span class="mc-chip mc-chip--warn">Sin detalle</span>';
+      return '<div class="mc-item" onclick="this.classList.toggle(\'is-open\')">' +
+        '<div class="mc-item-head">' +
+          '<div class="mc-avatar">' + esc(ini) + '</div>' +
+          '<div class="mc-item-body"><b>' + esc(prev) + '</b>' +
+          '<span>' + (mismo ? 'Ficha propia' : 'Se unió a ' + esc(x.ficha.nombre)) + '</span></div>' +
+          '<div class="mc-item-meta">' + chip + '</div>' +
+        '</div>' +
+        '<div class="mc-actions" onclick="event.stopPropagation()">' +
+          '<button class="mc-btn mc-btn--quiet" onclick="deshacerAlias(' + x.a.id + ')">Separar de nuevo</button>' +
+          '<button class="mc-btn mc-btn--quiet" onclick="viewExp(' + x.ficha.id + ')">Ver ficha</button>' +
+        '</div></div>';
+    }).join(''));
+}
+
+function deshacerAlias(aliasId) {
+  var a = (S.alias || []).find(function (x) { return String(x.id) === String(aliasId); });
+  if (!a) return;
+  var f = fichaPorId(a.paciente_id);
+  if (!f) { toast('Esa ficha ya no existe'); return; }
+  var prev = a.nombre_previo || a.alias;
+  var ids = (a.movimientos_ids || []).map(String);
+  var idsD = (a.deudas_ids || []).map(String);
+
+  var movs = (S.movimientos || []).filter(function (m) {
+    return String(m.paciente_id) === String(f.id);
+  }).sort(function (p, q) { return String(q.fecha).localeCompare(String(p.fecha)); });
+  var deu = (S.deudas || []).filter(function (d) {
+    return d.tipo === 'cobrar' && String(d.paciente_id) === String(f.id);
+  });
+
+  var aviso = ids.length
+    ? '<div class="des-nota">La app guardó cuáles cobros venían de <b>' + esc(prev) + '</b>. Ya están marcados. Quita o agrega los que quieras.</div>'
+    : '<div class="des-nota des-nota--ojo">Esta unión se hizo antes de que la app guardara el detalle, así que no sabe cuáles cobros eran de <b>' + esc(prev) + '</b>. Márcalos tú.</div>';
+
+  var lista = movs.length ? movs.map(function (m) {
+    var on = ids.indexOf(String(m.id)) > -1;
+    return '<label class="des-row"><input type="checkbox" class="desMov" value="' + esc(m.id) + '"' + (on ? ' checked' : '') + '>' +
+      '<span class="des-t"><b>' + esc(m.concepto || 'Cobro') + '</b><span>' + esc(fechaLarga(m.fecha)) + '</span></span>' +
+      '<span class="des-m">' + fmt(m.monto) + '</span></label>';
+  }).join('') : '<div class="des-nota">Esta ficha no tiene cobros.</div>';
+
+  var listaD = deu.length ? '<div class="des-h">Deudas</div>' + deu.map(function (d) {
+    var on = idsD.indexOf(String(d.id)) > -1;
+    return '<label class="des-row"><input type="checkbox" class="desDeu" value="' + esc(d.id) + '"' + (on ? ' checked' : '') + '>' +
+      '<span class="des-t"><b>' + esc(d.concepto || 'Deuda') + '</b><span>' + esc(fechaLarga(d.fecha)) + '</span></span>' +
+      '<span class="des-m">' + fmt(d.monto) + '</span></label>';
+  }).join('') : '';
+
+  var div = document.createElement('div');
+  div.className = 'mb open dyn-modal';
+  div.innerHTML = '<div class="modal" style="max-width:460px">' +
+    '<div class="mh"><div class="mt">Separar ' + esc(prev) + '</div>' +
+    '<button class="mcx" onclick="removeTopModal()"><i class="ti ti-x"></i></button></div>' +
+    '<div class="mbody">' + aviso +
+      '<div class="des-h">Cobros de ' + esc(f.nombre) + '</div>' +
+      '<div class="des-lista">' + lista + listaD + '</div>' +
+      '<div class="des-nota" style="margin-top:12px">Lo que marques vuelve a llamarse <b>' + esc(prev) + '</b> y regresa a la lista de arriba, sin ficha. Nada se borra.</div>' +
+    '</div>' +
+    '<div class="mf"><button class="btn bg2" onclick="removeTopModal()">Cancelar</button>' +
+    '<button class="btn bt" onclick="aplicarDeshacer(' + esc(aliasId) + ')">Separar</button></div></div>';
+  document.body.appendChild(div);
+}
+
+async function aplicarDeshacer(aliasId) {
+  var a = (S.alias || []).find(function (x) { return String(x.id) === String(aliasId); });
+  if (!a) { removeTopModal(); return; }
+  var prev = a.nombre_previo || a.alias;
+  var mods = [].slice.call(document.querySelectorAll('.desMov:checked')).map(function (c) { return c.value; });
+  var deus = [].slice.call(document.querySelectorAll('.desDeu:checked')).map(function (c) { return c.value; });
+  removeTopModal();
+  if (!mods.length && !deus.length) { toast('No marcaste nada'); return; }
+
+  if (db) {
+    if (mods.length) {
+      var rm = await db.from('movimientos').update({ paciente_id: null, cliente: prev }).in('id', mods);
+      if (rm.error) { toast('No se pudo separar: ' + rm.error.message); return; }
+    }
+    if (deus.length) {
+      var rd = await db.from('deudas').update({ paciente_id: null, persona: prev }).in('id', deus);
+      if (rd.error) { toast('No se pudo separar la deuda: ' + rd.error.message); return; }
+    }
+  }
+  (S.movimientos || []).forEach(function (m) {
+    if (mods.indexOf(String(m.id)) > -1) { m.paciente_id = null; m.cliente = prev; }
+  });
+  (S.deudas || []).forEach(function (d) {
+    if (deus.indexOf(String(d.id)) > -1) { d.paciente_id = null; d.persona = prev; }
+  });
+
+  var quedan = (a.movimientos_ids || []).map(String).filter(function (i) { return mods.indexOf(i) < 0; });
+  var quedanD = (a.deudas_ids || []).map(String).filter(function (i) { return deus.indexOf(i) < 0; });
+  var vacia = !quedan.length && !quedanD.length;
+
+  if (db) {
+    if (vacia) await db.from('alias_clientas').delete().eq('id', a.id);
+    else await db.from('alias_clientas').update({ movimientos_ids: quedan, deudas_ids: quedanD }).eq('id', a.id);
+  }
+  if (vacia) S.alias = (S.alias || []).filter(function (x) { return String(x.id) !== String(a.id); });
+  else { a.movimientos_ids = quedan; a.deudas_ids = quedanD; }
+
+  renderAll();
+  toast(mods.length + (mods.length !== 1 ? ' cobros separados' : ' cobro separado'));
+}
+
 
 async function ignorarAlias(nombre) {
   await guardarAlias(nombre, null, true);
