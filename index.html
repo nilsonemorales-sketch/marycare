@@ -1675,7 +1675,7 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
 </div>
 
 <script>
-var APP_VER = '36';
+var APP_VER = '37';
 
 // ── SUPABASE ────────────────────────────────────────────
 var db = null;
@@ -5213,27 +5213,47 @@ function proximasSinCita() {
   return out;
 }
 
+var creandoCitas = false;
 async function crearCitasPendientes() {
-  var pend = proximasSinCita().filter(function (x) { return !x.vencida; });
-  if (!pend.length) { toast('No hay próximas visitas futuras sin cita'); return; }
-  var n = 0;
-  for (var i = 0; i < pend.length; i++) {
-    var ses = pend[i].sesion;
-    var pac = ses.paciente_id
-      ? (S.pacientes || []).find(function (p) { return p.id === ses.paciente_id; })
-      : pacientePorNombre(ses.paciente_nombre);
-    var obj = {
-      paciente_id: ses.paciente_id || null, cliente: ses.paciente_nombre, tel: pac ? pac.tel : null,
-      fecha: ses.proxima, hora: ses.proxima_hora || '10:00', duracion_min: 60,
-      servicio: ses.servicio, estado: 'pendiente', notas: 'Creada desde la sesión del ' + ses.fecha
-    };
-    if (db) {
-      var r = await db.from('citas').insert(obj).select().single();
-      if (!r.error) { S.citas.push(r.data); n++; }
-    } else { obj.id = Date.now() + i; S.citas.push(obj); n++; }
+  if (creandoCitas) return;
+  creandoCitas = true;
+  try {
+    var pend = proximasSinCita().filter(function (x) { return !x.vencida; });
+    // una sola cita por clienta y fecha, aunque haya varias sesiones apuntando al mismo día
+    var vistos = {};
+    pend = pend.filter(function (x) {
+      var k = normNom(x.sesion.paciente_nombre) + '|' + x.sesion.proxima;
+      if (vistos[k]) return false;
+      vistos[k] = 1;
+      return true;
+    });
+    if (!pend.length) { toast('No hay próximas visitas futuras sin cita'); return; }
+    var n = 0;
+    for (var i = 0; i < pend.length; i++) {
+      var ses = pend[i].sesion;
+      // segunda comprobación justo antes de guardar, por si ya se creó
+      var yaEsta = (S.citas || []).some(function (c) {
+        return c.fecha === ses.proxima && normNom(c.cliente) === normNom(ses.paciente_nombre);
+      });
+      if (yaEsta) continue;
+      var pac = ses.paciente_id
+        ? (S.pacientes || []).find(function (p) { return p.id === ses.paciente_id; })
+        : pacientePorNombre(ses.paciente_nombre);
+      var obj = {
+        paciente_id: ses.paciente_id || null, cliente: ses.paciente_nombre, tel: pac ? pac.tel : null,
+        fecha: ses.proxima, hora: ses.proxima_hora || '10:00', duracion_min: 60,
+        servicio: ses.servicio, estado: 'pendiente', notas: 'Creada desde la sesión del ' + ses.fecha
+      };
+      if (db) {
+        var r = await db.from('citas').insert(obj).select().single();
+        if (!r.error) { S.citas.push(r.data); n++; }
+      } else { obj.id = Date.now() + i; S.citas.push(obj); n++; }
+    }
+    renderAll();
+    toast(n ? n + (n !== 1 ? ' citas creadas' : ' cita creada') : 'Ya estaban todas creadas');
+  } finally {
+    creandoCitas = false;
   }
-  renderAll();
-  toast(n + ' cita' + (n !== 1 ? 's' : '') + ' creada' + (n !== 1 ? 's' : '') + ' en la agenda');
 }
 
 function reagendarWA(sesionId) {
