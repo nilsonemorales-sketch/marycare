@@ -730,6 +730,13 @@ input,select,textarea{font-size:16px}
   display:flex;align-items:center;gap:9px;justify-content:center}
 .sb-logout:hover{background:var(--sf2);color:var(--ink)}
 
+/* ── ESTADO DE FICHA EN EL COBRO ─────────────────────── */
+.ficha-ok,.ficha-nueva{
+  border-radius:var(--r);padding:9px 13px;font-size:12.5px;font-weight:500;margin:-8px 0 14px;
+}
+.ficha-ok{background:var(--mint-bg);color:var(--mint)}
+.ficha-nueva{background:var(--gold-bg);color:var(--gold)}
+
 /* ── ACCESO: SELECTOR DE PERSONA ─────────────────────── */
 .auth-hint{font-size:13px;color:var(--ink2);margin-bottom:18px}
 .who-row{display:flex;gap:14px;justify-content:center}
@@ -908,6 +915,7 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
     <div class="sb-lbl">Operación</div>
     <button class="ni" onclick="goPage('movimientos',this)"><i class="ti ti-arrows-exchange"></i>Movimientos</button>
     <button class="ni" onclick="goPage('clientes',this)"><i class="ti ti-users"></i>Clientes</button>
+    <button class="ni" onclick="goPage('fusion',this)"><i class="ti ti-users-group"></i>Unir clientas<span class="ni-badge" id="niFusBadge" style="display:none">0</span></button>
     <button class="ni" onclick="goPage('recuperacion',this)"><i class="ti ti-heart-handshake"></i>Recuperación<span class="ni-badge" id="niRecBadge" style="display:none">0</span></button>
     <button class="ni" onclick="goPage('deudas',this)"><i class="ti ti-clock-dollar"></i>Deudas<span class="ni-badge" id="niDeudaBadge" style="display:none">0</span></button>
     <button class="ni" onclick="goPage('cotizaciones',this)"><i class="ti ti-file-invoice"></i>Cotizaciones</button>
@@ -1105,6 +1113,29 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
       </div>
     </div>
 
+    <div class="page" id="page-fusion">
+      <div class="ph"><h1>Unir clientas</h1><p>Cobros que no están enganchados a una ficha</p></div>
+      <div class="bday-banner" style="border-left-color:var(--sky)">
+        <i class="ti ti-info-circle" style="color:var(--sky)"></i>
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:600;font-size:13.5px">Cada nombre de aquí es una clienta que la app no reconoce</div>
+          <div style="font-size:11.5px;color:var(--ink3);margin-top:3px">Al unirla con su ficha, sus cobros, su expediente, su deuda y su teléfono quedan juntos. Si no es una clienta con expediente (una farmacia, un gimnasio), escóndela con el ojo.</div>
+        </div>
+      </div>
+      <div class="kg" style="margin-bottom:14px">
+        <div class="kpi"><div class="kl">Sin ficha</div><div class="kv" id="fusKTotal">—</div><div class="ks">Nombres por resolver</div></div>
+        <div class="kpi"><div class="kl">Con sugerencia clara</div><div class="kv" style="color:var(--mint)" id="fusKSug">—</div><div class="ks">Un toque y quedan unidas</div></div>
+        <div class="kpi"><div class="kl">Facturado suelto</div><div class="kv ater" id="fusKMonto">—</div><div class="ks">Sin dueña identificada</div></div>
+        <div class="kpi"><div class="kl">Fichas activas</div><div class="kv" id="fusKFichas">—</div><div class="ks">Expedientes en la app</div></div>
+      </div>
+      <div class="card">
+        <div class="ch" style="flex-wrap:wrap;gap:8px">
+          <div class="sb2" style="max-width:260px;flex:1"><i class="ti ti-search"></i><input type="text" placeholder="Buscar nombre..." oninput="fusSearch(this.value)"></div>
+        </div>
+        <div class="cb np"><div class="tw"><table><thead><tr><th>Nombre en los cobros</th><th>Facturado</th><th>Se parece a</th><th>Acción</th></tr></thead><tbody id="fusTbody"></tbody></table></div></div>
+      </div>
+    </div>
+
     <div class="page" id="page-recuperacion">
       <div class="ph"><h1>Recuperación</h1><p>Clientas que dejaron de venir · reactivación por WhatsApp</p></div>
       <div class="kg" style="margin-bottom:14px">
@@ -1263,7 +1294,8 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
   <div class="mh"><div class="mt">Nuevo Movimiento</div><button class="mc" onclick="closeM('movModal')"><i class="ti ti-x"></i></button></div>
   <div class="mbody">
     <div class="fr2"><div class="fld"><label>Tipo</label><select id="mTipo" onchange="toggleMTipo()"><option value="servicio">Servicio</option><option value="producto">Producto</option></select></div><div class="fld"><label>Fecha</label><input type="date" id="mFecha"></div></div>
-    <div class="fld"><label>Cliente *</label><input type="text" id="mCliente" list="mCliList" placeholder="Nombre" oninput="chequearCredito()" onchange="chequearCredito()"><datalist id="mCliList"></datalist></div>
+    <div class="fld"><label>Cliente *</label><input type="text" id="mCliente" list="mCliList" placeholder="Nombre" oninput="chequearCredito();estadoFicha('mCliente','mFichaEstado')" onchange="chequearCredito();estadoFicha('mCliente','mFichaEstado')"><datalist id="mCliList"></datalist></div>
+    <div id="mFichaEstado" style="display:none"></div>
     <div id="mCreditoAviso" style="display:none;background:var(--red-bg);color:var(--red);border-radius:var(--r);padding:10px 13px;font-size:12.5px;font-weight:500;margin-bottom:14px"></div>
     <div class="fld" id="mServFld"><label>Servicio *</label><input type="text" id="mServicio" list="mServList" placeholder="Ej: Peeling Acné"><datalist id="mServList"><option value="Peeling Acne"><option value="Clean Balance"><option value="HidraCare"><option value="DermaPen Bost"><option value="Purifying"><option value="Peeling Axilas"><option value="Lash Lift"><option value="Peeling Manchas"><option value="RadiantCare"></datalist></div>
     <div class="fld" id="mProdFld" style="display:none">
@@ -1667,7 +1699,7 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
 </div>
 
 <script>
-var APP_VER = '33';
+var APP_VER = '34';
 
 // ── SUPABASE ────────────────────────────────────────────
 var db = null;
@@ -1682,7 +1714,7 @@ try {
 } catch(e) { db = null; }
 
 // ── STATE ───────────────────────────────────────────────
-var S = { movimientos: [], catalogo: [], deudas: [], pacientes: [], sesiones: [], gastos: [], cotizaciones: [], citas: [], fotos: [], kardex: [], seguimientos: [], gastosFijos: [] };
+var S = { movimientos: [], catalogo: [], deudas: [], pacientes: [], sesiones: [], gastos: [], cotizaciones: [], citas: [], fotos: [], kardex: [], seguimientos: [], gastosFijos: [], alias: [] };
 var mFilterV = 'all', mSearchV = '', catSearchV = '', catFilterV = 'all', deudaFilterV = 'activas';
 var cliSearchV = '', cliSortV = 'total', expFilterV = 'all', expSearchV = '';
 var currentReport = 'resumen';
@@ -1715,7 +1747,7 @@ async function loadAll() {
       db.from('movimientos').select('*').order('fecha', { ascending: false }),
       db.from('catalogo').select('*').eq('active', true).order('name'),
       db.from('deudas').select('*').order('created_at', { ascending: false }),
-      db.from('pacientes').select('*').order('nombre'),
+      db.from('pacientes').select('*').is('duplicado_de', null).order('nombre'),
       db.from('sesiones').select('*').order('fecha', { ascending: false }),
       db.from('gastos').select('*').order('fecha', { ascending: false }),
       db.from('cotizaciones').select('*').order('created_at', { ascending: false }),
@@ -1723,7 +1755,8 @@ async function loadAll() {
       db.from('fotos').select('*').order('fecha', { ascending: false }),
       db.from('inventario_mov').select('*').order('created_at', { ascending: false }).limit(60),
       db.from('seguimientos').select('*').order('fecha', { ascending: false }).limit(400),
-      db.from('gastos_fijos').select('*').order('concepto')
+      db.from('gastos_fijos').select('*').order('concepto'),
+      db.from('alias_clientas').select('*')
     ]);
     S.movimientos  = results[0].data || [];
     S.catalogo     = results[1].data || [];
@@ -1737,6 +1770,7 @@ async function loadAll() {
     S.kardex       = results[9].data || [];
     S.seguimientos = (results[10] && results[10].data) || [];
     S.gastosFijos  = (results[11] && results[11].data) || [];
+    S.alias        = (results[12] && results[12].data) || [];
     await firmarFotos();
     try { localStorage.setItem('mc_cache', JSON.stringify(S)); localStorage.setItem('mc_cache_at', new Date().toISOString()); } catch(e){}
     dataReady = true;
@@ -1750,7 +1784,7 @@ var pageTitles = {
   dashboard: 'Resumen', movimientos: 'Movimientos', clientes: 'Clientes',
   catalogo: 'Catálogo', deudas: 'Deudas', expedientes: 'Expedientes',
   sesiones: 'Sesiones', gastos: 'Gastos & Costos', reportes: 'Reportería', cotizaciones: 'Cotizaciones',
-  agenda: 'Agenda', fotos: 'Antes / Después', inventario: 'Inventario', recuperacion: 'Recuperación'
+  agenda: 'Agenda', fotos: 'Antes / Después', inventario: 'Inventario', recuperacion: 'Recuperación', fusion: 'Unir clientas'
 };
 
 function goPage(id, el) {
@@ -1846,6 +1880,8 @@ function renderAll() {
   renderFotosPage();
   renderInventario();
   renderRecuperacion();
+  renderFusion();
+  renderBadgeFusion();
   renderRescate();
   renderBadges();
   renderAlerts();
@@ -2192,7 +2228,7 @@ function renderDeudas() {
       '<td>' + estadoBadge + (d.estado === 'pendiente' && d.tipo === 'cobrar' ? ' ' + edadChip(diasDesde(d.fecha)) : '') + '</td>' +
       '<td style="display:flex;gap:4px">' +
       '<button class="btn bg2 bxs" onclick="openDeudaModal(' + d.id + ')" title="Editar deuda"><i class="ti ti-edit"></i></button>' +
-      (d.estado === 'pendiente' && d.tipo === 'cobrar' && telDeCliente(d.persona) ? '<button class="btn bwa bxs" onclick="cobroWA(' + d.id + ')" title="Recordar el cobro por WhatsApp"><i class="ti ti-brand-whatsapp"></i></button>' : '') +
+      (d.estado === 'pendiente' && d.tipo === 'cobrar' && telDeCliente(d.persona, d.paciente_id) ? '<button class="btn bwa bxs" onclick="cobroWA(' + d.id + ')" title="Recordar el cobro por WhatsApp"><i class="ti ti-brand-whatsapp"></i></button>' : '') +
       (d.estado === 'pendiente' ? '<button class="btn bg2 bxs" onclick="openAbonoModal(' + d.id + ')" title="Registrar abono"><i class="ti ti-coin"></i></button>' : '') +
       (d.estado === 'pendiente' ? '<button class="btn bgo bxs" onclick="marcarPagada(' + d.id + ')" title="Marcar como pagada"><i class="ti ti-check"></i></button>' : '') +
       '<button class="btn bda bxs" onclick="elimDeuda(' + d.id + ')"><i class="ti ti-trash"></i></button></td></tr>';
@@ -2406,11 +2442,9 @@ function openMovModal() {
   ['mDescInfo','mDescInfoS'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});
   document.getElementById('mMonto').readOnly = false;
   toggleMTipo();
-  var dl = document.getElementById('mCliList');
-  var names = [];
-  S.movimientos.forEach(function(m) { if (!names.includes(m.cliente)) names.push(m.cliente); });
-  names.sort();
-  dl.innerHTML = names.map(function(n) { return '<option value="' + n + '">'; }).join('');
+  llenarFichasDatalist('mCliList');
+  var fe = document.getElementById('mFichaEstado');
+  if (fe) fe.style.display = 'none';
   var sel = document.getElementById('mProductoSel');
   if (sel) sel.innerHTML = S.catalogo.map(function(p) { return '<option value="' + p.price + '" data-name="' + p.name + '">' + p.name + ' — ' + fmt(p.price) + '</option>'; }).join('');
   citaACobrar = null;
@@ -2519,6 +2553,10 @@ async function saveMov() {
     if (_saldoPrevio > 0 && !confirm(cliente + ' ya debe ' + fmt(_saldoPrevio) + ' de antes.\n\n¿Aun así dejas esta venta a crédito?')) return;
   }
 
+  var fichaMov = await fichaParaGuardar(cliente);
+  var pidMov = fichaMov ? fichaMov.id : null;
+  if (fichaMov) cliente = fichaMov.nombre;
+
   if (tipo === 'producto') {
     if (movCart.length === 0) { toast('Agrega al menos un producto al carrito'); return; }
     var subtotal = movCart.reduce(function(a, item) { return a + item.price * item.qty; }, 0);
@@ -2530,7 +2568,7 @@ async function saveMov() {
       var itemBruto = item.price * item.qty;
       var itemMonto = desc.descMonto > 0 ? Math.round(itemBruto / subtotal * totalMonto) : itemBruto;
       var itemConcepto = item.qty > 1 ? item.name + ' x' + item.qty : item.name;
-      var obj = { fecha: fecha, cliente: cliente, concepto: itemConcepto, tipo: 'producto', monto: itemMonto, pago: pago, notas: notas };
+      var obj = { fecha: fecha, cliente: cliente, concepto: itemConcepto, tipo: 'producto', monto: itemMonto, pago: pago, notas: notas, paciente_id: pidMov };
       if (db) {
         var ri = await db.from('movimientos').insert(obj).select().single();
         if (!ri.error) S.movimientos.unshift(ri.data);
@@ -2539,7 +2577,7 @@ async function saveMov() {
     if (pago === 'cxc') {
       var conceptoDeuda = movCart.map(function(it) { return it.name; }).join(', ');
       if (db) {
-        var rdp = await db.from('deudas').insert({ tipo: 'cobrar', persona: cliente, concepto: conceptoDeuda, monto: totalMonto, estado: 'pendiente', fecha: fecha }).select().single();
+        var rdp = await db.from('deudas').insert({ tipo: 'cobrar', persona: cliente, concepto: conceptoDeuda, monto: totalMonto, estado: 'pendiente', fecha: fecha, paciente_id: pidMov }).select().single();
         if (!rdp.error) S.deudas.unshift(rdp.data);
       }
     }
@@ -2568,14 +2606,14 @@ async function saveMov() {
   var monto = descS.final;
   if (descS.nota && !notas) notas = descS.nota;
   if (db) {
-    var r = await db.from('movimientos').insert({ fecha: fecha, cliente: cliente, concepto: concepto, tipo: tipo, monto: monto, pago: pago, notas: notas }).select().single();
+    var r = await db.from('movimientos').insert({ fecha: fecha, cliente: cliente, concepto: concepto, tipo: tipo, monto: monto, pago: pago, notas: notas, paciente_id: pidMov }).select().single();
     if (!r.error) S.movimientos.unshift(r.data);
     if (pago === 'cxc') {
-      var rd = await db.from('deudas').insert({ tipo: 'cobrar', persona: cliente, concepto: concepto, monto: monto, estado: 'pendiente', fecha: fecha }).select().single();
+      var rd = await db.from('deudas').insert({ tipo: 'cobrar', persona: cliente, concepto: concepto, monto: monto, estado: 'pendiente', fecha: fecha, paciente_id: pidMov }).select().single();
       if (!rd.error) S.deudas.unshift(rd.data);
     }
   } else {
-    var newMov = { id: Date.now(), fecha: fecha, cliente: cliente, concepto: concepto, tipo: tipo, monto: monto, pago: pago, notas: notas };
+    var newMov = { id: Date.now(), fecha: fecha, cliente: cliente, concepto: concepto, tipo: tipo, monto: monto, pago: pago, notas: notas, paciente_id: pidMov };
     S.movimientos.unshift(newMov);
   }
   await cerrarCitaCobrada();
@@ -2892,7 +2930,7 @@ async function saveSes() {
   var proxHoraEl = document.getElementById('ss_prox_hora');
   var hora = horaEl ? horaEl.value || null : null;
   var proxHora = proxHoraEl ? proxHoraEl.value || null : null;
-  var pac = S.pacientes.find(function(p) { return p.nombre.toLowerCase() === nombre.toLowerCase(); });
+  var pac = resolverFicha(nombre);
   var prox = document.getElementById('ss_prox').value || null;
   var obj = { paciente_id: pac ? pac.id : null, paciente_nombre: nombre, fecha: fecha, servicio: servicio, productos: document.getElementById('ss_prod').value, notas: document.getElementById('ss_notas').value, proxima: prox, evolucion: document.getElementById('ss_evol').value };
   if (hora) obj.hora = hora; else obj.hora = null;
@@ -4389,7 +4427,7 @@ async function saveCita() {
   }
   window._citaForce = false;
 
-  var pac = (S.pacientes || []).find(function (p) { return (p.nombre || '').toLowerCase() === cliente.toLowerCase(); });
+  var pac = resolverFicha(cliente);
   var obj = {
     paciente_id: pac ? pac.id : null,
     cliente: cliente,
@@ -4830,7 +4868,7 @@ function enviarListaCompra() {
    v33 — RECUPERACIÓN · COBRO · AGENDA · PRODUCTO · MARGEN
    ═══════════════════════════════════════════════════════ */
 
-function normNom(x) { return String(x || '').trim().toLowerCase(); }
+function normNom(x) { return sinAcentos(String(x || '')).replace(/\s+/g, ' ').trim().toLowerCase(); }
 
 function diasDesde(f) {
   if (!f) return null;
@@ -4841,8 +4879,7 @@ function diasDesde(f) {
 }
 
 function pacientePorNombre(nom) {
-  var n = normNom(nom);
-  return (S.pacientes || []).find(function (p) { return normNom(p.nombre) === n; }) || null;
+  return resolverFicha(nom);
 }
 
 async function registrarSeguimiento(tipo, cliente, pacienteId, refId, nota) {
@@ -4871,9 +4908,10 @@ var recFilterV = 'todas', recSearchV = '';
 function clientasDormidas() {
   var mapa = {};
   (S.movimientos || []).forEach(function (m) {
-    var k = normNom(m.cliente);
+    var f = m.paciente_id ? fichaPorId(m.paciente_id) : null;
+    var k = f ? 'f' + f.id : normNom(m.cliente);
     if (!k) return;
-    if (!mapa[k]) mapa[k] = { nombre: m.cliente, ultima: m.fecha, total: 0, visitas: 0, servicio: m.concepto };
+    if (!mapa[k]) mapa[k] = { nombre: f ? f.nombre : m.cliente, ficha: f, ultima: m.fecha, total: 0, visitas: 0, servicio: m.concepto };
     var o = mapa[k];
     o.total += parseFloat(m.monto || 0);
     o.visitas++;
@@ -4888,7 +4926,7 @@ function clientasDormidas() {
       return normNom(c.cliente) === k && c.fecha >= hoyKey() && c.estado !== 'cancelada';
     });
     if (citaFutura) return;
-    var pac = pacientePorNombre(o.nombre);
+    var pac = o.ficha || pacientePorNombre(o.nombre);
     var seg = ultimoSeguimiento('recuperacion', o.nombre);
     out.push({
       nombre: o.nombre, dias: d, ultima: o.ultima, total: Math.round(o.total), visitas: o.visitas,
@@ -4994,8 +5032,11 @@ function deudaSaldo(d) {
 
 function saldoCliente(nombre) {
   var n = normNom(nombre);
+  var f = resolverFicha(nombre);
   return (S.deudas || []).filter(function (d) {
-    return d.tipo === 'cobrar' && d.estado === 'pendiente' && normNom(d.persona) === n;
+    if (d.tipo !== 'cobrar' || d.estado !== 'pendiente') return false;
+    if (f && d.paciente_id) return d.paciente_id === f.id;
+    return normNom(d.persona) === n;
   }).reduce(function (a, d) { return a + deudaSaldo(d); }, 0);
 }
 
@@ -5008,15 +5049,15 @@ function edadChip(dias) {
   return '';
 }
 
-function telDeCliente(nombre) {
-  var pac = pacientePorNombre(nombre);
+function telDeCliente(nombre, pacienteId) {
+  var pac = (pacienteId ? fichaPorId(pacienteId) : null) || pacientePorNombre(nombre);
   return pac ? telLimpio(pac.tel) : '';
 }
 
 function cobroWA(id) {
   var d = (S.deudas || []).find(function (x) { return x.id === id; });
   if (!d) return;
-  var tel = telDeCliente(d.persona);
+  var tel = telDeCliente(d.persona, d.paciente_id);
   if (!tel) { toast('Esta clienta no tiene teléfono en su ficha'); return; }
   var saldo = deudaSaldo(d);
   var abonado = parseFloat(d.monto_pagado || 0);
@@ -5414,6 +5455,275 @@ function renderBadges() {
   }).length;
   var elD = document.getElementById('niDeudaBadge');
   if (elD) { elD.textContent = vencidas; elD.style.display = vencidas ? '' : 'none'; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   v34 — UNA SOLA CLIENTA: fichas, alias y fusión
+   ═══════════════════════════════════════════════════════ */
+
+function sinAcentos(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function fichasActivas() {
+  return (S.pacientes || []).filter(function (p) { return !p.duplicado_de; });
+}
+
+function fichaPorId(id) {
+  if (!id) return null;
+  return (S.pacientes || []).find(function (p) { return p.id === id; }) || null;
+}
+
+function fichaPorNombre(nom) {
+  var n = normNom(nom);
+  if (!n) return null;
+  return fichasActivas().find(function (p) { return normNom(p.nombre) === n; }) || null;
+}
+
+function aliasDe(nom) {
+  var n = normNom(nom);
+  return (S.alias || []).find(function (a) { return normNom(a.alias) === n; }) || null;
+}
+
+function resolverFicha(nom) {
+  var f = fichaPorNombre(nom);
+  if (f) return f;
+  var a = aliasDe(nom);
+  if (a && a.paciente_id) return fichaPorId(a.paciente_id);
+  return null;
+}
+
+function lev(a, b) {
+  a = String(a); b = String(b);
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  var fila = [], i, j;
+  for (j = 0; j <= b.length; j++) fila[j] = j;
+  for (i = 1; i <= a.length; i++) {
+    var prev = fila[0]; fila[0] = i;
+    for (j = 1; j <= b.length; j++) {
+      var tmp = fila[j];
+      fila[j] = Math.min(fila[j] + 1, fila[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = tmp;
+    }
+  }
+  return fila[b.length];
+}
+
+function sugerirFicha(nom) {
+  var n = normNom(nom);
+  if (!n) return null;
+  var tk = n.split(' '), nf = tk[0], nl = tk[tk.length - 1];
+  var best = null, mejor = 0;
+  fichasActivas().forEach(function (p) {
+    var pn = normNom(p.nombre);
+    var pt = pn.split(' '), pf = pt[0], pl = pt[pt.length - 1];
+    var s;
+    if (pn === n) s = 100;
+    else if (pf === nf && nl !== nf && pt.indexOf(nl) > -1) s = 92;
+    else if (pf === nf && lev(nl, pl) <= 2) s = 84;
+    else if (pl === nl && nl !== nf && lev(nf, pf) <= 2) s = 80;
+    else if (pf === nf) s = 60;
+    else s = Math.max(0, 62 - lev(n, pn) * 7);
+    if (s > mejor) { mejor = s; best = p; }
+  });
+  return mejor >= 50 ? { ficha: best, confianza: mejor } : null;
+}
+
+/* ── PANTALLA DE FUSIÓN ────────────────────────────────── */
+var fusSearchV = '';
+
+function nombresSueltos() {
+  var mapa = {};
+  (S.movimientos || []).forEach(function (m) {
+    if (m.paciente_id) return;
+    var nom = String(m.cliente || '').trim();
+    if (!nom) return;
+    var a = aliasDe(nom);
+    if (a && (a.ignorar || a.paciente_id)) return;
+    var k = normNom(nom);
+    if (!mapa[k]) mapa[k] = { nombre: nom, visitas: 0, total: 0, ultima: m.fecha };
+    mapa[k].visitas++;
+    mapa[k].total += parseFloat(m.monto || 0);
+    if (String(m.fecha) > String(mapa[k].ultima)) mapa[k].ultima = m.fecha;
+  });
+  var out = Object.keys(mapa).map(function (k) {
+    var o = mapa[k];
+    o.sug = sugerirFicha(o.nombre);
+    return o;
+  });
+  out.sort(function (a, b) { return b.total - a.total; });
+  return out;
+}
+
+function fusSearch(v) { fusSearchV = String(v || '').toLowerCase(); renderFusion(); }
+
+function renderFusion() {
+  if (!document.getElementById('fusTbody')) return;
+  var todos = nombresSueltos();
+  var conSug = todos.filter(function (x) { return x.sug && x.sug.confianza >= 78; });
+  setText('fusKTotal', String(todos.length));
+  setText('fusKSug', String(conSug.length));
+  setText('fusKMonto', fmt(todos.reduce(function (a, x) { return a + x.total; }, 0)));
+  setText('fusKFichas', String(fichasActivas().length));
+
+  var list = todos;
+  if (fusSearchV) list = list.filter(function (x) { return x.nombre.toLowerCase().indexOf(fusSearchV) > -1; });
+
+  setHTML('fusTbody', list.length ? list.map(function (x, i) {
+    var seguro = esc(x.nombre).replace(/'/g, '&#39;');
+    var sug = x.sug;
+    var chipConf = sug
+      ? '<span class="chip ' + (sug.confianza >= 84 ? 'cm' : (sug.confianza >= 60 ? 'cg' : 'cx')) + '">' +
+        (sug.confianza >= 84 ? 'Muy parecida' : (sug.confianza >= 60 ? 'Puede ser' : 'Dudosa')) + '</span>'
+      : '<span class="chip cx">Sin parecido</span>';
+    return '<tr>' +
+      '<td><div class="tdm">' + esc(x.nombre) + '</div><div class="tds">' + x.visitas + ' visita' + (x.visitas !== 1 ? 's' : '') + ' · última ' + fechaLarga(x.ultima) + '</div></td>' +
+      '<td><span class="amt ater">' + fmt(x.total) + '</span></td>' +
+      '<td>' + (sug ? '<div class="tdm">' + esc(sug.ficha.nombre) + '</div><div class="tds">' + chipConf + '</div>' : chipConf) + '</td>' +
+      '<td><div style="display:flex;gap:4px;flex-wrap:wrap">' +
+      (sug ? '<button class="btn bt bxs" onclick="vincularAlias(\'' + seguro + '\',' + sug.ficha.id + ')" title="Es la misma persona"><i class="ti ti-link"></i>Es la misma</button>' : '') +
+      '<button class="btn bg2 bxs" onclick="elegirFicha(\'' + seguro + '\')" title="Buscar otra ficha"><i class="ti ti-search"></i></button>' +
+      '<button class="btn bg2 bxs" onclick="crearFichaDesde(\'' + seguro + '\')" title="Crear ficha nueva"><i class="ti ti-user-plus"></i></button>' +
+      '<button class="btn bda bxs" onclick="ignorarAlias(\'' + seguro + '\')" title="No es una clienta con ficha"><i class="ti ti-eye-off"></i></button>' +
+      '</div></td></tr>';
+  }).join('') : '<tr><td colspan="4"><div class="empty"><i class="ti ti-users-group"></i><p>Todos los cobros están vinculados a una ficha</p></div></td></tr>');
+}
+
+async function guardarAlias(alias, pacienteId, ignorar) {
+  var obj = { alias: alias, paciente_id: pacienteId || null, ignorar: !!ignorar };
+  var ya = aliasDe(alias);
+  if (db) {
+    if (ya && ya.id) {
+      var ru = await db.from('alias_clientas').update(obj).eq('id', ya.id).select().single();
+      if (!ru.error) { var i = S.alias.findIndex(function (a) { return a.id === ya.id; }); if (i >= 0) S.alias[i] = ru.data; return; }
+    }
+    var r = await db.from('alias_clientas').insert(obj).select().single();
+    if (!r.error) { S.alias.push(r.data); return; }
+  }
+  obj.id = Date.now();
+  if (ya) { Object.assign(ya, obj); } else { S.alias.push(obj); }
+}
+
+async function vincularAlias(nombre, pacienteId) {
+  var f = fichaPorId(pacienteId);
+  if (!f) return;
+  var afectados = (S.movimientos || []).filter(function (m) { return !m.paciente_id && normNom(m.cliente) === normNom(nombre); });
+  var deudasAf = (S.deudas || []).filter(function (d) { return d.tipo === 'cobrar' && !d.paciente_id && normNom(d.persona) === normNom(nombre); });
+  if (db) {
+    var idsMov = afectados.map(function (m) { return m.id; });
+    if (idsMov.length) await db.from('movimientos').update({ paciente_id: f.id, cliente: f.nombre }).in('id', idsMov);
+    var idsDeu = deudasAf.map(function (d) { return d.id; });
+    if (idsDeu.length) await db.from('deudas').update({ paciente_id: f.id, persona: f.nombre }).in('id', idsDeu);
+  }
+  afectados.forEach(function (m) { m.paciente_id = f.id; m.cliente = f.nombre; });
+  deudasAf.forEach(function (d) { d.paciente_id = f.id; d.persona = f.nombre; });
+  await guardarAlias(nombre, f.id, false);
+  renderAll();
+  toast(afectados.length + ' cobro' + (afectados.length !== 1 ? 's' : '') + ' unido' + (afectados.length !== 1 ? 's' : '') + ' a ' + f.nombre.split(' ')[0]);
+}
+
+async function ignorarAlias(nombre) {
+  await guardarAlias(nombre, null, true);
+  renderAll();
+  toast('Ya no aparecerá en la lista');
+}
+
+async function crearFicha(nombre, tel) {
+  var obj = { nombre: String(nombre).trim() };
+  if (tel) obj.tel = tel;
+  if (db) {
+    var r = await db.from('pacientes').insert(obj).select().single();
+    if (r.error) { toast('No se pudo crear la ficha: ' + r.error.message); return null; }
+    S.pacientes.push(r.data);
+    S.pacientes.sort(function (a, b) { return String(a.nombre).localeCompare(String(b.nombre)); });
+    return r.data;
+  }
+  obj.id = Date.now();
+  S.pacientes.push(obj);
+  return obj;
+}
+
+async function crearFichaDesde(nombre) {
+  var tel = prompt('Teléfono de ' + nombre + ' (puedes dejarlo vacío):', '');
+  if (tel === null) return;
+  var f = await crearFicha(nombre, tel.trim() || null);
+  if (!f) return;
+  await vincularAlias(nombre, f.id);
+}
+
+function elegirFicha(nombre) {
+  var opciones = fichasActivas().slice().sort(function (a, b) { return String(a.nombre).localeCompare(String(b.nombre)); });
+  var html = '<div class="fld"><label>Buscar ficha</label>' +
+    '<input type="text" id="efBuscar" placeholder="Escribe un nombre..." oninput="filtrarFichas()"></div>' +
+    '<div id="efLista" style="max-height:320px;overflow-y:auto;margin-top:4px"></div>';
+  var div = document.createElement('div');
+  div.className = 'mb open dyn-modal';
+  div.innerHTML = '<div class="modal" style="max-width:440px">' +
+    '<div class="mh"><div class="mt">¿Quién es ' + esc(nombre) + '?</div>' +
+    '<button class="mc" onclick="removeTopModal()"><i class="ti ti-x"></i></button></div>' +
+    '<div class="mbody">' + html + '</div>' +
+    '<div class="mf"><button class="btn bg2" onclick="removeTopModal()">Cancelar</button></div></div>';
+  document.body.appendChild(div);
+  window.__fusAlias = nombre;
+  window.__fusOpciones = opciones;
+  filtrarFichas();
+}
+
+function filtrarFichas() {
+  var q = normNom((document.getElementById('efBuscar') || {}).value || '');
+  var lista = (window.__fusOpciones || []).filter(function (p) { return !q || normNom(p.nombre).indexOf(q) > -1; }).slice(0, 60);
+  var alias = String(window.__fusAlias || '').replace(/'/g, '&#39;');
+  setHTML('efLista', lista.length ? lista.map(function (p) {
+    return '<button class="btn bg2" style="width:100%;justify-content:space-between;margin-bottom:6px" ' +
+      'onclick="removeTopModal();vincularAlias(\'' + esc(alias) + '\',' + p.id + ')">' +
+      '<span>' + esc(p.nombre) + '</span>' +
+      '<span style="color:var(--ink3);font-size:11px">' + esc(p.tel || 'sin teléfono') + '</span></button>';
+  }).join('') : '<div class="empty" style="padding:26px"><i class="ti ti-user-off"></i><p>Ninguna ficha coincide</p></div>');
+}
+
+/* ── SELECTOR DE CLIENTA EN EL COBRO ───────────────────── */
+function llenarFichasDatalist(idDatalist) {
+  var dl = document.getElementById(idDatalist);
+  if (!dl) return;
+  dl.innerHTML = fichasActivas().map(function (p) {
+    return '<option value="' + esc(p.nombre) + '">';
+  }).join('');
+}
+
+function estadoFicha(inputId, avisoId) {
+  var el = document.getElementById(avisoId);
+  var input = document.getElementById(inputId);
+  if (!el || !input) return;
+  var nom = String(input.value || '').trim();
+  if (!nom) { el.style.display = 'none'; return; }
+  var f = resolverFicha(nom);
+  el.style.display = '';
+  if (f) {
+    el.className = 'ficha-ok';
+    el.innerHTML = '<i class="ti ti-user-check" style="vertical-align:-2px"></i> Ficha de <strong>' + esc(f.nombre) + '</strong>' +
+      (f.tel ? ' · ' + esc(f.tel) : ' · sin teléfono');
+  } else {
+    el.className = 'ficha-nueva';
+    el.innerHTML = '<i class="ti ti-user-plus" style="vertical-align:-2px"></i> Clienta nueva — se le crea la ficha al guardar';
+  }
+}
+
+async function fichaParaGuardar(nombre) {
+  var f = resolverFicha(nombre);
+  if (f) return f;
+  var nom = String(nombre || '').trim();
+  if (!nom) return null;
+  if (!confirm('"' + nom + '" no tiene ficha todavía.\n\n¿Se la creamos ahora? Así sus cobros, su expediente y sus recordatorios quedan juntos.')) return null;
+  return await crearFicha(nom, null);
+}
+
+/* ── BADGE Y ARRANQUE ──────────────────────────────────── */
+function renderBadgeFusion() {
+  var n = nombresSueltos().length;
+  var el = document.getElementById('niFusBadge');
+  if (el) { el.textContent = n; el.style.display = n ? '' : 'none'; }
 }
 
 function registrarSW() {
