@@ -908,7 +908,8 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
     <div class="sb-lbl">Operación</div>
     <button class="ni" onclick="goPage('movimientos',this)"><i class="ti ti-arrows-exchange"></i>Movimientos</button>
     <button class="ni" onclick="goPage('clientes',this)"><i class="ti ti-users"></i>Clientes</button>
-    <button class="ni" onclick="goPage('deudas',this)"><i class="ti ti-clock-dollar"></i>Deudas</button>
+    <button class="ni" onclick="goPage('recuperacion',this)"><i class="ti ti-heart-handshake"></i>Recuperación<span class="ni-badge" id="niRecBadge" style="display:none">0</span></button>
+    <button class="ni" onclick="goPage('deudas',this)"><i class="ti ti-clock-dollar"></i>Deudas<span class="ni-badge" id="niDeudaBadge" style="display:none">0</span></button>
     <button class="ni" onclick="goPage('cotizaciones',this)"><i class="ti ti-file-invoice"></i>Cotizaciones</button>
     <div class="sb-lbl">Clínico</div>
     <button class="ni" onclick="goPage('expedientes',this)"><i class="ti ti-file-description"></i>Expedientes</button>
@@ -1097,9 +1098,34 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
               <button class="fc" onclick="gastoFilter('Personal',this)">Personal</button>
             </div>
           </div>
+          <button class="btn bg2 bsm" onclick="openFijosModal()"><i class="ti ti-repeat"></i>Gastos fijos</button>
           <button class="btn bp bsm" onclick="openGastoModal()"><i class="ti ti-plus"></i>Agregar gasto</button>
         </div>
         <div class="cb np"><div class="tw"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Monto</th><th>Notas</th><th></th></tr></thead><tbody id="gastosTbody"></tbody></table></div></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-recuperacion">
+      <div class="ph"><h1>Recuperación</h1><p>Clientas que dejaron de venir · reactivación por WhatsApp</p></div>
+      <div class="kg" style="margin-bottom:14px">
+        <div class="kpi"><div class="kl">60 a 89 días</div><div class="kv" id="recK60">—</div><div class="ks">Se están enfriando</div></div>
+        <div class="kpi"><div class="kl">90 días o más</div><div class="kv" style="color:var(--red)" id="recK90">—</div><div class="ks">Dormidas</div></div>
+        <div class="kpi"><div class="kl">Valor dormido</div><div class="kv ater" id="recKValor">—</div><div class="ks">Han dejado las de 90+</div></div>
+        <div class="kpi"><div class="kl">Por contactar</div><div class="kv" id="recKPend">—</div><div class="ks">Nunca o hace +30 días</div></div>
+      </div>
+      <div class="card">
+        <div class="ch" style="flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1">
+            <div class="sb2" style="max-width:230px;flex:1"><i class="ti ti-search"></i><input type="text" placeholder="Buscar clienta..." oninput="recSearch(this.value)"></div>
+            <div class="fb">
+              <button class="fc on" onclick="recFilter('todas',this)">Todas</button>
+              <button class="fc" onclick="recFilter('pend',this)">Por contactar</button>
+              <button class="fc" onclick="recFilter('60',this)">60-89 días</button>
+              <button class="fc" onclick="recFilter('90',this)">90+ días</button>
+            </div>
+          </div>
+        </div>
+        <div class="cb np"><div class="tw"><table><thead><tr><th>Clienta</th><th>Sin venir</th><th>Visitas</th><th>Ha dejado</th><th>Contacto</th><th></th></tr></thead><tbody id="recTbody"></tbody></table></div></div>
       </div>
     </div>
 
@@ -1113,6 +1139,7 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
         <button class="rcard" onclick="selReport('semanal',this)"><i class="ti ti-calendar-stats" style="color:var(--terra)"></i><h3>Semanal</h3><p>Por semana</p></button>
         <button class="rcard" onclick="selReport('clinico',this)"><i class="ti ti-file-medical" style="color:var(--violet)"></i><h3>Clínico</h3><p>Expedientes</p></button>
         <button class="rcard" onclick="selReport('mensual',this)"><i class="ti ti-calendar-month" style="color:var(--sky)"></i><h3>Mensual</h3><p>Por mes</p></button>
+        <button class="rcard" onclick="selReport('margen',this)"><i class="ti ti-coins" style="color:var(--mint)"></i><h3>Margen</h3><p>Por servicio y por hora</p></button>
       </div>
       <div id="reportContent"></div>
     </div>
@@ -1140,6 +1167,7 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
     <div class="page" id="page-agenda">
       <div class="ph"><h1>Agenda</h1><p>Citas, confirmaciones y recordatorios</p></div>
 
+      <div id="rescateBanner"></div>
       <div class="sr" id="agStats"></div>
 
       <div class="tbar">
@@ -1235,7 +1263,8 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
   <div class="mh"><div class="mt">Nuevo Movimiento</div><button class="mc" onclick="closeM('movModal')"><i class="ti ti-x"></i></button></div>
   <div class="mbody">
     <div class="fr2"><div class="fld"><label>Tipo</label><select id="mTipo" onchange="toggleMTipo()"><option value="servicio">Servicio</option><option value="producto">Producto</option></select></div><div class="fld"><label>Fecha</label><input type="date" id="mFecha"></div></div>
-    <div class="fld"><label>Cliente *</label><input type="text" id="mCliente" list="mCliList" placeholder="Nombre"><datalist id="mCliList"></datalist></div>
+    <div class="fld"><label>Cliente *</label><input type="text" id="mCliente" list="mCliList" placeholder="Nombre" oninput="chequearCredito()" onchange="chequearCredito()"><datalist id="mCliList"></datalist></div>
+    <div id="mCreditoAviso" style="display:none;background:var(--red-bg);color:var(--red);border-radius:var(--r);padding:10px 13px;font-size:12.5px;font-weight:500;margin-bottom:14px"></div>
     <div class="fld" id="mServFld"><label>Servicio *</label><input type="text" id="mServicio" list="mServList" placeholder="Ej: Peeling Acné"><datalist id="mServList"><option value="Peeling Acne"><option value="Clean Balance"><option value="HidraCare"><option value="DermaPen Bost"><option value="Purifying"><option value="Peeling Axilas"><option value="Lash Lift"><option value="Peeling Manchas"><option value="RadiantCare"></datalist></div>
     <div class="fld" id="mProdFld" style="display:none">
       <label>Productos en esta venta</label>
@@ -1336,7 +1365,15 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
       <div class="fld"><label>Costo (RD$)</label><input type="number" id="cpCosto" placeholder="0" min="0" oninput="updateMargenPreview()"></div>
       <div class="fld"><label>Cant. inventario</label><input type="number" id="cpCantidad" placeholder="0" min="0"></div>
     </div>
-    <div class="fld"><label>Stock mínimo — avisar cuando queden</label><input type="number" id="cpStockMin" placeholder="3" min="0"></div>
+    <div class="fr">
+      <div class="fld"><label>Stock mínimo — avisar cuando queden</label><input type="number" id="cpStockMin" placeholder="3" min="0"></div>
+      <div class="fld"><label>Duración en cabina (min)</label><input type="number" id="cpDuracion" placeholder="60" min="0" step="5"></div>
+    </div>
+    <div class="fld"><label>Recomendar después de estos servicios</label>
+      <input type="text" id="cpReco" list="listaServicios" placeholder="Clean Balance, Peeling Acne">
+      <div style="font-size:11px;color:var(--ink3);margin-top:5px">Separa con comas. Al cerrar una sesión de esos servicios, la app te ofrece vender este producto.</div>
+    </div>
+    <datalist id="listaServicios"></datalist>
     <div id="cpMargenPreview" style="display:none;border-radius:8px;padding:10px 14px;font-size:12px;font-weight:500;margin-top:4px"></div>
   </div>
   <div class="mf"><button class="btn bg2" onclick="closeM('catModal')">Cancelar</button><button class="btn bt" onclick="saveCat()"><i class="ti ti-check"></i>Guardar</button></div>
@@ -1383,6 +1420,7 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
 <div class="mb" id="gastoModal"><div class="modal" style="max-width:420px">
   <div class="mh"><div class="mt" id="gastoModalTitle">Registrar Gasto</div><button class="mc" onclick="closeM('gastoModal')"><i class="ti ti-x"></i></button></div>
   <div class="mbody">
+    <div id="gQuick" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px"></div>
     <div class="fr2">
       <div class="fld"><label>Fecha *</label><input type="date" id="gFecha"></div>
       <div class="fld"><label>Monto (RD$) *</label><input type="number" id="gMonto" placeholder="0" min="0"></div>
@@ -1401,8 +1439,40 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
       </select>
     </div>
     <div class="fld"><label>Notas</label><textarea id="gNotas" placeholder="Descripción adicional..." style="min-height:60px"></textarea></div>
+    <div class="fld"><label>Foto del recibo</label>
+      <input type="file" id="gRecibo" accept="image/*" capture="environment" style="font-size:12.5px">
+      <div id="gReciboActual" style="font-size:11.5px;margin-top:6px"></div>
+    </div>
   </div>
-  <div class="mf"><button class="btn bg2" onclick="closeM('gastoModal')">Cancelar</button><button class="btn bt" onclick="saveGasto()"><i class="ti ti-check"></i>Guardar</button></div>
+  <div class="mf"><button class="btn bg2" onclick="closeM('gastoModal')">Cancelar</button><button class="btn bt" id="gSaveBtn" onclick="saveGasto()"><i class="ti ti-check"></i>Guardar</button></div>
+</div></div>
+
+<!-- MODAL GASTOS FIJOS -->
+<div class="mb" id="fijosModal"><div class="modal" style="max-width:480px">
+  <div class="mh"><div class="mt">Gastos fijos del mes</div><button class="mc" onclick="closeM('fijosModal')"><i class="ti ti-x"></i></button></div>
+  <div class="mbody">
+    <p style="font-size:13px;color:var(--ink2);margin-bottom:16px">Lo que se repite todos los meses: alquiler, internet, luz, publicidad. Se registran de una vez en lugar de recordarlos uno por uno.</p>
+    <div id="fijosLista" style="margin-bottom:18px"></div>
+    <div class="fr">
+      <div class="fld"><label>Concepto</label><input type="text" id="fjConcepto" placeholder="Alquiler del local"></div>
+      <div class="fld"><label>Monto (RD$)</label><input type="number" id="fjMonto" placeholder="0" min="0"></div>
+    </div>
+    <div class="fr">
+      <div class="fld"><label>Categoría</label>
+        <select id="fjCategoria">
+          <option value="Local y servicios">Local y servicios</option>
+          <option value="Productos e insumos">Productos e insumos</option>
+          <option value="Marketing">Marketing y publicidad</option>
+          <option value="Personal">Personal</option>
+          <option value="Equipamiento">Equipamiento</option>
+          <option value="Otros">Otros</option>
+        </select>
+      </div>
+      <div class="fld"><label>Día del mes</label><input type="number" id="fjDia" placeholder="1" min="1" max="28"></div>
+    </div>
+    <button class="btn bg2" style="width:100%" onclick="saveFijo()"><i class="ti ti-plus"></i>Agregar a la lista</button>
+  </div>
+  <div class="mf"><button class="btn bg2" onclick="closeM('fijosModal')">Cerrar</button><button class="btn bt" onclick="registrarFijosDelMes()"><i class="ti ti-calendar-plus"></i>Registrar los de este mes</button></div>
 </div></div>
 
 <!-- MODAL REPORTE WA -->
@@ -1597,7 +1667,7 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
 </div>
 
 <script>
-var APP_VER = '32';
+var APP_VER = '33';
 
 // ── SUPABASE ────────────────────────────────────────────
 var db = null;
@@ -1612,7 +1682,7 @@ try {
 } catch(e) { db = null; }
 
 // ── STATE ───────────────────────────────────────────────
-var S = { movimientos: [], catalogo: [], deudas: [], pacientes: [], sesiones: [], gastos: [], cotizaciones: [], citas: [], fotos: [], kardex: [] };
+var S = { movimientos: [], catalogo: [], deudas: [], pacientes: [], sesiones: [], gastos: [], cotizaciones: [], citas: [], fotos: [], kardex: [], seguimientos: [], gastosFijos: [] };
 var mFilterV = 'all', mSearchV = '', catSearchV = '', catFilterV = 'all', deudaFilterV = 'activas';
 var cliSearchV = '', cliSortV = 'total', expFilterV = 'all', expSearchV = '';
 var currentReport = 'resumen';
@@ -1651,7 +1721,9 @@ async function loadAll() {
       db.from('cotizaciones').select('*').order('created_at', { ascending: false }),
       db.from('citas').select('*').order('fecha', { ascending: true }),
       db.from('fotos').select('*').order('fecha', { ascending: false }),
-      db.from('inventario_mov').select('*').order('created_at', { ascending: false }).limit(60)
+      db.from('inventario_mov').select('*').order('created_at', { ascending: false }).limit(60),
+      db.from('seguimientos').select('*').order('fecha', { ascending: false }).limit(400),
+      db.from('gastos_fijos').select('*').order('concepto')
     ]);
     S.movimientos  = results[0].data || [];
     S.catalogo     = results[1].data || [];
@@ -1663,6 +1735,8 @@ async function loadAll() {
     S.citas        = results[7].data || [];
     S.fotos        = results[8].data || [];
     S.kardex       = results[9].data || [];
+    S.seguimientos = (results[10] && results[10].data) || [];
+    S.gastosFijos  = (results[11] && results[11].data) || [];
     await firmarFotos();
     try { localStorage.setItem('mc_cache', JSON.stringify(S)); localStorage.setItem('mc_cache_at', new Date().toISOString()); } catch(e){}
     dataReady = true;
@@ -1676,7 +1750,7 @@ var pageTitles = {
   dashboard: 'Resumen', movimientos: 'Movimientos', clientes: 'Clientes',
   catalogo: 'Catálogo', deudas: 'Deudas', expedientes: 'Expedientes',
   sesiones: 'Sesiones', gastos: 'Gastos & Costos', reportes: 'Reportería', cotizaciones: 'Cotizaciones',
-  agenda: 'Agenda', fotos: 'Antes / Después', inventario: 'Inventario'
+  agenda: 'Agenda', fotos: 'Antes / Después', inventario: 'Inventario', recuperacion: 'Recuperación'
 };
 
 function goPage(id, el) {
@@ -1771,6 +1845,9 @@ function renderAll() {
   renderAgenda();
   renderFotosPage();
   renderInventario();
+  renderRecuperacion();
+  renderRescate();
+  renderBadges();
   renderAlerts();
   checkBirthdays();
   // Actualizar subtítulo del dashboard con mes actual
@@ -2112,9 +2189,10 @@ function renderDeudas() {
       '<td>' + (d.concepto || '—') + '</td>' +
       '<td><span class="amt ' + (d.tipo === 'cobrar' ? 'apos' : 'aneg') + '">' + fmt(d.monto) + '</span></td>' +
       '<td><span class="chip ' + tCh[d.tipo] + '">' + tLb[d.tipo] + '</span></td>' +
-      '<td>' + estadoBadge + '</td>' +
+      '<td>' + estadoBadge + (d.estado === 'pendiente' && d.tipo === 'cobrar' ? ' ' + edadChip(diasDesde(d.fecha)) : '') + '</td>' +
       '<td style="display:flex;gap:4px">' +
       '<button class="btn bg2 bxs" onclick="openDeudaModal(' + d.id + ')" title="Editar deuda"><i class="ti ti-edit"></i></button>' +
+      (d.estado === 'pendiente' && d.tipo === 'cobrar' && telDeCliente(d.persona) ? '<button class="btn bwa bxs" onclick="cobroWA(' + d.id + ')" title="Recordar el cobro por WhatsApp"><i class="ti ti-brand-whatsapp"></i></button>' : '') +
       (d.estado === 'pendiente' ? '<button class="btn bg2 bxs" onclick="openAbonoModal(' + d.id + ')" title="Registrar abono"><i class="ti ti-coin"></i></button>' : '') +
       (d.estado === 'pendiente' ? '<button class="btn bgo bxs" onclick="marcarPagada(' + d.id + ')" title="Marcar como pagada"><i class="ti ti-check"></i></button>' : '') +
       '<button class="btn bda bxs" onclick="elimDeuda(' + d.id + ')"><i class="ti ti-trash"></i></button></td></tr>';
@@ -2335,6 +2413,8 @@ function openMovModal() {
   dl.innerHTML = names.map(function(n) { return '<option value="' + n + '">'; }).join('');
   var sel = document.getElementById('mProductoSel');
   if (sel) sel.innerHTML = S.catalogo.map(function(p) { return '<option value="' + p.price + '" data-name="' + p.name + '">' + p.name + ' — ' + fmt(p.price) + '</option>'; }).join('');
+  citaACobrar = null;
+  chequearCredito();
   document.getElementById('movModal').classList.add('open');
 }
 function toggleMTipo() {
@@ -2434,6 +2514,10 @@ async function saveMov() {
   var pago = document.getElementById('mPago').value;
   var notas = document.getElementById('mNotas').value;
   if (!cliente || !fecha) { toast('Completa los campos obligatorios'); return; }
+  if (pago === 'cxc') {
+    var _saldoPrevio = saldoCliente(cliente);
+    if (_saldoPrevio > 0 && !confirm(cliente + ' ya debe ' + fmt(_saldoPrevio) + ' de antes.\n\n¿Aun así dejas esta venta a crédito?')) return;
+  }
 
   if (tipo === 'producto') {
     if (movCart.length === 0) { toast('Agrega al menos un producto al carrito'); return; }
@@ -2472,6 +2556,7 @@ async function saveMov() {
     }
     if (stockOps.length) await Promise.all(stockOps);
     movCart = [];
+    await cerrarCitaCobrada();
     closeM('movModal'); renderAll(); toast('Productos guardados · Inventario actualizado');
     return;
   }
@@ -2493,6 +2578,7 @@ async function saveMov() {
     var newMov = { id: Date.now(), fecha: fecha, cliente: cliente, concepto: concepto, tipo: tipo, monto: monto, pago: pago, notas: notas };
     S.movimientos.unshift(newMov);
   }
+  await cerrarCitaCobrada();
   closeM('movModal'); renderAll(); toast('Movimiento guardado');
 }
 
@@ -2555,10 +2641,13 @@ function openCatModal(id) {
       document.getElementById('cpCosto').value = p.costo || '';
       document.getElementById('cpCantidad').value = (p.cantidad !== undefined && p.cantidad !== null) ? p.cantidad : '';
       document.getElementById('cpStockMin').value = (p.stock_min !== undefined && p.stock_min !== null) ? p.stock_min : '';
+      document.getElementById('cpDuracion').value = p.duracion_min != null ? p.duracion_min : '';
+      document.getElementById('cpReco').value = (p.reco_para || []).join(', ');
     }
   } else {
-    ['cpNombre', 'cpPrecio', 'cpCat', 'cpCosto', 'cpCantidad', 'cpStockMin'].forEach(function(fid) { document.getElementById(fid).value = ''; });
+    ['cpNombre', 'cpPrecio', 'cpCat', 'cpCosto', 'cpCantidad', 'cpStockMin', 'cpDuracion', 'cpReco'].forEach(function(fid) { document.getElementById(fid).value = ''; });
   }
+  llenarListaServicios();
   updateMargenPreview();
   document.getElementById('catModal').classList.add('open');
 }
@@ -2587,7 +2676,12 @@ async function saveCat() {
   if (!name || !price) { toast('Completa los campos obligatorios'); return; }
   var smRaw = document.getElementById('cpStockMin').value;
   var stockMin = smRaw === '' ? 3 : (parseInt(smRaw, 10) || 0);
-  var obj = { name: name, price: price, cat: cat, costo: costo, cantidad: cantidad, stock_min: stockMin, active: true };
+  var durRaw = document.getElementById('cpDuracion').value;
+  var duracion = durRaw === '' ? 60 : (parseInt(durRaw, 10) || 0);
+  var reco = (document.getElementById('cpReco').value || '').split(',')
+    .map(function(x) { return x.trim(); }).filter(function(x) { return x.length; });
+  var obj = { name: name, price: price, cat: cat, costo: costo, cantidad: cantidad, stock_min: stockMin,
+    duracion_min: duracion, reco_para: reco, active: true };
   if (editCatId) {
     if (db) {
       var r2 = await db.from('catalogo').update(obj).eq('id', editCatId).select().single();
@@ -2838,6 +2932,7 @@ async function saveSes() {
   }
   closeM('sesModal'); renderAll(); toast(prox ? 'Sesión guardada · próxima cita en la agenda' : 'Sesión guardada');
   if (prox) { showSesActions(nombre, pac, servicio, prox, proxHora); }
+  sugerirProducto(nombre, servicio);
 }
 function makeGCalLink(title, date, hora, details) {
   var d = date.replace(/-/g, '');
@@ -3038,6 +3133,7 @@ function renderGastos() {
       '<td><span class="amt aneg">' + fmt(g.monto) + '</span></td>' +
       '<td style="font-size:11px;color:var(--ink3)">' + (g.notas || '—') + '</td>' +
       '<td style="display:flex;gap:4px">' +
+      (g.recibo_path ? '<button class="btn bgo bxs" onclick="verRecibo(' + g.id + ')" title="Ver el recibo"><i class="ti ti-photo"></i></button>' : '') +
       '<button class="btn bg2 bxs" onclick="openGastoModal(' + g.id + ')"><i class="ti ti-edit"></i></button>' +
       '<button class="btn bda bxs" onclick="delGasto(' + g.id + ')"><i class="ti ti-trash"></i></button>' +
       '</td></tr>';
@@ -3051,6 +3147,8 @@ function openGastoModal(id) {
     var g = S.gastos.find(function(x) { return x.id === id; });
     if (!g) return;
     if (titleEl) titleEl.textContent = 'Editar Gasto';
+    gReciboQueue = null;
+    mostrarReciboActual(g);
     document.getElementById('gFecha').value = g.fecha || '';
     document.getElementById('gMonto').value = g.monto || '';
     document.getElementById('gConcepto').value = g.concepto || '';
@@ -3058,10 +3156,13 @@ function openGastoModal(id) {
     document.getElementById('gNotas').value = g.notas || '';
   } else {
     if (titleEl) titleEl.textContent = 'Registrar Gasto';
+    mostrarReciboActual(null);
     document.getElementById('gFecha').value = new Date().toISOString().split('T')[0];
     ['gMonto', 'gConcepto', 'gNotas'].forEach(function(id) { document.getElementById(id).value = ''; });
     document.getElementById('gCategoria').value = 'Productos e insumos';
   }
+  var fEl = document.getElementById('gRecibo'); if (fEl) fEl.value = '';
+  renderGastoQuick();
   document.getElementById('gastoModal').classList.add('open');
 }
 
@@ -3073,6 +3174,18 @@ async function saveGasto() {
   var notas = document.getElementById('gNotas').value;
   if (!fecha || !concepto || !monto) { toast('Completa fecha, concepto y monto'); return; }
   var obj = { fecha: fecha, concepto: concepto, categoria: categoria, monto: monto, notas: notas || null };
+  var btnG = document.getElementById('gSaveBtn');
+  var fileG = document.getElementById('gRecibo');
+  if (db && fileG && fileG.files && fileG.files[0]) {
+    if (btnG) { btnG.disabled = true; btnG.textContent = 'Subiendo recibo…'; }
+    try {
+      var blobG = await comprimir(fileG.files[0], 1400);
+      var pathG = 'g' + Date.now() + '.jpg';
+      var upG = await db.storage.from('recibos').upload(pathG, blobG, { contentType: 'image/jpeg', upsert: false });
+      if (!upG.error) obj.recibo_path = pathG;
+    } catch (e) {}
+    if (btnG) { btnG.disabled = false; btnG.innerHTML = '<i class="ti ti-check"></i>Guardar'; }
+  }
   if (editGastoId) {
     if (db) {
       var r = await db.from('gastos').update(obj).eq('id', editGastoId).select().single();
@@ -3131,6 +3244,33 @@ function renderReport(id, st) {
       '<div class="pi"><div class="pn">Efectivo</div>' + mkBar(st.pagoMap.efectivo, st.total, 'var(--mint)') + '<div class="pv">' + fmt(st.pagoMap.efectivo) + '</div></div>' +
       '<div class="pi"><div class="pn">C×Cobrar</div>' + mkBar(st.pagoMap.cxc, st.total, 'var(--red)') + '<div class="pv">' + fmt(st.pagoMap.cxc) + '</div></div>' +
       '</div></div></div></div>';
+  } else if (id === 'margen') {
+    var filas = datosMargen(st);
+    var sinCosto = filas.filter(function(f) { return !f.tieneCosto; }).length;
+    var aviso = sinCosto
+      ? '<div class="bday-banner" style="border-left-color:var(--gold)"><i class="ti ti-info-circle" style="color:var(--gold)"></i>' +
+        '<div style="flex:1;min-width:180px"><div style="font-weight:600;font-size:13px">' + sinCosto + ' servicio' + (sinCosto !== 1 ? 's' : '') + ' sin costo cargado</div>' +
+        '<div style="font-size:11.5px;color:var(--ink3);margin-top:2px">Ponles el costo de insumo y la duración en el catálogo para que el margen sea real</div></div></div>'
+      : '';
+    html = aviso + '<div class="card"><div class="ch"><div class="ct">Margen por servicio</div>' +
+      '<div style="font-size:11px;color:var(--ink3)">Ordenado por lo que deja cada hora de cabina</div></div>' +
+      '<div class="cb np"><div class="tw"><table><thead><tr>' +
+      '<th>Servicio</th><th>Veces</th><th>Precio</th><th>Costo</th><th>Margen</th><th>Min</th><th>Por hora</th>' +
+      '</tr></thead><tbody>' +
+      (filas.length ? filas.map(function(f) {
+        return '<tr>' +
+          '<td class="tdm">' + esc(f.nombre) + (f.enCatalogo ? '' : ' <span class="chip cx" style="font-size:9px">fuera del catálogo</span>') + '</td>' +
+          '<td>' + f.veces + '</td>' +
+          '<td class="amt">' + fmt(f.precio) + '</td>' +
+          '<td class="amt" style="color:var(--ink3)">' + (f.tieneCosto ? fmt(f.costo) : '—') + '</td>' +
+          '<td>' + (f.tieneCosto
+            ? '<span class="amt ' + (f.margen > 0 ? 'apos' : 'aneg') + '">' + fmt(f.margen) + '</span> <span class="chip ' + (f.pct >= 60 ? 'cm' : (f.pct >= 35 ? 'cg' : 'cr')) + '" style="font-size:9px">' + f.pct + '%</span>'
+            : '<span style="color:var(--ink3)">falta el costo</span>') + '</td>' +
+          '<td style="color:var(--ink3)">' + (f.tieneCosto ? f.dur : '—') + '</td>' +
+          '<td>' + (f.tieneCosto ? '<span class="amt ater">' + fmt(f.porHora) + '</span>' : '<span style="color:var(--ink3)">—</span>') + '</td>' +
+          '</tr>';
+      }).join('') : '<tr><td colspan="7"><div class="empty"><i class="ti ti-coins"></i><p>Sin servicios cobrados este mes</p></div></td></tr>') +
+      '</tbody></table></div></div></div>';
   } else if (id === 'servicios') {
     var entries = Object.entries(st.servMap).sort(function(a, b) { return b[1] - a[1]; });
     var maxV = entries[0] ? entries[0][1] : 1;
@@ -3539,13 +3679,58 @@ function generateAlerts() {
     }
   });
 
-  // Deudas atrasadas (más de 30 días)
+  // Cobro por tramos de antigüedad
   S.deudas.filter(function(d) {
-    return d.estado === 'pendiente' && d.tipo === 'cobrar' && d.fecha && new Date(d.fecha) < cutoff30;
+    return d.estado === 'pendiente' && d.tipo === 'cobrar' && d.fecha;
   }).forEach(function(d) {
-    var pendiente = parseFloat(d.monto || 0) - parseFloat(d.monto_pagado || 0);
-    alerts.push({ nivel: 'error', icono: 'ti-clock-dollar', titulo: d.persona + ' — ' + fmt(pendiente) + ' atrasado', sub: 'Deuda · ' + (d.concepto || 'sin concepto'), pag: 'deudas' });
+    var dias = diasDesde(d.fecha);
+    if (dias == null || dias < 15) return;
+    var pendiente = deudaSaldo(d);
+    if (pendiente <= 0) return;
+    var seg = ultimoSeguimiento('cobro', d.persona);
+    var yaAvisado = seg && diasDesde(seg.fecha) != null && diasDesde(seg.fecha) <= 7;
+    alerts.push({
+      nivel: dias >= 60 ? 'error' : (dias >= 30 ? 'warn' : 'info'),
+      icono: 'ti-clock-dollar',
+      titulo: d.persona + ' — ' + fmt(pendiente) + ' a ' + dias + ' días',
+      sub: (d.concepto || 'Sin concepto') + (yaAvisado ? ' · ya le escribiste' : ' · toca para cobrar'),
+      pag: 'deudas'
+    });
   });
+
+  // Clientas dormidas
+  var _dormidas = dormidasPorContactar();
+  if (_dormidas.length >= 3) {
+    alerts.push({
+      nivel: 'warn', icono: 'ti-heart-handshake',
+      titulo: _dormidas.length + ' clientas sin venir hace más de 60 días',
+      sub: 'Recuperación · ' + fmt(_dormidas.reduce(function(a, c) { return a + c.total; }, 0)) + ' han dejado en total',
+      pag: 'recuperacion'
+    });
+  }
+
+  // Próximas visitas sin cita creada
+  var _pendCitas = proximasSinCita();
+  var _futuras = _pendCitas.filter(function(x) { return !x.vencida; });
+  var _vencidas = _pendCitas.filter(function(x) { return x.vencida; });
+  if (_futuras.length) {
+    alerts.push({ nivel: 'info', icono: 'ti-calendar-plus',
+      titulo: _futuras.length + ' próxima' + (_futuras.length !== 1 ? 's' : '') + ' visita' + (_futuras.length !== 1 ? 's' : '') + ' sin cita',
+      sub: 'Agenda · toca para crearlas', pag: 'agenda' });
+  }
+  if (_vencidas.length) {
+    alerts.push({ nivel: 'warn', icono: 'ti-calendar-x',
+      titulo: _vencidas.length + ' próxima' + (_vencidas.length !== 1 ? 's' : '') + ' visita' + (_vencidas.length !== 1 ? 's' : '') + ' ya vencida' + (_vencidas.length !== 1 ? 's' : ''),
+      sub: 'Agenda · clientas que tocaba volver y no volvieron', pag: 'agenda' });
+  }
+
+  // Gastos fijos del mes sin registrar
+  var _fijos = fijosPendientesMes();
+  if (_fijos.length) {
+    alerts.push({ nivel: 'info', icono: 'ti-repeat',
+      titulo: _fijos.length + ' gasto' + (_fijos.length !== 1 ? 's' : '') + ' fijo' + (_fijos.length !== 1 ? 's' : '') + ' sin registrar este mes',
+      sub: 'Gastos · ' + fmt(_fijos.reduce(function(a, f) { return a + parseFloat(f.monto || 0); }, 0)), pag: 'gastos' });
+  }
 
   // Cotizaciones vencidas
   S.cotizaciones.filter(function(c) {
@@ -4113,7 +4298,7 @@ function citaRowHTML(c) {
     '<span class="chip ' + (EST_CHIP[c.estado] || 'cx') + '">' + (EST_LBL[c.estado] || c.estado) + '</span>' +
     '<div style="display:flex;gap:5px;flex-shrink:0">' +
       (c.estado === 'pendiente' ? '<button class="btn bg2 bxs" onclick="setCitaEstado(' + c.id + ',\'confirmada\')" title="Confirmar"><i class="ti ti-check"></i></button>' : '') +
-      (c.estado === 'confirmada' ? '<button class="btn bg2 bxs" onclick="setCitaEstado(' + c.id + ',\'completada\')" title="Marcar completada"><i class="ti ti-circle-check"></i></button>' : '') +
+      (c.estado === 'confirmada' || c.estado === 'pendiente' ? '<button class="btn bgo bxs" onclick="cobrarCita(' + c.id + ')" title="Cobrar esta cita"><i class="ti ti-cash"></i></button>' : '') +
       (tel ? '<button class="btn bwa bxs" onclick="waRecordatorio(' + c.id + ')" title="Recordatorio WhatsApp"><i class="ti ti-brand-whatsapp"></i></button>' : '') +
       '<button class="btn bg2 bxs" onclick="openCitaModal(' + c.id + ')" title="Editar"><i class="ti ti-pencil"></i></button>' +
     '</div></div>';
@@ -4641,6 +4826,596 @@ function enviarListaCompra() {
 /* ═══════════════════════════════════════════════════════
    PWA · OFFLINE · ATAJOS
    ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   v33 — RECUPERACIÓN · COBRO · AGENDA · PRODUCTO · MARGEN
+   ═══════════════════════════════════════════════════════ */
+
+function normNom(x) { return String(x || '').trim().toLowerCase(); }
+
+function diasDesde(f) {
+  if (!f) return null;
+  var a = parseD(String(f).slice(0, 10));
+  if (!a || isNaN(a.getTime())) return null;
+  var h = new Date(); h.setHours(0, 0, 0, 0);
+  return Math.round((h - a) / 86400000);
+}
+
+function pacientePorNombre(nom) {
+  var n = normNom(nom);
+  return (S.pacientes || []).find(function (p) { return normNom(p.nombre) === n; }) || null;
+}
+
+async function registrarSeguimiento(tipo, cliente, pacienteId, refId, nota) {
+  var obj = {
+    tipo: tipo, cliente: cliente, paciente_id: pacienteId || null, ref_id: refId || null,
+    canal: 'whatsapp', nota: nota || null, fecha: hoyKey()
+  };
+  if (db) {
+    var r = await db.from('seguimientos').insert(obj).select().single();
+    if (!r.error) { S.seguimientos.unshift(r.data); }
+    else { obj.id = Date.now(); S.seguimientos.unshift(obj); }
+  } else { obj.id = Date.now(); S.seguimientos.unshift(obj); }
+  renderAll();
+}
+
+function ultimoSeguimiento(tipo, cliente) {
+  var n = normNom(cliente);
+  return (S.seguimientos || [])
+    .filter(function (s) { return s.tipo === tipo && normNom(s.cliente) === n; })
+    .sort(function (a, b) { return String(b.fecha).localeCompare(String(a.fecha)); })[0] || null;
+}
+
+/* ── RECUPERACIÓN DE CLIENTAS DORMIDAS ─────────────────── */
+var recFilterV = 'todas', recSearchV = '';
+
+function clientasDormidas() {
+  var mapa = {};
+  (S.movimientos || []).forEach(function (m) {
+    var k = normNom(m.cliente);
+    if (!k) return;
+    if (!mapa[k]) mapa[k] = { nombre: m.cliente, ultima: m.fecha, total: 0, visitas: 0, servicio: m.concepto };
+    var o = mapa[k];
+    o.total += parseFloat(m.monto || 0);
+    o.visitas++;
+    if (String(m.fecha) > String(o.ultima)) { o.ultima = m.fecha; o.servicio = m.concepto; }
+  });
+  var out = [];
+  Object.keys(mapa).forEach(function (k) {
+    var o = mapa[k];
+    var d = diasDesde(o.ultima);
+    if (d == null || d < 60) return;
+    var citaFutura = (S.citas || []).some(function (c) {
+      return normNom(c.cliente) === k && c.fecha >= hoyKey() && c.estado !== 'cancelada';
+    });
+    if (citaFutura) return;
+    var pac = pacientePorNombre(o.nombre);
+    var seg = ultimoSeguimiento('recuperacion', o.nombre);
+    out.push({
+      nombre: o.nombre, dias: d, ultima: o.ultima, total: Math.round(o.total), visitas: o.visitas,
+      servicio: o.servicio, tel: pac ? pac.tel : null, pacienteId: pac ? pac.id : null,
+      contactadaHace: seg ? diasDesde(seg.fecha) : null
+    });
+  });
+  out.sort(function (a, b) { return b.total - a.total; });
+  return out;
+}
+
+function dormidasPorContactar() {
+  return clientasDormidas().filter(function (c) {
+    return c.contactadaHace == null || c.contactadaHace > 30;
+  });
+}
+
+function recFilter(v, el) {
+  recFilterV = v;
+  if (el && el.parentNode) {
+    el.parentNode.querySelectorAll('.fc').forEach(function (b) { b.classList.remove('on'); });
+    el.classList.add('on');
+  }
+  renderRecuperacion();
+}
+function recSearch(v) { recSearchV = String(v || '').toLowerCase(); renderRecuperacion(); }
+
+function renderRecuperacion() {
+  if (!document.getElementById('recTbody')) return;
+  var todas = clientasDormidas();
+  var d60 = todas.filter(function (c) { return c.dias < 90; });
+  var d90 = todas.filter(function (c) { return c.dias >= 90; });
+  var pend = todas.filter(function (c) { return c.contactadaHace == null || c.contactadaHace > 30; });
+  setText('recK60', String(d60.length));
+  setText('recK90', String(d90.length));
+  setText('recKValor', fmt(d90.reduce(function (a, c) { return a + c.total; }, 0)));
+  setText('recKPend', String(pend.length));
+
+  var list = todas;
+  if (recFilterV === '60') list = d60;
+  else if (recFilterV === '90') list = d90;
+  else if (recFilterV === 'pend') list = pend;
+  if (recSearchV) list = list.filter(function (c) { return c.nombre.toLowerCase().indexOf(recSearchV) > -1; });
+
+  setHTML('recTbody', list.length ? list.map(function (c) {
+    var chipDias = c.dias >= 90
+      ? '<span class="chip cr">' + c.dias + ' días</span>'
+      : '<span class="chip cg">' + c.dias + ' días</span>';
+    var contacto = c.contactadaHace == null
+      ? '<span class="chip cx">Nunca</span>'
+      : (c.contactadaHace <= 30
+        ? '<span class="chip cm">Hace ' + c.contactadaHace + ' d</span>'
+        : '<span class="chip ct2">Hace ' + c.contactadaHace + ' d</span>');
+    var seguro = esc(c.nombre).replace(/'/g, '&#39;');
+    return '<tr>' +
+      '<td><div class="tdm">' + esc(c.nombre) + '</div><div class="tds">' + esc(c.servicio || '—') + ' · ' + fechaLarga(c.ultima) + '</div></td>' +
+      '<td>' + chipDias + '</td>' +
+      '<td>' + c.visitas + '</td>' +
+      '<td><span class="amt ater">' + fmt(c.total) + '</span></td>' +
+      '<td>' + contacto + '</td>' +
+      '<td><div style="display:flex;gap:4px;align-items:center">' +
+      (c.tel
+        ? '<button class="btn bwa bxs" onclick="recuperarWA(\'' + seguro + '\')" title="Invitar por WhatsApp"><i class="ti ti-brand-whatsapp"></i></button>'
+        : '<span class="chip cx" title="Sin teléfono en la ficha">Sin tel</span>') +
+      '<button class="btn bg2 bxs" onclick="marcarContactada(\'' + seguro + '\')" title="Ya la contacté"><i class="ti ti-check"></i></button>' +
+      (c.pacienteId ? '<button class="btn bg2 bxs" onclick="viewClientePorNombre(\'' + seguro + '\')" title="Ver clienta"><i class="ti ti-user"></i></button>' : '') +
+      '</div></td></tr>';
+  }).join('') : '<tr><td colspan="6"><div class="empty"><i class="ti ti-heart-handshake"></i><p>Ninguna clienta lleva más de 60 días sin venir</p></div></td></tr>');
+}
+
+function recuperarWA(nombre) {
+  var c = clientasDormidas().find(function (x) { return normNom(x.nombre) === normNom(nombre); });
+  if (!c) return;
+  var tel = telLimpio(c.tel);
+  if (!tel) { toast('Esta clienta no tiene teléfono en su ficha'); return; }
+  var primer = String(c.nombre).trim().split(' ')[0];
+  var msg = 'Hola ' + primer + ' 🌿\n\n' +
+    'Soy Maria, de *Mary Care*. Hace rato no te veo por aquí — la última vez fue el ' + fechaLarga(c.ultima) +
+    (c.servicio ? ' con tu ' + c.servicio : '') + '.\n\n' +
+    '¿Te aparto un espacio esta semana? Dime qué día te queda mejor y te lo reservo 💛\n\n— Maria Frias';
+  window.open(makeWALink(tel, msg), '_blank');
+  registrarSeguimiento('recuperacion', c.nombre, c.pacienteId, null, c.dias + ' días sin venir');
+  toast('Mensaje abierto · contacto registrado');
+}
+
+function marcarContactada(nombre) {
+  var c = clientasDormidas().find(function (x) { return normNom(x.nombre) === normNom(nombre); });
+  if (!c) return;
+  registrarSeguimiento('recuperacion', c.nombre, c.pacienteId, null, 'Contactada por otra vía');
+  toast('Anotado');
+}
+
+function viewClientePorNombre(nombre) {
+  var st = getStats();
+  var i = st.clientes.findIndex(function (c) { return normNom(c.nombre) === normNom(nombre); });
+  if (i >= 0) viewCliente(i);
+}
+
+/* ── COBRO QUE SE PERSIGUE SOLO ────────────────────────── */
+function deudaSaldo(d) {
+  return Math.max(parseFloat(d.monto || 0) - parseFloat(d.monto_pagado || 0), 0);
+}
+
+function saldoCliente(nombre) {
+  var n = normNom(nombre);
+  return (S.deudas || []).filter(function (d) {
+    return d.tipo === 'cobrar' && d.estado === 'pendiente' && normNom(d.persona) === n;
+  }).reduce(function (a, d) { return a + deudaSaldo(d); }, 0);
+}
+
+function edadChip(dias) {
+  if (dias == null) return '';
+  if (dias >= 90) return '<span class="chip cr">+90 días</span>';
+  if (dias >= 60) return '<span class="chip cr">' + dias + ' días</span>';
+  if (dias >= 30) return '<span class="chip cg">' + dias + ' días</span>';
+  if (dias >= 15) return '<span class="chip ct2">' + dias + ' días</span>';
+  return '';
+}
+
+function telDeCliente(nombre) {
+  var pac = pacientePorNombre(nombre);
+  return pac ? telLimpio(pac.tel) : '';
+}
+
+function cobroWA(id) {
+  var d = (S.deudas || []).find(function (x) { return x.id === id; });
+  if (!d) return;
+  var tel = telDeCliente(d.persona);
+  if (!tel) { toast('Esta clienta no tiene teléfono en su ficha'); return; }
+  var saldo = deudaSaldo(d);
+  var abonado = parseFloat(d.monto_pagado || 0);
+  var primer = String(d.persona).trim().split(' ')[0];
+  var msg = 'Hola ' + primer + ' 🌿\n\n' +
+    'Te escribo de *Mary Care* por el saldo de ' + (d.concepto || 'tu servicio') +
+    (d.fecha ? ' del ' + fechaLarga(d.fecha) : '') + '.\n\n' +
+    '💰 Saldo pendiente: *' + fmt(saldo) + '*\n' +
+    (abonado > 0 ? '✅ Ya abonaste: ' + fmt(abonado) + ' de ' + fmt(d.monto) + '\n' : '') +
+    '\n¿Te queda bien saldarlo esta semana? Puedes transferir o pagarlo en tu próxima visita 💛\n\n— Maria Frias';
+  window.open(makeWALink(tel, msg), '_blank');
+  registrarSeguimiento('cobro', d.persona, null, d.id, 'Recordatorio de cobro · ' + fmt(saldo));
+  toast('Mensaje de cobro abierto');
+}
+
+function chequearCredito() {
+  var el = document.getElementById('mCreditoAviso');
+  if (!el) return;
+  var input = document.getElementById('mCliente');
+  var nom = input ? input.value : '';
+  var saldo = saldoCliente(nom);
+  if (saldo > 0) {
+    var n = (S.deudas || []).filter(function (d) {
+      return d.tipo === 'cobrar' && d.estado === 'pendiente' && normNom(d.persona) === normNom(nom);
+    }).length;
+    el.style.display = '';
+    el.innerHTML = '<i class="ti ti-alert-triangle" style="vertical-align:-2px"></i> ' + esc(nom.trim()) +
+      ' debe ' + fmt(saldo) + ' en ' + n + ' cuenta' + (n !== 1 ? 's' : '') + ' abierta' + (n !== 1 ? 's' : '');
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+/* ── AGENDA QUE SE LLENA SOLA ──────────────────────────── */
+var citaACobrar = null;
+
+function proximasSinCita() {
+  var out = [];
+  (S.sesiones || []).forEach(function (s) {
+    if (!s.proxima) return;
+    var existe = (S.citas || []).some(function (c) {
+      return c.fecha === s.proxima && normNom(c.cliente) === normNom(s.paciente_nombre);
+    });
+    if (existe) return;
+    out.push({ sesion: s, vencida: String(s.proxima) < hoyKey() });
+  });
+  out.sort(function (a, b) { return String(a.sesion.proxima).localeCompare(String(b.sesion.proxima)); });
+  return out;
+}
+
+async function crearCitasPendientes() {
+  var pend = proximasSinCita().filter(function (x) { return !x.vencida; });
+  if (!pend.length) { toast('No hay próximas visitas futuras sin cita'); return; }
+  var n = 0;
+  for (var i = 0; i < pend.length; i++) {
+    var ses = pend[i].sesion;
+    var pac = ses.paciente_id
+      ? (S.pacientes || []).find(function (p) { return p.id === ses.paciente_id; })
+      : pacientePorNombre(ses.paciente_nombre);
+    var obj = {
+      paciente_id: ses.paciente_id || null, cliente: ses.paciente_nombre, tel: pac ? pac.tel : null,
+      fecha: ses.proxima, hora: ses.proxima_hora || '10:00', duracion_min: 60,
+      servicio: ses.servicio, estado: 'pendiente', notas: 'Creada desde la sesión del ' + ses.fecha
+    };
+    if (db) {
+      var r = await db.from('citas').insert(obj).select().single();
+      if (!r.error) { S.citas.push(r.data); n++; }
+    } else { obj.id = Date.now() + i; S.citas.push(obj); n++; }
+  }
+  renderAll();
+  toast(n + ' cita' + (n !== 1 ? 's' : '') + ' creada' + (n !== 1 ? 's' : '') + ' en la agenda');
+}
+
+function reagendarWA(sesionId) {
+  var ses = (S.sesiones || []).find(function (x) { return x.id === sesionId; });
+  if (!ses) return;
+  var tel = telDeCliente(ses.paciente_nombre);
+  if (!tel) { toast('Esta clienta no tiene teléfono en su ficha'); return; }
+  var primer = String(ses.paciente_nombre).trim().split(' ')[0];
+  var msg = 'Hola ' + primer + ' 🌿\n\n' +
+    'En tu última sesión de ' + (ses.servicio || 'tratamiento') + ' dejamos pendiente volver el ' + fechaLarga(ses.proxima) +
+    ', y esa fecha ya pasó.\n\n¿Te reservo un espacio esta semana para retomar? 💛\n\n— Maria Frias';
+  window.open(makeWALink(tel, msg), '_blank');
+  registrarSeguimiento('recordatorio', ses.paciente_nombre, ses.paciente_id, ses.id, 'Reagendar próxima visita vencida');
+}
+
+function renderRescate() {
+  var el = document.getElementById('rescateBanner');
+  if (!el) return;
+  var pend = proximasSinCita();
+  var futuras = pend.filter(function (x) { return !x.vencida; });
+  var vencidas = pend.filter(function (x) { return x.vencida; });
+  if (!futuras.length && !vencidas.length) { el.innerHTML = ''; return; }
+
+  var html = '';
+  if (futuras.length) {
+    html += '<div class="bday-banner" style="border-left-color:var(--mint)">' +
+      '<i class="ti ti-calendar-plus" style="color:var(--mint)"></i>' +
+      '<div style="flex:1;min-width:180px"><div style="font-weight:600;font-size:13.5px">' +
+      futuras.length + ' próxima' + (futuras.length !== 1 ? 's' : '') + ' visita' + (futuras.length !== 1 ? 's' : '') + ' sin cita creada</div>' +
+      '<div style="font-size:11.5px;color:var(--ink3);margin-top:2px">Salen de sesiones donde anotaste cuándo vuelve la clienta</div></div>' +
+      '<button class="btn bt bsm" onclick="crearCitasPendientes()"><i class="ti ti-plus"></i>Crear todas</button></div>';
+  }
+  if (vencidas.length) {
+    html += '<div class="card" style="margin-bottom:20px">' +
+      '<div class="ch"><div class="ct">Próximas visitas vencidas · ' + vencidas.length + '</div></div>' +
+      '<div class="cb np">' + vencidas.slice(0, 12).map(function (x) {
+        var ses = x.sesion;
+        var d = diasDesde(ses.proxima);
+        return '<div class="cita-row">' +
+          '<div class="cita-time" style="min-width:74px;color:var(--red);font-size:12.5px">' + d + ' días</div>' +
+          '<div class="cita-meta"><div class="cita-name">' + esc(ses.paciente_nombre) + '</div>' +
+          '<div class="cita-serv">' + esc(ses.servicio || 'Sin servicio') + ' · tocaba el ' + fechaLarga(ses.proxima) + '</div></div>' +
+          '<div style="display:flex;gap:5px;flex-shrink:0">' +
+          (telDeCliente(ses.paciente_nombre)
+            ? '<button class="btn bwa bxs" onclick="reagendarWA(' + ses.id + ')" title="Reagendar por WhatsApp"><i class="ti ti-brand-whatsapp"></i></button>' : '') +
+          '<button class="btn bg2 bxs" onclick="openCitaModal(null,hoyKey())" title="Crear cita"><i class="ti ti-calendar-plus"></i></button>' +
+          '</div></div>';
+      }).join('') + '</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+function cobrarCita(id) {
+  var c = (S.citas || []).find(function (x) { return x.id === id; });
+  if (!c) return;
+  openMovModal();
+  citaACobrar = c.id;
+  setTimeout(function () {
+    var tipoEl = document.getElementById('mTipo');
+    if (tipoEl) { tipoEl.value = 'servicio'; toggleMTipo(); }
+    document.getElementById('mCliente').value = c.cliente || '';
+    document.getElementById('mServicio').value = c.servicio || '';
+    var precio = Number(c.precio) || 0;
+    if (!precio) {
+      var cat = (S.catalogo || []).find(function (p) { return normNom(p.name) === normNom(c.servicio); });
+      if (cat) precio = parseFloat(cat.price || 0);
+    }
+    if (precio) document.getElementById('mMonto').value = precio;
+    chequearCredito();
+  }, 80);
+}
+
+async function cerrarCitaCobrada() {
+  if (!citaACobrar) return;
+  var id = citaACobrar;
+  citaACobrar = null;
+  try { await setCitaEstado(id, 'completada'); } catch (e) {}
+}
+
+/* ── PRODUCTO: RECOMENDACIÓN AL CERRAR SESIÓN ──────────── */
+var recoClienteActual = '';
+
+function llenarListaServicios() {
+  var dl = document.getElementById('listaServicios');
+  if (!dl) return;
+  var set = {};
+  (S.catalogo || []).forEach(function (p) { if (p.active) set[p.name] = 1; });
+  (S.sesiones || []).forEach(function (s) { if (s.servicio) set[s.servicio] = 1; });
+  dl.innerHTML = Object.keys(set).sort().map(function (n) {
+    return '<option value="' + esc(n) + '">';
+  }).join('');
+}
+
+function productosRecomendados(servicio) {
+  var s = normNom(servicio);
+  if (!s) return [];
+  return (S.catalogo || []).filter(function (p) {
+    if (!p.active) return false;
+    var arr = p.reco_para || [];
+    return arr.some(function (x) { return normNom(x) === s; });
+  });
+}
+
+function sugerirProducto(nombre, servicio) {
+  var recos = productosRecomendados(servicio);
+  if (!recos.length) return;
+  recoClienteActual = nombre;
+  var html = '<p style="margin-bottom:16px;color:var(--ink2);font-size:13.5px">Para <strong>' + esc(servicio) +
+    '</strong> normalmente recomiendas:</p><div style="display:flex;flex-direction:column;gap:8px">' +
+    recos.map(function (p) {
+      var stock = (p.cantidad == null) ? '' : (p.cantidad > 0 ? p.cantidad + ' en stock' : 'sin stock');
+      return '<button class="btn bg2" style="justify-content:space-between;width:100%" ' +
+        'onclick="removeTopModal();venderRecomendado(' + p.id + ')">' +
+        '<span>' + esc(p.name) + '</span>' +
+        '<span style="color:var(--ink3);font-size:11px;font-weight:500">' + fmt(p.price) + (stock ? ' · ' + stock : '') + '</span></button>';
+    }).join('') + '</div>';
+  var div = document.createElement('div');
+  div.className = 'mb open dyn-modal';
+  div.innerHTML = '<div class="modal" style="max-width:400px">' +
+    '<div class="mh"><div class="mt">¿Le vendes producto?</div>' +
+    '<button class="mc" onclick="removeTopModal()"><i class="ti ti-x"></i></button></div>' +
+    '<div class="mbody">' + html + '</div>' +
+    '<div class="mf"><button class="btn bg2" onclick="removeTopModal()">Ahora no</button></div></div>';
+  document.body.appendChild(div);
+}
+
+function venderRecomendado(catId) {
+  var p = (S.catalogo || []).find(function (x) { return x.id === catId; });
+  if (!p) return;
+  var cliente = recoClienteActual;
+  openMovModal();
+  setTimeout(function () {
+    var tipoEl = document.getElementById('mTipo');
+    if (tipoEl) { tipoEl.value = 'producto'; toggleMTipo(); }
+    document.getElementById('mCliente').value = cliente || '';
+    movCart = [{ id: p.id, name: p.name, price: parseFloat(p.price || 0), qty: 1 }];
+    renderCart();
+    chequearCredito();
+  }, 80);
+}
+
+/* ── RENTABILIDAD ──────────────────────────────────────── */
+var gReciboQueue = null;
+
+function conceptosFrecuentes() {
+  var mapa = {};
+  (S.gastos || []).forEach(function (g) {
+    var k = String(g.concepto || '').trim();
+    if (!k) return;
+    if (!mapa[k]) mapa[k] = { n: 0, monto: g.monto, categoria: g.categoria };
+    mapa[k].n++;
+  });
+  return Object.keys(mapa).map(function (k) {
+    return { concepto: k, n: mapa[k].n, monto: mapa[k].monto, categoria: mapa[k].categoria };
+  }).sort(function (a, b) { return b.n - a.n; }).slice(0, 6);
+}
+
+function renderGastoQuick() {
+  var el = document.getElementById('gQuick');
+  if (!el) return;
+  var items = conceptosFrecuentes();
+  if (!items.length) { el.innerHTML = ''; return; }
+  el.innerHTML = '<div style="width:100%;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:2px">Repetir uno frecuente</div>' +
+    items.map(function (it, i) {
+      return '<button type="button" class="fc" onclick="usarGastoRapido(' + i + ')">' + esc(it.concepto) + '</button>';
+    }).join('');
+}
+
+function usarGastoRapido(i) {
+  var it = conceptosFrecuentes()[i];
+  if (!it) return;
+  document.getElementById('gConcepto').value = it.concepto;
+  if (it.categoria) document.getElementById('gCategoria').value = it.categoria;
+  var m = document.getElementById('gMonto');
+  if (it.monto) m.value = it.monto;
+  m.focus();
+  m.select();
+}
+
+async function mostrarReciboActual(g) {
+  var el = document.getElementById('gReciboActual');
+  if (!el) return;
+  el.innerHTML = '';
+  if (!g || !g.recibo_path || !db) return;
+  try {
+    var r = await db.storage.from('recibos').createSignedUrl(g.recibo_path, 3600);
+    if (r.data && r.data.signedUrl) {
+      el.innerHTML = '<a href="' + r.data.signedUrl + '" target="_blank" style="color:var(--terra);font-weight:600">Ver el recibo guardado</a>';
+    }
+  } catch (e) {}
+}
+
+async function verRecibo(id) {
+  var g = (S.gastos || []).find(function (x) { return x.id === id; });
+  if (!g || !g.recibo_path || !db) return;
+  try {
+    var r = await db.storage.from('recibos').createSignedUrl(g.recibo_path, 3600);
+    if (r.data && r.data.signedUrl) openLightbox(r.data.signedUrl);
+    else toast('No se pudo abrir el recibo');
+  } catch (e) { toast('No se pudo abrir el recibo'); }
+}
+
+function fijosPendientesMes() {
+  var mes = hoyKey().slice(0, 7);
+  return (S.gastosFijos || []).filter(function (f) {
+    if (f.activo === false) return false;
+    return !(S.gastos || []).some(function (g) {
+      return g.fijo_id === f.id && String(g.fecha || '').slice(0, 7) === mes;
+    });
+  });
+}
+
+function openFijosModal() {
+  renderFijos();
+  ['fjConcepto', 'fjMonto', 'fjDia'].forEach(function (id) {
+    var e = document.getElementById(id); if (e) e.value = '';
+  });
+  document.getElementById('fijosModal').classList.add('open');
+}
+
+function renderFijos() {
+  var el = document.getElementById('fijosLista');
+  if (!el) return;
+  var fijos = S.gastosFijos || [];
+  var pend = fijosPendientesMes();
+  if (!fijos.length) {
+    el.innerHTML = '<div class="empty" style="padding:26px 12px"><i class="ti ti-repeat"></i><p>Todavía no hay gastos fijos</p></div>';
+    return;
+  }
+  el.innerHTML =
+    '<div style="font-size:12px;color:' + (pend.length ? 'var(--terra)' : 'var(--mint)') + ';font-weight:600;margin-bottom:10px">' +
+    (pend.length ? pend.length + ' sin registrar este mes' : 'Todos registrados este mes ✓') + '</div>' +
+    fijos.map(function (f) {
+      var falta = pend.some(function (x) { return x.id === f.id; });
+      return '<div class="prod-row" style="justify-content:space-between">' +
+        '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:13px;font-weight:600">' + esc(f.concepto) + '</div>' +
+        '<div style="font-size:11px;color:var(--ink3)">' + esc(f.categoria || 'Otros') + ' · día ' + (f.dia_mes || 1) + '</div></div>' +
+        '<div style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">' + fmt(f.monto) + '</div>' +
+        '<span class="chip ' + (falta ? 'ct2' : 'cm') + '">' + (falta ? 'Falta' : 'Hecho') + '</span>' +
+        '<button class="btn bda bxs" onclick="delFijo(' + f.id + ')"><i class="ti ti-trash"></i></button>' +
+        '</div>';
+    }).join('');
+}
+
+async function saveFijo() {
+  var concepto = document.getElementById('fjConcepto').value.trim();
+  var monto = parseFloat(document.getElementById('fjMonto').value) || 0;
+  var categoria = document.getElementById('fjCategoria').value;
+  var diaRaw = document.getElementById('fjDia').value;
+  var dia = Math.min(Math.max(parseInt(diaRaw, 10) || 1, 1), 28);
+  if (!concepto || !monto) { toast('Escribe el concepto y el monto'); return; }
+  var obj = { concepto: concepto, categoria: categoria, monto: monto, dia_mes: dia, activo: true };
+  if (db) {
+    var r = await db.from('gastos_fijos').insert(obj).select().single();
+    if (r.error) { toast('Error: ' + r.error.message); return; }
+    S.gastosFijos.push(r.data);
+  } else { obj.id = Date.now(); S.gastosFijos.push(obj); }
+  ['fjConcepto', 'fjMonto', 'fjDia'].forEach(function (id) { document.getElementById(id).value = ''; });
+  renderFijos();
+  renderAll();
+  toast('Gasto fijo agregado');
+}
+
+async function delFijo(id) {
+  if (!confirm('¿Quitar este gasto fijo de la lista? Los gastos ya registrados no se tocan.')) return;
+  if (db) await db.from('gastos_fijos').delete().eq('id', id);
+  S.gastosFijos = (S.gastosFijos || []).filter(function (f) { return f.id !== id; });
+  renderFijos();
+  renderAll();
+  toast('Quitado de la lista');
+}
+
+async function registrarFijosDelMes() {
+  var pend = fijosPendientesMes();
+  if (!pend.length) { toast('Los gastos fijos de este mes ya están registrados'); return; }
+  var mes = hoyKey().slice(0, 7);
+  var n = 0;
+  for (var i = 0; i < pend.length; i++) {
+    var f = pend[i];
+    var fecha = mes + '-' + String(f.dia_mes || 1).padStart(2, '0');
+    var obj = {
+      fecha: fecha, concepto: f.concepto, categoria: f.categoria || 'Otros',
+      monto: f.monto || 0, notas: 'Gasto fijo mensual', fijo_id: f.id
+    };
+    if (db) {
+      var r = await db.from('gastos').insert(obj).select().single();
+      if (!r.error) { S.gastos.unshift(r.data); n++; }
+    } else { obj.id = Date.now() + i; S.gastos.unshift(obj); n++; }
+  }
+  renderFijos();
+  renderAll();
+  toast(n + ' gasto' + (n !== 1 ? 's' : '') + ' fijo' + (n !== 1 ? 's' : '') + ' registrado' + (n !== 1 ? 's' : ''));
+}
+
+function datosMargen(st) {
+  return Object.keys(st.servMap).map(function (nombre) {
+    var total = st.servMap[nombre];
+    var veces = st.servs.filter(function (m) { return m.concepto === nombre; }).length;
+    var cat = (S.catalogo || []).find(function (p) { return normNom(p.name) === normNom(nombre); });
+    var precio = veces ? total / veces : 0;
+    var costo = cat ? parseFloat(cat.costo || 0) : 0;
+    var dur = (cat && cat.duracion_min) ? cat.duracion_min : 60;
+    var margen = precio - costo;
+    return {
+      nombre: nombre, veces: veces, total: total, precio: precio, costo: costo,
+      dur: dur, margen: margen, pct: precio ? Math.round(margen / precio * 100) : 0,
+      porHora: dur ? margen * 60 / dur : 0,
+      enCatalogo: !!cat, tieneCosto: !!(cat && parseFloat(cat.costo || 0) > 0)
+    };
+  }).sort(function (a, b) {
+    if (a.tieneCosto !== b.tieneCosto) return a.tieneCosto ? -1 : 1;
+    return b.porHora - a.porHora;
+  });
+}
+
+/* ── BADGES ────────────────────────────────────────────── */
+function renderBadges() {
+  var rec = dormidasPorContactar().length;
+  var elR = document.getElementById('niRecBadge');
+  if (elR) { elR.textContent = rec; elR.style.display = rec ? '' : 'none'; }
+  var vencidas = (S.deudas || []).filter(function (d) {
+    return d.tipo === 'cobrar' && d.estado === 'pendiente' && (diasDesde(d.fecha) || 0) >= 15;
+  }).length;
+  var elD = document.getElementById('niDeudaBadge');
+  if (elD) { elD.textContent = vencidas; elD.style.display = vencidas ? '' : 'none'; }
+}
+
 function registrarSW() {
   if (!('serviceWorker' in navigator)) return;
   navigator.serviceWorker.register('sw.js').then(function (reg) {
