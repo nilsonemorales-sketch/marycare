@@ -1,11 +1,11 @@
-/* Mary Care — Service Worker v34
+/* Mary Care — Service Worker v35
    Estrategia:
    - HTML: network-first (siempre la versión más nueva si hay internet)
    - Estáticos y CDN: stale-while-revalidate
    - Supabase / API: nunca se cachea
    - Fotos del storage: cache-first (no cambian)
 */
-const VERSION = 'mc-v34';
+const VERSION = 'mc-v35';
 const SHELL = VERSION + '-shell';
 const RUNTIME = VERSION + '-runtime';
 const IMGS = VERSION + '-img';

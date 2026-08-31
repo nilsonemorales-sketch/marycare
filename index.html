@@ -1063,7 +1063,10 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
       <div class="tbar">
         <div class="sb2" style="flex:1;max-width:280px"><i class="ti ti-search"></i><input type="text" placeholder="Buscar paciente..." oninput="expSearch(this.value)"></div>
         <div class="fb">
-          <button class="fc on" onclick="expFilter('all',this)">Todas</button>
+          <button class="fc on" onclick="expFilter('paciente',this)">Con expediente</button>
+          <button class="fc" onclick="expFilter('contacto',this)">Solo producto</button>
+          <button class="fc" onclick="expFilter('negocio',this)">Negocios</button>
+          <button class="fc" onclick="expFilter('all',this)">Todas</button>
           <button class="fc" onclick="expFilter('acne',this)">Acné</button>
           <button class="fc" onclick="expFilter('grasa',this)">Grasa</button>
           <button class="fc" onclick="expFilter('seca',this)">Seca</button>
@@ -1119,7 +1122,7 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
         <i class="ti ti-info-circle" style="color:var(--sky)"></i>
         <div style="flex:1;min-width:200px">
           <div style="font-weight:600;font-size:13.5px">Cada nombre de aquí es una clienta que la app no reconoce</div>
-          <div style="font-size:11.5px;color:var(--ink3);margin-top:3px">Al unirla con su ficha, sus cobros, su expediente, su deuda y su teléfono quedan juntos. Si no es una clienta con expediente (una farmacia, un gimnasio), escóndela con el ojo.</div>
+          <div style="font-size:11.5px;color:var(--ink3);margin-top:3px">Al unirla con su ficha, sus cobros, su deuda y su teléfono quedan juntos. Si nunca ha tenido expediente, créale una ficha: puede ser paciente, clienta que solo compra producto, o un negocio. El ojo tachado es solo para nombres que no son una clienta real.</div>
         </div>
       </div>
       <div class="kg" style="margin-bottom:14px">
@@ -1699,7 +1702,7 @@ body.is-loading .kv,body.is-loading .scv,body.is-loading .sb-bal .sv,body.is-loa
 </div>
 
 <script>
-var APP_VER = '34';
+var APP_VER = '35';
 
 // ── SUPABASE ────────────────────────────────────────────
 var db = null;
@@ -1716,8 +1719,9 @@ try {
 // ── STATE ───────────────────────────────────────────────
 var S = { movimientos: [], catalogo: [], deudas: [], pacientes: [], sesiones: [], gastos: [], cotizaciones: [], citas: [], fotos: [], kardex: [], seguimientos: [], gastosFijos: [], alias: [] };
 var mFilterV = 'all', mSearchV = '', catSearchV = '', catFilterV = 'all', deudaFilterV = 'activas';
-var cliSearchV = '', cliSortV = 'total', expFilterV = 'all', expSearchV = '';
+var cliSearchV = '', cliSortV = 'total', expFilterV = 'paciente', expSearchV = '';
 var currentReport = 'resumen';
+var expFilterDefault = 'paciente';
 var editCatId = null;
 var movCart = [];
 var restockCatId = null;
@@ -2341,7 +2345,9 @@ function expFilter(v, el) {
 function expSearch(v) { expSearchV = v.toLowerCase(); renderExpedientes(); }
 function renderExpedientes() {
   var list = S.pacientes.slice();
-  if (expFilterV !== 'all') list = list.filter(function(p) {
+  if (expFilterV === 'paciente' || expFilterV === 'contacto' || expFilterV === 'negocio') {
+    list = list.filter(function(p) { return (p.tipo || 'paciente') === expFilterV; });
+  } else if (expFilterV !== 'all') list = list.filter(function(p) {
     var tp = ((p.tipo_piel || []).join(' ')).toLowerCase();
     if (expFilterV === 'acne') return p.acne && p.acne !== 'No tiene';
     if (expFilterV === 'grasa') return tp.includes('grasa');
@@ -2358,13 +2364,17 @@ function renderExpedientes() {
     return '<div class="pc" onclick="viewExp(' + p.id + ')">' +
       '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">' +
       '<div class="avt">' + p.nombre.charAt(0).toUpperCase() + '</div>' +
-      '<div><div style="font-weight:500;font-size:13px">' + p.nombre + '</div>' +
+      '<div><div style="font-weight:500;font-size:13px">' + p.nombre +
+      ((p.tipo && p.tipo !== 'paciente') ? ' <span class="chip ' + (TIPO_CHIP_CLI[p.tipo] || 'cx') + '" style="font-size:9px">' + TIPO_LBL_CLI[p.tipo] + '</span>' : '') + '</div>' +
       '<div style="font-size:10px;color:var(--ink3)">' + (p.edad ? p.edad + ' años · ' : '') + (p.tel || 'Sin teléfono') + '</div></div></div>' +
       '<div style="display:flex;flex-wrap:wrap;gap:4px">' + tags + '</div>' +
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;padding-top:8px;border-top:1px solid var(--br)">' +
       '<span style="font-size:10px;color:var(--ink3)">' + (p.fecha_eval || 'Sin fecha') + '</span>' +
       '<span style="font-size:10px;font-weight:500;color:var(--terra)">' + ss + ' sesión' + (ss !== 1 ? 'es' : '') + '</span></div>' +
       '<div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--br)">' +
+      ((p.tipo && p.tipo !== 'paciente')
+        ? '<button class="btn bg2 bxs" style="flex:1" onclick="event.stopPropagation();cambiarTipoFicha(' + p.id + ',\'paciente\')" title="Ahora toma tratamientos"><i class="ti ti-stethoscope"></i>Hacer paciente</button>'
+        : '') +
       '<button class="btn bp bxs" style="flex:1" onclick="event.stopPropagation();editExp(' + p.id + ')"><i class="ti ti-edit"></i>Editar</button>' +
       '<button class="btn bda bxs" onclick="event.stopPropagation();delExp(' + p.id + ')"><i class="ti ti-trash"></i></button>' +
       '</div></div>';
@@ -2553,7 +2563,7 @@ async function saveMov() {
     if (_saldoPrevio > 0 && !confirm(cliente + ' ya debe ' + fmt(_saldoPrevio) + ' de antes.\n\n¿Aun así dejas esta venta a crédito?')) return;
   }
 
-  var fichaMov = await fichaParaGuardar(cliente);
+  var fichaMov = await fichaParaGuardar(cliente, tipo);
   var pidMov = fichaMov ? fichaMov.id : null;
   if (fichaMov) cliente = fichaMov.nombre;
 
@@ -5586,7 +5596,7 @@ function renderFusion() {
       (sug ? '<button class="btn bt bxs" onclick="vincularAlias(\'' + seguro + '\',' + sug.ficha.id + ')" title="Es la misma persona"><i class="ti ti-link"></i>Es la misma</button>' : '') +
       '<button class="btn bg2 bxs" onclick="elegirFicha(\'' + seguro + '\')" title="Buscar otra ficha"><i class="ti ti-search"></i></button>' +
       '<button class="btn bg2 bxs" onclick="crearFichaDesde(\'' + seguro + '\')" title="Crear ficha nueva"><i class="ti ti-user-plus"></i></button>' +
-      '<button class="btn bda bxs" onclick="ignorarAlias(\'' + seguro + '\')" title="No es una clienta con ficha"><i class="ti ti-eye-off"></i></button>' +
+      '<button class="btn bda bxs" onclick="ignorarAlias(\'' + seguro + '\')" title="Esconder: no es una clienta real (nombre repetido, prueba, error)"><i class="ti ti-eye-off"></i></button>' +
       '</div></td></tr>';
   }).join('') : '<tr><td colspan="4"><div class="empty"><i class="ti ti-users-group"></i><p>Todos los cobros están vinculados a una ficha</p></div></td></tr>');
 }
@@ -5630,8 +5640,8 @@ async function ignorarAlias(nombre) {
   toast('Ya no aparecerá en la lista');
 }
 
-async function crearFicha(nombre, tel) {
-  var obj = { nombre: String(nombre).trim() };
+async function crearFicha(nombre, tel, tipo) {
+  var obj = { nombre: String(nombre).trim(), tipo: tipo || 'paciente' };
   if (tel) obj.tel = tel;
   if (db) {
     var r = await db.from('pacientes').insert(obj).select().single();
@@ -5645,12 +5655,52 @@ async function crearFicha(nombre, tel) {
   return obj;
 }
 
-async function crearFichaDesde(nombre) {
-  var tel = prompt('Teléfono de ' + nombre + ' (puedes dejarlo vacío):', '');
-  if (tel === null) return;
-  var f = await crearFicha(nombre, tel.trim() || null);
+var TIPO_LBL_CLI = { paciente: 'Paciente', contacto: 'Solo producto', negocio: 'Negocio' };
+var TIPO_CHIP_CLI = { paciente: 'ct2', contacto: 'cs', negocio: 'cv' };
+
+function crearFichaDesde(nombre) {
+  var seguro = esc(nombre).replace(/'/g, '&#39;');
+  var html =
+    '<div class="fld"><label>Nombre</label><input type="text" id="nfNombre" value="' + esc(nombre) + '"></div>' +
+    '<div class="fld"><label>Teléfono</label><input type="tel" id="nfTel" placeholder="809-000-0000"></div>' +
+    '<div style="font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin:18px 0 10px">¿Qué tipo de clienta es?</div>' +
+    '<div style="display:flex;flex-direction:column;gap:8px">' +
+    '<button class="btn bg2" style="justify-content:flex-start;text-align:left;height:auto;padding:13px 16px" onclick="guardarFichaNueva(\'' + seguro + '\',\'paciente\')">' +
+      '<span><strong>Paciente con expediente</strong><br><span style="font-size:11.5px;color:var(--ink3);font-weight:400">Toma tratamientos. Lleva historia clínica, sesiones y fotos.</span></span></button>' +
+    '<button class="btn bg2" style="justify-content:flex-start;text-align:left;height:auto;padding:13px 16px" onclick="guardarFichaNueva(\'' + seguro + '\',\'contacto\')">' +
+      '<span><strong>Solo compra producto</strong><br><span style="font-size:11.5px;color:var(--ink3);font-weight:400">Nombre y teléfono, sin expediente clínico. Igual entra en recuperación y en el control de deuda.</span></span></button>' +
+    '<button class="btn bg2" style="justify-content:flex-start;text-align:left;height:auto;padding:13px 16px" onclick="guardarFichaNueva(\'' + seguro + '\',\'negocio\')">' +
+      '<span><strong>Negocio</strong><br><span style="font-size:11.5px;color:var(--ink3);font-weight:400">Farmacia, gimnasio, reventa. Compra para revender.</span></span></button>' +
+    '</div>';
+  var div = document.createElement('div');
+  div.className = 'mb open dyn-modal';
+  div.innerHTML = '<div class="modal" style="max-width:440px">' +
+    '<div class="mh"><div class="mt">Ficha nueva</div>' +
+    '<button class="mc" onclick="removeTopModal()"><i class="ti ti-x"></i></button></div>' +
+    '<div class="mbody">' + html + '</div>' +
+    '<div class="mf"><button class="btn bg2" onclick="removeTopModal()">Cancelar</button></div></div>';
+  document.body.appendChild(div);
+}
+
+async function guardarFichaNueva(aliasOriginal, tipo) {
+  var nombre = (document.getElementById('nfNombre') || {}).value || aliasOriginal;
+  var tel = ((document.getElementById('nfTel') || {}).value || '').trim();
+  removeTopModal();
+  var f = await crearFicha(nombre, tel || null, tipo);
   if (!f) return;
-  await vincularAlias(nombre, f.id);
+  await vincularAlias(aliasOriginal, f.id);
+}
+
+async function cambiarTipoFicha(id, tipo) {
+  var f = fichaPorId(id);
+  if (!f) return;
+  if (db) {
+    var r = await db.from('pacientes').update({ tipo: tipo }).eq('id', id);
+    if (r.error) { toast('No se pudo cambiar: ' + r.error.message); return; }
+  }
+  f.tipo = tipo;
+  renderAll();
+  toast(tipo === 'paciente' ? 'Ahora tiene expediente clínico' : 'Guardada como ' + TIPO_LBL_CLI[tipo].toLowerCase());
 }
 
 function elegirFicha(nombre) {
@@ -5710,13 +5760,17 @@ function estadoFicha(inputId, avisoId) {
   }
 }
 
-async function fichaParaGuardar(nombre) {
+async function fichaParaGuardar(nombre, tipoVenta) {
   var f = resolverFicha(nombre);
   if (f) return f;
   var nom = String(nombre || '').trim();
   if (!nom) return null;
-  if (!confirm('"' + nom + '" no tiene ficha todavía.\n\n¿Se la creamos ahora? Así sus cobros, su expediente y sus recordatorios quedan juntos.')) return null;
-  return await crearFicha(nom, null);
+  var tipo = tipoVenta === 'producto' ? 'contacto' : 'paciente';
+  var msg = tipoVenta === 'producto'
+    ? '"' + nom + '" es nueva.\n\n¿Le creamos su ficha? Como es una venta de producto, la guardo como clienta de producto: nombre y teléfono, sin expediente clínico. Si algún día toma un tratamiento, se convierte con un toque.'
+    : '"' + nom + '" es nueva.\n\n¿Le creamos su ficha? Así sus cobros, su expediente y sus recordatorios quedan juntos.';
+  if (!confirm(msg)) return null;
+  return await crearFicha(nom, null, tipo);
 }
 
 /* ── BADGE Y ARRANQUE ──────────────────────────────────── */
