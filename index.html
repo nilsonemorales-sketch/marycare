@@ -920,6 +920,8 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
   .kg[style*="repeat(3"]{grid-template-columns:1fr 1fr!important}
   .kv{font-size:var(--mc-t-lg);overflow-wrap:anywhere}
 }
+
+.mc-item--wrap .mc-item-body span{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.45}
 </style>
 </head>
 <body class="mc">
@@ -1821,7 +1823,7 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
 </div>
 
 <script>
-var APP_VER = '40';
+var APP_VER = '41';
 
 // ── SUPABASE ────────────────────────────────────────────
 var db = null;
@@ -5106,6 +5108,14 @@ async function saveCita() {
   }
   window._citaForce = false;
 
+  if (sesionAReagendar) {
+    var _s = (S.sesiones || []).find(function (x) { return x.id === sesionAReagendar; });
+    if (_s) {
+      if (db) await db.from('sesiones').update({ proxima_estado: 'resuelta' }).eq('id', _s.id);
+      _s.proxima_estado = 'resuelta';
+    }
+    sesionAReagendar = null;
+  }
   var pac = resolverFicha(cliente);
   var obj = {
     paciente_id: pac ? pac.id : null,
@@ -5776,19 +5786,63 @@ function chequearCredito() {
 /* ── AGENDA QUE SE LLENA SOLA ──────────────────────────── */
 var citaACobrar = null;
 
+function dif(a, b) {
+  var x = parseD(a), y = parseD(b);
+  if (!x || !y) return 999;
+  return Math.round((x - y) / 86400000);
+}
 function proximasSinCita() {
-  var out = [];
+  var out = [], hoy = hoyKey();
   (S.sesiones || []).forEach(function (s) {
     if (!s.proxima) return;
-    var existe = (S.citas || []).some(function (c) {
-      return c.fecha === s.proxima && normNom(c.cliente) === normNom(s.paciente_nombre);
+    if (s.proxima_estado) return;                 /* ya la resolvió Maria */
+    var vencida = String(s.proxima) < hoy;
+    var manejada = (S.citas || []).some(function (c) {
+      if (normNom(c.cliente) !== normNom(s.paciente_nombre)) return false;
+      if (c.estado === 'cancelada') return false;
+      if (c.fecha === s.proxima) return true;
+      /* si ya se pasó la fecha, cualquier cita de hoy en adelante la da por resuelta */
+      if (vencida) return c.fecha >= hoy && c.fecha >= s.fecha;
+      /* si todavía no llega, solo cuenta una cita cerca de esa fecha */
+      return Math.abs(dif(c.fecha, s.proxima)) <= 7;
     });
-    if (existe) return;
-    out.push({ sesion: s, vencida: String(s.proxima) < hoyKey() });
+    if (manejada) return;
+    out.push({ sesion: s, vencida: vencida });
   });
   out.sort(function (a, b) { return String(a.sesion.proxima).localeCompare(String(b.sesion.proxima)); });
   return out;
 }
+
+/* Cerrar una próxima visita vencida sin tener que crear una cita */
+async function cerrarProxima(sesionId, estado) {
+  var ses = (S.sesiones || []).find(function (x) { return x.id === sesionId; });
+  if (!ses) return;
+  if (db) {
+    var r = await db.from('sesiones').update({ proxima_estado: estado }).eq('id', sesionId);
+    if (r.error) { toast('No se pudo quitar de la lista. Revisa la conexión e intenta otra vez.'); return; }
+  }
+  ses.proxima_estado = estado;
+  renderAll();
+  toast(estado === 'resuelta' ? 'Listo, salió de la lista' : 'Quitada de la lista');
+}
+
+/* Reagendar: abre la cita ya llena con la clienta y su servicio */
+function reagendarProxima(sesionId) {
+  var ses = (S.sesiones || []).find(function (x) { return x.id === sesionId; });
+  if (!ses) return;
+  openCitaModal(null, hoyKey());
+  var set = function (id, v) { var e = document.getElementById(id); if (e) e.value = v; };
+  set('ciCliente', ses.paciente_nombre || '');
+  set('ciServicio', ses.servicio || '');
+  var pr = precioCatalogo(ses.servicio) || precioHistorico(ses.servicio);
+  if (pr) set('ciPrecio', pr);
+  set('ciDur', duracionCatalogo(ses.servicio));
+  var tel = telDeCliente(ses.paciente_nombre, ses.paciente_id);
+  if (tel) set('ciTel', tel);
+  set('ciNotas', 'Reagendada: tocaba el ' + fechaLarga(ses.proxima));
+  sesionAReagendar = ses.id;
+}
+var sesionAReagendar = null;
 
 var creandoCitas = false;
 async function crearCitasPendientes() {
@@ -5866,18 +5920,30 @@ function renderRescate() {
   }
   if (vencidas.length) {
     html += '<div class="card" style="margin-bottom:20px">' +
-      '<div class="ch"><div class="ct">Próximas visitas vencidas · ' + vencidas.length + '</div></div>' +
-      '<div class="cb np">' + vencidas.slice(0, 12).map(function (x) {
+      '<div class="ch" style="flex-direction:column;align-items:flex-start;gap:2px">' +
+      '<div class="ct">Próximas visitas vencidas · ' + vencidas.length + '</div>' +
+      '<div style="font-size:11.5px;color:var(--mc-muted);font-weight:400">Toca una para escribirle, ponerle cita o sacarla de la lista</div></div>' +
+      '<div class="cb np" style="padding-top:6px">' + vencidas.map(function (x) {
         var ses = x.sesion;
         var d = diasDesde(ses.proxima);
-        return '<div class="cita-row">' +
-          '<div class="cita-time" style="min-width:74px;color:var(--red);font-size:12.5px">' + d + ' días</div>' +
-          '<div class="cita-meta"><div class="cita-name">' + esc(ses.paciente_nombre) + '</div>' +
-          '<div class="cita-serv">' + esc(ses.servicio || 'Sin servicio') + ' · tocaba el ' + fechaLarga(ses.proxima) + '</div></div>' +
-          '<div style="display:flex;gap:5px;flex-shrink:0">' +
-          (telDeCliente(ses.paciente_nombre)
-            ? '<button class="btn bwa bxs" onclick="reagendarWA(' + ses.id + ')" title="Reagendar por WhatsApp"><i class="ti ti-brand-whatsapp"></i></button>' : '') +
-          '<button class="btn bg2 bxs" onclick="openCitaModal(null,hoyKey())" title="Crear cita"><i class="ti ti-calendar-plus"></i></button>' +
+        var sg = ultimoSeguimiento('recordatorio', ses.paciente_nombre);
+        var hace = sg ? diasDesde(sg.fecha) : null;
+        var aviso = hace == null ? ''
+          : ' · <span style="color:var(--mc-ok)">escrita ' + (hace === 0 ? 'hoy' : 'hace ' + hace + (hace === 1 ? ' día' : ' días')) + '</span>';
+        var ini = String(ses.paciente_nombre || '?').trim().charAt(0).toUpperCase();
+        return '<div class="mc-item mc-item--wrap" onclick="this.classList.toggle(\'is-open\')">' +
+          '<div class="mc-item-head">' +
+            '<div class="mc-avatar">' + esc(ini) + '</div>' +
+            '<div class="mc-item-body"><b>' + esc(ses.paciente_nombre) + '</b>' +
+            '<span>' + esc(ses.servicio || 'Sin servicio') + ' · tocaba el ' + fechaLarga(ses.proxima) + aviso + '</span></div>' +
+            '<div class="mc-item-meta"><span class="mc-chip mc-chip--alert">' + d + ' días</span></div>' +
+          '</div>' +
+          '<div class="mc-actions" onclick="event.stopPropagation()">' +
+            (telDeCliente(ses.paciente_nombre, ses.paciente_id)
+              ? '<button class="mc-btn" onclick="reagendarWA(' + ses.id + ')">Escribirle</button>' : '') +
+            '<button class="mc-btn mc-btn--quiet" onclick="reagendarProxima(' + ses.id + ')">Ponerle cita</button>' +
+            '<button class="mc-btn mc-btn--quiet" onclick="cerrarProxima(' + ses.id + ',\'resuelta\')">Ya volvió</button>' +
+            '<button class="mc-btn mc-btn--quiet" onclick="cerrarProxima(' + ses.id + ',\'descartada\')">No viene</button>' +
           '</div></div>';
       }).join('') + '</div></div>';
   }

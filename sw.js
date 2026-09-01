@@ -5,7 +5,7 @@
    - Supabase / API: nunca se cachea
    - Fotos del storage: cache-first (no cambian)
 */
-const VERSION = 'mc-v40';
+const VERSION = 'mc-v41';
 const SHELL = VERSION + '-shell';
 const RUNTIME = VERSION + '-runtime';
 const IMGS = VERSION + '-img';
