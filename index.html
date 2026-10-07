@@ -214,6 +214,7 @@ body{
 }
 .mc-actions{display:none;gap:var(--mc-gap);margin-top:12px;padding-top:12px;border-top:1px solid var(--mc-hair)}
 .mc-item.is-open .mc-actions{display:flex;flex-wrap:wrap}
+#kitFiltros .fc em{font-style:normal;font-weight:700;margin-left:4px;background:var(--mc-g1);color:#fff;border-radius:99px;padding:0 6px;font-size:11px}
 
 .avt{
   width:38px;height:38px;border-radius:13px;background:var(--mc-grad-soft);color:var(--mc-on-grad);
@@ -1196,6 +1197,7 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
     <div class="page" id="page-mas">
       <div class="ph"><h1>Más</h1><p>Catálogo, inventario, cotizaciones, gastos y reportes</p></div>
       <div class="mc-more">
+        <button onclick="goPage('kits')"><i class="ti ti-gift"></i><b>Kits de Navidad</b><span>Códigos y pedidos del test</span></button>
         <button onclick="goPage('catalogo')"><i class="ti ti-tag"></i><b>Catálogo</b><span>Servicios y productos</span></button>
         <button onclick="goPage('inventario')"><i class="ti ti-box"></i><b>Inventario</b><span>Stock y reposición</span></button>
         <button onclick="goPage('cotizaciones')"><i class="ti ti-file-invoice"></i><b>Cotizaciones</b><span>Presupuestos</span></button>
@@ -1209,6 +1211,35 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
         <div class="mc-card-head"><span id="sbBalLabel">Balance del mes</span></div>
         <b id="sbBal" style="font-size:30px;font-weight:700;letter-spacing:-.035em;display:block;margin-top:4px">—</b>
       </div>
+    </div>
+
+    <div class="page" id="page-kits">
+      <div class="ph"><h1>Kits de Navidad</h1><p>Crea el código cuando la clienta paga · el test te dice cómo armar su kit</p></div>
+      <div class="kg" style="margin-bottom:14px">
+        <div class="kpi"><div class="kl">Por llenar</div><div class="kv" id="kitKPend">—</div><div class="ks">Pagaron, falta el test</div></div>
+        <div class="kpi"><div class="kl">Por armar</div><div class="kv" style="color:var(--mc-g1)" id="kitKLlen">—</div><div class="ks">Ya llenaron el test</div></div>
+        <div class="kpi"><div class="kl">Armados</div><div class="kv" id="kitKArm">—</div><div class="ks">Listos para entregar</div></div>
+        <div class="kpi"><div class="kl">Entregados</div><div class="kv" id="kitKEnt">—</div><div class="ks">Kits vendidos</div></div>
+      </div>
+      <div class="mc-card" style="margin-bottom:14px">
+        <div class="mc-card-head"><span>Nueva venta</span></div>
+        <div class="fld" style="margin-top:8px"><label>Nombre de quien compró</label><input type="text" id="kitComprador" placeholder="Ej: Ana Rodríguez" maxlength="80" onkeydown="if(event.key==='Enter')kitGenerar()"></div>
+        <button class="btn bp" id="kitGenBtn" style="width:100%;justify-content:center" onclick="kitGenerar()"><i class="ti ti-ticket"></i>Crear código</button>
+        <div style="font-size:11.5px;color:var(--mc-ink3);margin-top:8px">Cada código sirve una sola vez. Después lo envías por WhatsApp con el link del test.</div>
+      </div>
+      <div id="kitArmar"></div>
+      <div class="card">
+        <div class="ch" style="flex-wrap:wrap;gap:8px">
+          <div class="fb" id="kitFiltros">
+            <button class="fc" data-f="llenado" onclick="kitFilter('llenado')">Por armar</button>
+            <button class="fc" data-f="pendiente" onclick="kitFilter('pendiente')">Por llenar</button>
+            <button class="fc" data-f="armado" onclick="kitFilter('armado')">Armados</button>
+            <button class="fc" data-f="entregado" onclick="kitFilter('entregado')">Entregados</button>
+          </div>
+        </div>
+      </div>
+      <div id="kitLista"></div>
+      <div style="height:10px"></div>
     </div>
 
     <div class="page" id="page-horario">
@@ -1823,7 +1854,7 @@ body.is-loading .mc-hero-big{background-image:linear-gradient(90deg,rgba(255,255
 </div>
 
 <script>
-var APP_VER = '41';
+var APP_VER = '42';
 
 // ── SUPABASE ────────────────────────────────────────────
 var db = null;
@@ -1838,7 +1869,7 @@ try {
 } catch(e) { db = null; }
 
 // ── STATE ───────────────────────────────────────────────
-var S = { movimientos: [], catalogo: [], deudas: [], pacientes: [], sesiones: [], gastos: [], cotizaciones: [], citas: [], fotos: [], kardex: [], seguimientos: [], gastosFijos: [], alias: [], config: {} };
+var S = { movimientos: [], catalogo: [], deudas: [], pacientes: [], sesiones: [], gastos: [], cotizaciones: [], citas: [], fotos: [], kardex: [], seguimientos: [], gastosFijos: [], alias: [], config: {}, kits: [] };
 var mFilterV = 'all', mSearchV = '', catSearchV = '', catFilterV = 'all', deudaFilterV = 'activas';
 var cliSearchV = '', cliSortV = 'total', expFilterV = 'paciente', expSearchV = '';
 var currentReport = 'resumen';
@@ -1882,7 +1913,8 @@ async function loadAll() {
       db.from('seguimientos').select('*').order('fecha', { ascending: false }).limit(400),
       db.from('gastos_fijos').select('*').order('concepto'),
       db.from('alias_clientas').select('*'),
-      db.from('config').select('*')
+      db.from('config').select('*'),
+      db.from('kit_pedidos').select('*').order('creado_en', { ascending: false })
     ]);
     S.movimientos  = results[0].data || [];
     S.catalogo     = results[1].data || [];
@@ -1899,6 +1931,7 @@ async function loadAll() {
     S.alias        = (results[12] && results[12].data) || [];
     S.config = {};
     ((results[13] && results[13].data) || []).forEach(function (r) { S.config[r.clave] = r.valor; });
+    S.kits = (results[14] && results[14].data) || [];
     await firmarFotos();
     try { localStorage.setItem('mc_cache', JSON.stringify(S)); localStorage.setItem('mc_cache_at', new Date().toISOString()); } catch(e){}
     dataReady = true;
@@ -1912,7 +1945,7 @@ var pageTitles = {
   dashboard: 'Resumen', movimientos: 'Movimientos', clientes: 'Clientas',
   catalogo: 'Catálogo', deudas: 'Deudas', expedientes: 'Expedientes',
   sesiones: 'Sesiones', gastos: 'Gastos & Costos', reportes: 'Reportería', cotizaciones: 'Cotizaciones',
-  agenda: 'Agenda', fotos: 'Antes y después', inventario: 'Inventario', recuperacion: 'Recuperación', fusion: 'Unir clientas', mas: 'Más', horario: 'Horario del salón'
+  agenda: 'Agenda', fotos: 'Antes y después', inventario: 'Inventario', recuperacion: 'Recuperación', fusion: 'Unir clientas', mas: 'Más', horario: 'Horario del salón', kits: 'Kits de Navidad'
 };
 
 var MC_DEST = {
@@ -1920,13 +1953,13 @@ var MC_DEST = {
   agenda:   ['agenda', 'sesiones'],
   clientas: ['clientes', 'expedientes', 'recuperacion', 'fusion', 'fotos'],
   cobros:   ['movimientos', 'deudas'],
-  mas:      ['mas', 'catalogo', 'inventario', 'cotizaciones', 'gastos', 'reportes', 'horario']
+  mas:      ['mas', 'kits', 'catalogo', 'inventario', 'cotizaciones', 'gastos', 'reportes', 'horario']
 };
 var MC_SUB = {
   agenda:   [['agenda', 'Citas'], ['sesiones', 'Sesiones']],
   clientas: [['clientes', 'Clientas'], ['expedientes', 'Fichas'], ['recuperacion', 'Recuperación'], ['fusion', 'Unir'], ['fotos', 'Antes y después']],
   cobros:   [['movimientos', 'Movimientos'], ['deudas', 'Deudas']],
-  mas:      [['mas', 'Todo'], ['catalogo', 'Catálogo'], ['inventario', 'Inventario'], ['cotizaciones', 'Cotizaciones'], ['gastos', 'Gastos'], ['reportes', 'Reportes'], ['horario', 'Horario']]
+  mas:      [['mas', 'Todo'], ['kits', 'Kits'], ['catalogo', 'Catálogo'], ['inventario', 'Inventario'], ['cotizaciones', 'Cotizaciones'], ['gastos', 'Gastos'], ['reportes', 'Reportes'], ['horario', 'Horario']]
 };
 
 function destDe(pagina) {
@@ -1943,6 +1976,7 @@ function contadorDe(pagina) {
     if (pagina === 'deudas') return (S.deudas || []).filter(function (d) {
       return d.tipo === 'cobrar' && d.estado === 'pendiente' && (diasDesde(d.fecha) || 0) >= 15;
     }).length;
+    if (pagina === 'kits') return (S.kits || []).filter(function (k) { return k.estado === 'llenado'; }).length;
     if (pagina === 'inventario') return soloProductos(S.catalogo).filter(function (p) {
       var m = p.stock_min == null ? 3 : p.stock_min;
       return p.cantidad != null && p.cantidad <= m;
@@ -2051,6 +2085,7 @@ function renderAll() {
   renderRecuperacion();
   renderFusion();
   renderHorario();
+  renderKits();
   renderBadgeFusion();
   renderRescate();
   renderBadges();
@@ -2468,6 +2503,140 @@ function renderDash(st) {
 }
 
 function ocupTap(k) { ocupSel = (ocupSel === k ? null : k); renderDash(); }
+
+
+/* ── KITS DE NAVIDAD ─────────────────────────────────── */
+var KIT_URL = 'https://nilsonemorales-sketch.github.io/marycare/kit.html';
+var kitFilterV = 'llenado';
+var KIT_PIEL = { grasa: 'Piel grasa', seca: 'Piel seca', mixta: 'Piel mixta', sensible: 'Piel sensible', normal: 'Piel normal', nose: 'No sabe su tipo de piel' };
+var KIT_FIJOS = 'Ampolla Flash · Agua termal · Bálsamo labios y mejillas · Desmaquillante';
+
+function kitCodigoNuevo() {
+  var A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', r = new Uint32Array(6), out = '';
+  crypto.getRandomValues(r);
+  for (var i = 0; i < 6; i++) out += A[r[i] % A.length];
+  return 'MC-' + out;
+}
+function kitBuscar(cod) { return (S.kits || []).find(function (k) { return k.codigo === cod; }); }
+function kitMensaje(k) {
+  return 'Hola ' + (k.comprador || '') + '! Gracias por comprar tu kit Mary Care. ' +
+    'Para armarlo a la medida de tu piel, contesta estas 3 preguntas (toma 1 minuto): ' +
+    KIT_URL + '?c=' + k.codigo + '\n\nTu código: ' + k.codigo;
+}
+function kitFilter(f) { kitFilterV = f; renderKits(); }
+
+async function kitGenerar() {
+  var inp = document.getElementById('kitComprador'), btn = document.getElementById('kitGenBtn');
+  var nom = (inp.value || '').trim();
+  if (nom.length < 2) { toast('Escribe el nombre de quien compró'); inp.focus(); return; }
+  if (!db) { toast('Sin conexión con el servidor'); return; }
+  btn.disabled = true;
+  var r = null;
+  for (var intento = 0; intento < 3; intento++) {
+    r = await db.from('kit_pedidos').insert({ codigo: kitCodigoNuevo(), comprador: nom }).select().single();
+    if (!r.error || r.error.code !== '23505') break;
+  }
+  btn.disabled = false;
+  if (r.error) { toast('No se pudo crear el código. Revisa la conexión e inténtalo otra vez.'); return; }
+  S.kits.unshift(r.data);
+  inp.value = '';
+  kitFilterV = 'pendiente';
+  renderKits();
+  renderNav(paginaActual());
+  toast('Código ' + r.data.codigo + ' creado para ' + nom);
+}
+
+function kitWA(cod) {
+  var k = kitBuscar(cod); if (!k) return;
+  window.open('https://wa.me/?text=' + encodeURIComponent(kitMensaje(k)), '_blank');
+}
+function kitCopiar(cod) {
+  var k = kitBuscar(cod); if (!k) return;
+  var txt = kitMensaje(k);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(function () { toast('Mensaje copiado'); }, function () { toast('No se pudo copiar'); });
+  } else toast('No se pudo copiar');
+}
+async function kitEstado(cod, estado) {
+  var k = kitBuscar(cod); if (!k || !db) return;
+  var antes = k.estado;
+  k.estado = estado; renderKits(); renderNav(paginaActual());
+  var r = await db.from('kit_pedidos').update({ estado: estado }).eq('codigo', cod);
+  if (r.error) { k.estado = antes; renderKits(); renderNav(paginaActual()); toast('No se guardó el cambio. Revisa la conexión.'); }
+}
+async function kitBorrar(cod) {
+  var k = kitBuscar(cod); if (!k || k.estado !== 'pendiente' || !db) return;
+  if (!confirm('¿Borrar el código ' + cod + ' de ' + (k.comprador || '') + '? Ya no se podrá usar.')) return;
+  var r = await db.from('kit_pedidos').delete().eq('codigo', cod).eq('estado', 'pendiente');
+  if (r.error) { toast('No se pudo borrar. Revisa la conexión.'); return; }
+  S.kits = S.kits.filter(function (x) { return x.codigo !== cod; });
+  renderKits(); renderNav(paginaActual());
+}
+
+function renderKits() {
+  if (!document.getElementById('kitLista')) return;
+  var ks = S.kits || [];
+  var por = { pendiente: [], llenado: [], armado: [], entregado: [] };
+  ks.forEach(function (k) { if (por[k.estado]) por[k.estado].push(k); });
+  setText('kitKPend', String(por.pendiente.length));
+  setText('kitKLlen', String(por.llenado.length));
+  setText('kitKArm', String(por.armado.length));
+  setText('kitKEnt', String(por.entregado.length));
+  document.querySelectorAll('#kitFiltros .fc').forEach(function (b) {
+    var f = b.getAttribute('data-f'); b.classList.toggle('on', f === kitFilterV);
+    var n = por[f].length; b.innerHTML = b.textContent.replace(/\s*\d+$/, '') + (n ? ' <em>' + n + '</em>' : '');
+  });
+
+  // Lo que hay que sacar del estante para los kits por armar
+  if (por.llenado.length) {
+    var cuenta = {};
+    por.llenado.forEach(function (k) { [k.limpiador, k.mascarilla, k.protector].forEach(function (p) { if (p) cuenta[p] = (cuenta[p] || 0) + 1; }); });
+    setHTML('kitArmar', '<div class="bday-banner" style="border-left-color:var(--mc-g2);margin-bottom:14px;align-items:flex-start">' +
+      '<i class="ti ti-package" style="color:var(--mc-g1)"></i><div style="flex:1;min-width:200px">' +
+      '<div style="font-weight:600;font-size:13.5px">Para armar ' + por.llenado.length + (por.llenado.length === 1 ? ' kit' : ' kits') + ' necesitas</div>' +
+      '<div style="font-size:12.5px;margin-top:6px;line-height:1.7">' +
+      Object.keys(cuenta).sort().map(function (p) { return '<b>' + cuenta[p] + '</b> × ' + esc(p); }).join('<br>') +
+      '<br><b>' + por.llenado.length + '</b> × ' + KIT_FIJOS + '</div></div></div>');
+  } else setHTML('kitArmar', '');
+
+  var list = por[kitFilterV] || [];
+  var vacio = {
+    llenado: ['No hay kits por armar', 'Cuando una clienta llene el test, su kit aparece aquí con lo que lleva.'],
+    pendiente: ['No hay códigos esperando', 'Crea un código arriba cuando una clienta pague su kit.'],
+    armado: ['No hay kits armados', 'Los kits que marques como armados aparecen aquí hasta que los entregues.'],
+    entregado: ['Todavía no has entregado kits', 'Aquí queda el historial de kits entregados.']
+  }[kitFilterV];
+  setHTML('kitLista', list.length ? list.map(function (k) {
+    var c = "'" + esc(k.codigo) + "'";
+    var quien = k.nombre || k.comprador || 'Sin nombre';
+    var ini = String(quien).trim().charAt(0).toUpperCase();
+    var fecha = new Date(k.llenado_en || k.creado_en).toLocaleDateString('es-DO', { day: 'numeric', month: 'short' });
+    var sub = k.estado === 'pendiente' ? 'Esperando que llene el test · ' + fecha
+      : (KIT_PIEL[k.piel] || '') + (k.para === 'regalo' ? ' · Es regalo' : '') + ' · ' + fecha;
+    var compro = (k.nombre && k.comprador && normNom(k.nombre) !== normNom(k.comprador)) ? '<div style="font-size:12px;color:var(--mc-ink3)">Compró: ' + esc(k.comprador) + '</div>' : '';
+    var prods = k.estado === 'pendiente' ? '' :
+      '<div style="font-size:13px;line-height:1.7;padding:2px 0 8px">' +
+      '<div><b>' + esc(k.limpiador) + '</b></div><div><b>' + esc(k.mascarilla) + '</b></div><div><b>' + esc(k.protector) + '</b></div>' +
+      '<div style="color:var(--mc-ink3);font-size:12px">+ ' + KIT_FIJOS + '</div>' +
+      (k.telefono ? '<div style="color:var(--mc-ink3);font-size:12px">Teléfono: ' + esc(k.telefono) + '</div>' : '') + compro + '</div>';
+    var acc = {
+      pendiente: '<button class="mc-btn" onclick="kitWA(' + c + ')">Enviar por WhatsApp</button>' +
+                 '<button class="mc-btn mc-btn--quiet" onclick="kitCopiar(' + c + ')">Copiar mensaje</button>' +
+                 '<button class="mc-btn mc-btn--quiet" onclick="kitBorrar(' + c + ')">Borrar</button>',
+      llenado: '<button class="mc-btn" onclick="kitEstado(' + c + ',\'armado\')">Ya lo armé</button>',
+      armado: '<button class="mc-btn" onclick="kitEstado(' + c + ',\'entregado\')">Ya lo entregué</button>' +
+              '<button class="mc-btn mc-btn--quiet" onclick="kitEstado(' + c + ',\'llenado\')">Volver a por armar</button>',
+      entregado: '<button class="mc-btn mc-btn--quiet" onclick="kitEstado(' + c + ',\'armado\')">Desmarcar entrega</button>'
+    }[k.estado] || '';
+    return '<div class="mc-item is-open">' +
+      '<div class="mc-item-head">' +
+        '<div class="mc-avatar">' + esc(ini) + '</div>' +
+        '<div class="mc-item-body"><b>' + esc(quien) + '</b><span>' + esc(sub) + '</span></div>' +
+        '<div class="mc-item-meta"><span class="mc-chip">' + esc(k.codigo) + '</span></div>' +
+      '</div>' + prods +
+      '<div class="mc-actions">' + acc + '</div></div>';
+  }).join('') : '<div class="mc-empty"><b>' + vacio[0] + '</b><p>' + vacio[1] + '</p></div>');
+}
 
 /* ── HORARIO DEL SALÓN ──────────────────────────────────── */
 function renderHorario() {

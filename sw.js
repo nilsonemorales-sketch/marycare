@@ -5,7 +5,7 @@
    - Supabase / API: nunca se cachea
    - Fotos del storage: cache-first (no cambian)
 */
-const VERSION = 'mc-v41';
+const VERSION = 'mc-v42';
 const SHELL = VERSION + '-shell';
 const RUNTIME = VERSION + '-runtime';
 const IMGS = VERSION + '-img';
@@ -69,8 +69,11 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(SHELL).then((c) => c.put('./index.html', copy));
+          // Solo la app se guarda como copia offline; otras páginas (ej. kit.html) no la reemplazan
+          if (url.pathname.endsWith('/') || url.pathname.endsWith('/index.html')) {
+            const copy = res.clone();
+            caches.open(SHELL).then((c) => c.put('./index.html', copy));
+          }
           return res;
         })
         .catch(() => caches.match('./index.html').then((r) => r || caches.match('./')))
